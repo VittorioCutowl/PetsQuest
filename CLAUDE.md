@@ -1,5 +1,10 @@
 # PetsQuest — Agent Context
 
+## Regola grafica
+Ogni volta che serve un asset grafico non ancora presente nella cartella `assets/`, fermarsi e chiedere all'utente di crearlo prima di procedere con l'implementazione. Non usare placeholder geometrici se esiste già uno stile visivo definito nel progetto.
+
+---
+
 ## Repo e avvio rapido
 - **GitHub**: https://github.com/VittorioCutowl/PetsQuest
 - **Dev server**: `python3 -m http.server 8080` dalla root del progetto
@@ -23,15 +28,15 @@ PetsQuest è un gioco RPG pixel art con combattimento a turni in tempo reale. Il
 - Difesa fisica e magica funzionanti
 - Risoluzione danni con floating numbers animati e shake on hit
 - Sprite animati (idle, 6 frame) per player (cane) e nemico (scheletro)
+- **Animazioni attacco/hit/death** — catena a 4 step in `resolveRound()`: player attack → enemy hit → enemy attack → player hit → resolution
 - HP bars, Rabbia bar, panel UI, background con luna/stelle/montagne
 - Scaling responsivo del canvas via CSS transform
 
 ### ❌ Non ancora fatto (in ordine di priorità)
-1. **Animazioni attacco** — frame one-shot per attack/hit (prossimo step)
-2. **Character selection** — schermata scelta razza + classe prima del combat
-3. **Effetti visivi** — flash bianco sul colpito, particelle magiche
-4. **Mappa campagna** — board a quadri (Quadro → Combat → Miniboss → Rewards)
-5. **Multiplayer** — WebSocket / Colyseus (fase avanzata)
+1. **Character selection** — schermata scelta razza + classe prima del combat
+2. **Effetti visivi** — flash bianco sul colpito, particelle magiche
+3. **Mappa campagna** — board a quadri (Quadro → Combat → Miniboss → Rewards)
+4. **Multiplayer** — WebSocket / Colyseus (fase avanzata)
 
 ---
 
@@ -55,8 +60,19 @@ assets/sprites/
     └── idle_left/       ← scheletro guarda a DESTRA
 ```
 
-**Naming controintuitivo**: `idle` = guarda sinistra, `idle_left` = guarda destra.  
+**Naming controintuitivo per `idle`**: `idle` = guarda sinistra, `idle_left` = guarda destra.  
 Regola: il personaggio a SINISTRA usa `idle_left`, quello a DESTRA usa `idle`.
+
+**⚠️ ATTENZIONE — `attack`/`hit`/`death` hanno la convenzione INVERTITA rispetto a `idle`:**
+
+| Set | no-suffix | `_left` |
+|-----|-----------|---------|
+| `idle` | guarda **SINISTRA** | guarda **DESTRA** |
+| `attack` / `hit` / `death` | guarda **DESTRA** | guarda **SINISTRA** |
+
+Quindi, per direzione coerente:
+- **Player** (sinistra schermo, guarda destra): `idle`→`frames.player.left`; attack/hit/death→varianti **no-suffix** (`frames.player.attack/hit/death`)
+- **Enemy** (destra schermo, guarda sinistra): `idle`→`frames.enemy.idle`; attack/hit/death→varianti **`*Left`** (`frames.enemy.attackLeft/hitLeft/deathLeft`)
 
 **Dimensioni**: 362×724 px RGBA, 6 frame per animazione, scala in-game: 0.21
 
@@ -141,24 +157,13 @@ enemySprite.x  = 620   // scheletro — destra
 
 ---
 
-## Prossimo step concreto: Animazioni di Attacco
+## Animazioni: note tecniche
 
-**Cosa fare**: quando il player o il nemico attacca, riprodurre un'animazione one-shot (non looping) prima di mostrare il floating damage.
+`frames` ha 8 chiavi per personaggio: `idle, left, attack, attackLeft, hit, hitLeft, death, deathLeft`.
 
-**Approccio consigliato senza nuovi sprite** (nel frattempo):
-1. Tween del personaggio in avanti (verso il nemico) e indietro — ~300ms
-2. Flash bianco sul bersaglio colpito (overlay alpha su L.effects)
-3. Poi shake + floatDmg come ora
+`playAnim(sprite, frameList, speed, cb)` — usa `setTimeout(cb, ms)` dove `ms = Math.round(frameList.length / speed / 60 * 1000)`. Non usa ticker per il callback, quindi funziona anche con tab in background.
 
-**Approccio con nuovi sprite** (quando disponibili):
-1. Aggiungere cartella `assets/sprites/{char}/attack/` con N frame
-2. Caricare in `frames.player.attack` / `frames.enemy.attack`
-3. In `resolveRound()`: switchare temporaneamente lo sprite all'animazione attack, poi tornare a idle
-
-**Domande aperte** (vedere anche `TECH.md` sezione 7):
-- Quanti frame per l'animazione attacco?
-- Il personaggio avanza fisicamente verso il nemico durante l'attacco?
-- Flash bianco sì/no sul colpito?
+**IMPORTANTE**: `requestAnimationFrame` è throttled nei tab in background (Chrome), quindi le animazioni PixiJS non girano visivamente se il tab non è in focus. Ma il callback e la logica di gioco si completano correttamente grazie a `setTimeout`.
 
 ---
 
