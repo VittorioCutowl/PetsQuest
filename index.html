@@ -152,6 +152,7 @@ const app = new PIXI.Application({
     backgroundColor: C.bg,
     antialias: false,
     resolution: 1,
+    sharedTicker: true,
 });
 document.getElementById('canvas-wrap').appendChild(app.view);
 
@@ -229,7 +230,10 @@ function stopTimer() {
 
 // ---- ASSET LOADING ----
 let playerSprite, enemySprite;
-const frames = { player: { idle: [], left: [] }, enemy: { idle: [], left: [] } };
+const frames = {
+    player: { idle: [], left: [], attack: [], attackLeft: [], hit: [], hitLeft: [], death: [], deathLeft: [] },
+    enemy:  { idle: [], left: [], attack: [], attackLeft: [], hit: [], hitLeft: [], death: [], deathLeft: [] },
+};
 
 async function loadFrames(basePath, count) {
     const textures = [];
@@ -247,10 +251,35 @@ async function loadFrames(basePath, count) {
 
 async function loadAllAssets() {
     const base = 'assets/sprites';
-    frames.player.idle = await loadFrames(`${base}/main_character/idle/main_character_idle`, 6);
-    frames.player.left = await loadFrames(`${base}/main_character/idle_left/main_character_idle_left`, 6);
-    frames.enemy.idle  = await loadFrames(`${base}/enemy_skeleton/idle/enemy_skeleton_idle`, 6);
-    frames.enemy.left  = await loadFrames(`${base}/enemy_skeleton/idle_left/enemy_skeleton_idle_left`, 6);
+    const mc   = `${base}/main_character`;
+    const sk   = `${base}/enemy_skeleton`;
+    const loadEl = document.getElementById('loading');
+
+    const sets = [
+        ['player.idle',       `${mc}/idle/main_character_idle`],
+        ['player.left',       `${mc}/idle_left/main_character_idle_left`],
+        ['player.attack',     `${mc}/attack/main_character_attack`],
+        ['player.attackLeft', `${mc}/attack_left/main_character_attack_left`],
+        ['player.hit',        `${mc}/hit/main_character_hit`],
+        ['player.hitLeft',    `${mc}/hit_left/main_character_hit_left`],
+        ['player.death',      `${mc}/death/main_character_death`],
+        ['player.deathLeft',  `${mc}/death_left/main_character_death_left`],
+        ['enemy.idle',        `${sk}/idle/enemy_skeleton_idle`],
+        ['enemy.left',        `${sk}/idle_left/enemy_skeleton_idle_left`],
+        ['enemy.attack',      `${sk}/attack/enemy_skeleton_attack`],
+        ['enemy.attackLeft',  `${sk}/attack_left/enemy_skeleton_attack_left`],
+        ['enemy.hit',         `${sk}/hit/enemy_skeleton_hit`],
+        ['enemy.hitLeft',     `${sk}/hit_left/enemy_skeleton_hit_left`],
+        ['enemy.death',       `${sk}/death/enemy_skeleton_death`],
+        ['enemy.deathLeft',   `${sk}/death_left/enemy_skeleton_death_left`],
+    ];
+
+    for (let i = 0; i < sets.length; i++) {
+        const [key, path] = sets[i];
+        if (loadEl) loadEl.textContent = `Caricamento ${i + 1}/${sets.length}...`;
+        const [char, anim] = key.split('.');
+        frames[char][anim] = await loadFrames(path, 6);
+    }
 }
 
 // ---- BACKGROUND ----
@@ -374,6 +403,26 @@ function floatDmg(x, y, txt, color) {
         if (life <= 0) { app.ticker.remove(tick); L.effects.removeChild(t); }
     };
     app.ticker.add(tick);
+}
+
+// One-shot animation: play frameList once, then call cb.
+// setTimeout for callback timing (works regardless of tab focus / rAF throttling).
+// PixiJS animates the frames visually when the tab is in foreground.
+function playAnim(sprite, frameList, speed, cb) {
+    sprite.textures = frameList;
+    sprite.animationSpeed = speed;
+    sprite.loop = false;
+    sprite.gotoAndPlay(0);
+    // Duration: frames / (speed * 60fps) * 1000ms
+    const ms = Math.round((frameList.length / speed / 60) * 1000);
+    setTimeout(cb, ms);
+}
+
+function returnToIdle(sprite, idleFrames) {
+    sprite.textures = idleFrames;
+    sprite.animationSpeed = 0.08;
+    sprite.loop = true;
+    sprite.gotoAndPlay(0);
 }
 
 // ---- STATIC UI (header + panel bg) ----
@@ -872,7 +921,7 @@ function phaseDefMagic() {
 function resolveRound() {
     stopTimer();
     const p = GS.player, e = GS.enemy;
-    let pDmg = 0, eDmg = 0;
+    let pDmg = 0, eDmg = 0, pHeal = 0;
     const msgs = [];
 
     // Enemy → Player
@@ -892,16 +941,16 @@ function resolveRound() {
             msgs.push({ t: `✨ Contro-magia! Solo ${pDmg} danni`, c: C.success });
         } else {
             pDmg = base;
-            msgs.push({ t: `🔮 Magia nemica: ${pDmg} danni ricevuti`, c: C.magic[0] });
+            msgs.push({ t: `🔮 Magia nemica: ${pDmg} danni ricevuti`, c: C.primary });
         }
     }
 
     // Player → Enemy
     if (GS.playerAction === 'item') {
-        const heal = 25 + Math.floor(Math.random() * 15);
-        p.hp = Math.min(p.maxHP, p.hp + heal);
+        pHeal = 25 + Math.floor(Math.random() * 15);
+        p.hp = Math.min(p.maxHP, p.hp + pHeal);
         p.res = Math.min(p.maxRes, p.res + 8);
-        msgs.push({ t: `🧪 Pozione: +${heal} HP recuperati`, c: C.hp });
+        msgs.push({ t: `🧪 Pozione: +${pHeal} HP recuperati`, c: C.hp });
     } else if (GS.playerAtkType === 'physical') {
         const base = Math.round(p.atk + Math.random() * 8);
         eDmg = GS.playerDir ? base : Math.round(base * 0.45);
@@ -919,12 +968,68 @@ function resolveRound() {
     e.hp = Math.max(0, e.hp - eDmg);
     GS.turnResult = { pDmg, eDmg, msgs };
 
-    // Visual feedback
-    if (pDmg > 0) setTimeout(() => { floatDmg(playerSprite.x + 30, playerSprite.y - 60, `-${pDmg}`, C.failure); shake(playerSprite); }, 150);
-    if (eDmg > 0) setTimeout(() => { floatDmg(enemySprite.x - 30, enemySprite.y - 50,  `-${eDmg}`, C.secondary); shake(enemySprite); }, 350);
-    if (GS.playerAction === 'item') setTimeout(() => floatDmg(playerSprite.x, playerSprite.y - 70, `+HP`, C.hp), 150);
+    const ASPD = 0.16; // one-shot animation speed
 
-    setTimeout(() => setPhase('resolution'), 150);
+    // Step 1 — player attacks (or uses item)
+    function doPlayerAttack(next) {
+        if (GS.playerAction === 'item') {
+            floatDmg(playerSprite.x, playerSprite.y - 70, `+${pHeal}`, C.hp);
+            next(); return;
+        }
+        playAnim(playerSprite, frames.player.attackLeft, ASPD, () => {
+            returnToIdle(playerSprite, frames.player.left);
+            next();
+        });
+    }
+
+    // Step 2 — enemy takes the hit
+    function doEnemyHit(next) {
+        if (eDmg <= 0) { next(); return; }
+        floatDmg(enemySprite.x - 20, enemySprite.y - 60, `-${eDmg}`, C.secondary);
+        shake(enemySprite, 8, 300);
+        if (e.hp <= 0) {
+            playAnim(enemySprite, frames.enemy.death, ASPD, next);
+        } else {
+            playAnim(enemySprite, frames.enemy.hit, ASPD, () => {
+                returnToIdle(enemySprite, frames.enemy.idle);
+                next();
+            });
+        }
+    }
+
+    // Step 3 — enemy attacks (skip if dead)
+    function doEnemyAttack(next) {
+        if (e.hp <= 0) { next(); return; }
+        playAnim(enemySprite, frames.enemy.attack, ASPD, () => {
+            returnToIdle(enemySprite, frames.enemy.idle);
+            next();
+        });
+    }
+
+    // Step 4 — player takes the hit
+    function doPlayerHit(next) {
+        if (pDmg <= 0) { next(); return; }
+        floatDmg(playerSprite.x + 20, playerSprite.y - 60, `-${pDmg}`, C.failure);
+        shake(playerSprite, 8, 300);
+        if (p.hp <= 0) {
+            playAnim(playerSprite, frames.player.deathLeft, ASPD, next);
+        } else {
+            playAnim(playerSprite, frames.player.hitLeft, ASPD, () => {
+                returnToIdle(playerSprite, frames.player.left);
+                next();
+            });
+        }
+    }
+
+    doPlayerAttack(() =>
+        doEnemyHit(() =>
+            doEnemyAttack(() =>
+                doPlayerHit(() =>
+                    setPhase('resolution')
+                )
+            )
+        )
+    );
 }
 
 function phaseResolution() {
@@ -967,6 +1072,8 @@ function resetGame() {
     GS.player.hp = GS.player.maxHP; GS.player.res = 60;
     GS.enemy.hp  = GS.enemy.maxHP;
     GS.turn = 1; GS.turnResult = null;
+    returnToIdle(playerSprite, frames.player.left);
+    returnToIdle(enemySprite,  frames.enemy.idle);
     setPhase('action');
 }
 
