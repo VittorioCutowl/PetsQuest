@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <title>PetsQuest – Combat Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <script src="https://pixijs.download/v7.4.2/pixi.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #050510;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        #title {
+            font-family: 'Press Start 2P', monospace;
+            color: #8b5cf6;
+            font-size: 13px;
+            letter-spacing: 6px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 20px rgba(139,92,246,0.8);
+        }
+        #canvas-wrap {
+            transform-origin: top center;
+        }
+        canvas {
+            border: 2px solid #3d1a7a;
+            border-radius: 4px;
+            box-shadow: 0 0 60px rgba(106,63,160,0.5), 0 0 120px rgba(106,63,160,0.2);
+            image-rendering: pixelated;
+            display: block;
+        }
+        #loading {
+            font-family: 'Press Start 2P', monospace;
+            color: #8b5cf6;
+            font-size: 10px;
+            margin-top: 12px;
+            letter-spacing: 2px;
+        }
+    </style>
+</head>
+<body>
+<div id="title">⚔ PETSQUEST ⚔</div>
+<div id="canvas-wrap">
+<div id="loading">Caricamento sprites...</div>
+</div>
+
+<script>
+// ================================================================
+// PETSQUEST — COMBAT DEMO v0.1
+// ================================================================
+
+const W = 820, H = 640;
+const BATTLE_H = 400;
+const PANEL_H  = H - BATTLE_H; // 240
+
+// ---- PALETTE ----
+const C = {
+    bg:          0x050510,
+    panel:       0x0e0b28,
+    panelBorder: 0x3d1a7a,
+    panelLight:  0x18124a,
+    primary:     0x8b5cf6,
+    primaryH:    0xa78bfa,
+    primaryDark: 0x4c1d95,
+    secondary:   0xf59e0b,
+    hp:          0x22c55e,
+    hpMid:       0xf59e0b,
+    hpLow:       0xef4444,
+    rage:        0xef4444,
+    enemy:       0xe11d48,
+    enemyBorder: 0xf43f5e,
+    text:        0xf1f5f9,
+    textDim:     0x94a3b8,
+    gold:        0xfbbf24,
+    timer:       0xf97316,
+    timerLow:    0xef4444,
+    success:     0x4ade80,
+    failure:     0xf87171,
+    dir:         0x6366f1,
+    dirH:        0x818cf8,
+    magic:       [0xe879f9, 0x60a5fa, 0x4ade80, 0xfbbf24],
+};
+
+// ---- MINI-HELPERS ----
+function T(str, opts = {}) {
+    return new PIXI.Text(str, {
+        fontFamily:      'Press Start 2P',
+        fontSize:        opts.size  || 10,
+        fill:            opts.fill  !== undefined ? opts.fill : C.text,
+        align:           opts.align || 'left',
+        wordWrap:        opts.wrap  || false,
+        wordWrapWidth:   opts.wrapWidth || 300,
+        stroke:          opts.stroke || 0,
+        strokeThickness: opts.strokeThickness || 0,
+    });
+}
+
+function G() { return new PIXI.Graphics(); }
+
+function drawRect(g, x, y, w, h, r, fill, stroke, sw = 2, fa = 1) {
+    if (stroke !== undefined) g.lineStyle(sw, stroke, 1); else g.lineStyle(0);
+    g.beginFill(fill, fa);
+    g.drawRoundedRect(x, y, w, h, r || 0);
+    g.endFill();
+}
+
+function drawBar(g, x, y, w, h, val, max, fillC, emptyC = 0x1a1040) {
+    drawRect(g, x, y, w, h, 3, emptyC);
+    const fw = Math.max(0, Math.min(1, val / max)) * w;
+    if (fw > 0) drawRect(g, x, y, fw, h, 3, fillC);
+}
+
+function shuffled(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+}
+
+function makeBtn(x, y, w, h, label, color, onClick) {
+    const c = new PIXI.Container();
+    c.interactive = true; c.buttonMode = true;
+    const bg = G();
+    const draw = (hover) => {
+        bg.clear();
+        bg.lineStyle(2, color, hover ? 1 : 0.75);
+        bg.beginFill(color, hover ? 0.35 : 0.15);
+        bg.drawRoundedRect(0, 0, w, h, 8);
+        bg.endFill();
+    };
+    draw(false);
+    c.addChild(bg);
+    const txt = T(label, { size: 8, fill: C.text });
+    txt.anchor.set(0.5); txt.x = w / 2; txt.y = h / 2;
+    c.addChild(txt);
+    c.on('pointerover', () => draw(true));
+    c.on('pointerout',  () => draw(false));
+    c.on('pointerdown', onClick);
+    c.x = x; c.y = y;
+    return c;
+}
+
+// ---- APP ----
+const app = new PIXI.Application({
+    width: W, height: H,
+    backgroundColor: C.bg,
+    antialias: false,
+    resolution: 1,
+});
+document.getElementById('canvas-wrap').appendChild(app.view);
+
+// Scale canvas to fit viewport
+function scaleCanvas() {
+    const wrap = document.getElementById('canvas-wrap');
+    const scale = Math.min(1, (window.innerWidth - 24) / W);
+    wrap.style.transform = `scale(${scale})`;
+    wrap.style.marginBottom = `${(scale - 1) * H}px`;
+}
+scaleCanvas();
+window.addEventListener('resize', scaleCanvas);
+
+// Layers (draw order)
+const L = {
+    bg:      new PIXI.Container(),
+    chars:   new PIXI.Container(),
+    effects: new PIXI.Container(),
+    ui:      new PIXI.Container(),
+};
+Object.values(L).forEach(l => app.stage.addChild(l));
+
+// ---- GAME STATE ----
+const GS = {
+    phase: 'loading',
+    turn:  1,
+    player: {
+        name: 'Biscotto', cls: 'Guerriero',
+        hp: 120, maxHP: 120,
+        res: 60, maxRes: 100, resName: 'Rabbia', resColor: C.rage,
+        lv: 7, atk: 22, def: 14, matk: 8,
+    },
+    enemy: {
+        name: 'Rattleclaw', cls: 'Scheletro',
+        hp: 95, maxHP: 95,
+        lv: 8, atk: 18, def: 10, matk: 6,
+    },
+    // Turn data
+    playerAction:  null,
+    playerAtkType: null,
+    playerDir:     null,
+    playerSeq:     [],
+    enemyAtkType:  'physical',
+    enemyDir:      null,
+    enemySeq:      [],
+    playerDefDir:  null,
+    playerDefSeq:  [],
+    turnResult:    null,
+};
+
+const DIRS = {
+    up:    { sym: '↑' },
+    down:  { sym: '↓' },
+    left:  { sym: '←' },
+    right: { sym: '→' },
+};
+
+// ---- TIMER ----
+let _timerInterval = null;
+
+function startTimer(duration, onTick, onDone) {
+    stopTimer();
+    let t = duration;
+    onTick(t);
+    _timerInterval = setInterval(() => {
+        t = Math.max(0, t - 0.1);
+        onTick(t);
+        if (t <= 0) { stopTimer(); onDone(); }
+    }, 100);
+}
+
+function stopTimer() {
+    if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
+}
+
+// ---- ASSET LOADING ----
+let playerSprite, enemySprite;
+const frames = { player: { idle: [], left: [] }, enemy: { idle: [], left: [] } };
+
+async function loadFrames(basePath, count) {
+    const textures = [];
+    for (let i = 1; i <= count; i++) {
+        const num = String(i).padStart(2, '0');
+        const tex = await new Promise(resolve => {
+            const img = new Image();
+            img.onload = () => resolve(PIXI.Texture.from(img));
+            img.src = `${basePath}_${num}.png`;
+        });
+        textures.push(tex);
+    }
+    return textures;
+}
+
+async function loadAllAssets() {
+    const base = 'assets/sprites';
+    frames.player.idle = await loadFrames(`${base}/main_character/idle/main_character_idle`, 6);
+    frames.player.left = await loadFrames(`${base}/main_character/idle_left/main_character_idle_left`, 6);
+    frames.enemy.idle  = await loadFrames(`${base}/enemy_skeleton/idle/enemy_skeleton_idle`, 6);
+    frames.enemy.left  = await loadFrames(`${base}/enemy_skeleton/idle_left/enemy_skeleton_idle_left`, 6);
+}
+
+// ---- BACKGROUND ----
+function drawBackground() {
+    // Sky
+    const sky = G();
+    sky.beginFill(0x050510); sky.drawRect(0, 0, W, BATTLE_H); sky.endFill();
+    sky.beginFill(0x080620, 0.7); sky.drawRect(0, 0, W, BATTLE_H * 0.65); sky.endFill();
+    L.bg.addChild(sky);
+
+    // Moon
+    const moon = G();
+    moon.beginFill(0xfef9c3, 0.9); moon.drawCircle(120, 55, 38); moon.endFill();
+    moon.beginFill(0x050510, 1);   moon.drawCircle(136, 44, 34); moon.endFill();
+    L.bg.addChild(moon);
+
+    // Stars
+    const stars = G();
+    for (let i = 0; i < 80; i++) {
+        stars.beginFill(0xffffff, Math.random() * 0.55 + 0.1);
+        stars.drawCircle(Math.random() * W, Math.random() * BATTLE_H * 0.62, Math.random() * 1.5 + 0.3);
+        stars.endFill();
+    }
+    L.bg.addChild(stars);
+
+    // Mountains silhouette
+    const mtn = G();
+    mtn.beginFill(0x0c0820, 0.85);
+    mtn.moveTo(0,   BATTLE_H * 0.68);
+    mtn.lineTo(90,  BATTLE_H * 0.35);
+    mtn.lineTo(220, BATTLE_H * 0.52);
+    mtn.lineTo(320, BATTLE_H * 0.27);
+    mtn.lineTo(440, BATTLE_H * 0.48);
+    mtn.lineTo(560, BATTLE_H * 0.30);
+    mtn.lineTo(680, BATTLE_H * 0.50);
+    mtn.lineTo(800, BATTLE_H * 0.36);
+    mtn.lineTo(W,   BATTLE_H * 0.58);
+    mtn.lineTo(W,   BATTLE_H * 0.68);
+    mtn.endFill();
+    L.bg.addChild(mtn);
+
+    // Ground
+    const ground = G();
+    ground.beginFill(0x080415); ground.drawRect(0, BATTLE_H * 0.67, W, BATTLE_H * 0.33); ground.endFill();
+    ground.lineStyle(1, 0x3d1a7a, 0.5);
+    ground.moveTo(0, BATTLE_H * 0.67); ground.lineTo(W, BATTLE_H * 0.67);
+    // Ground texture
+    ground.lineStyle(1, 0x1a1040, 0.3);
+    for (let i = 0; i < 5; i++) {
+        const ly = BATTLE_H * 0.70 + i * 14;
+        ground.moveTo(0, ly); ground.lineTo(W, ly);
+    }
+    L.bg.addChild(ground);
+
+    // Character glows on ground
+    const glowP = G();
+    glowP.beginFill(C.primary, 0.07); glowP.drawEllipse(210, BATTLE_H * 0.68, 75, 11); glowP.endFill();
+    L.bg.addChild(glowP);
+
+    const glowE = G();
+    glowE.beginFill(C.enemy, 0.07); glowE.drawEllipse(620, BATTLE_H * 0.68, 65, 10); glowE.endFill();
+    L.bg.addChild(glowE);
+}
+
+// ---- CHARACTERS ----
+const CHAR_SCALE = 0.21; // 362*0.21 ≈ 76px wide, 724*0.21 ≈ 152px tall
+const GROUND_Y   = BATTLE_H * 0.72;
+
+function makeAnimSprite(frameList) {
+    const anim = new PIXI.AnimatedSprite(frameList);
+    anim.animationSpeed = 0.08;
+    anim.scale.set(CHAR_SCALE);
+    anim.anchor.set(0.5, 1);
+    anim.play();
+    return anim;
+}
+
+function setupCharacters() {
+    L.chars.removeChildren();
+
+    // Player — idle_left frames face right, so player on left looks toward enemy
+    playerSprite = makeAnimSprite(frames.player.left);
+    playerSprite.x = 210;
+    playerSprite.y = GROUND_Y;
+    let pt = 0;
+    app.ticker.add(() => { pt += 0.022; playerSprite.y = GROUND_Y + Math.sin(pt) * 4; });
+
+    // Enemy — faces left (idle frames face left), right side
+    enemySprite = makeAnimSprite(frames.enemy.idle);
+    enemySprite.x = 620;
+    enemySprite.y = GROUND_Y;
+    let et = Math.PI;
+    app.ticker.add(() => { et += 0.022; enemySprite.y = GROUND_Y + Math.sin(et) * 4; });
+
+    L.chars.addChild(playerSprite, enemySprite);
+}
+
+// ---- EFFECTS ----
+function shake(sprite, intensity = 10, duration = 350) {
+    const baseX = sprite.x;
+    const start = Date.now();
+    const tick = () => {
+        const elapsed = Date.now() - start;
+        if (elapsed >= duration) { sprite.x = baseX; app.ticker.remove(tick); return; }
+        sprite.x = baseX + (Math.random() - 0.5) * intensity * (1 - elapsed / duration) * 2;
+    };
+    app.ticker.add(tick);
+}
+
+function floatDmg(x, y, txt, color) {
+    const t = new PIXI.Text(txt, {
+        fontFamily: 'Press Start 2P', fontSize: 20,
+        fill: color, stroke: 0x000000, strokeThickness: 4,
+    });
+    t.anchor.set(0.5); t.x = x; t.y = y; t.alpha = 1;
+    L.effects.addChild(t);
+    let vy = -2.8, life = 1;
+    const tick = () => {
+        vy *= 0.94; t.y += vy;
+        life -= 0.017; t.alpha = life;
+        if (life <= 0) { app.ticker.remove(tick); L.effects.removeChild(t); }
+    };
+    app.ticker.add(tick);
+}
+
+// ---- STATIC UI (header + panel bg) ----
+function drawStaticUI() {
+    // Panel bg
+    const panelBg = G();
+    drawRect(panelBg, 0, BATTLE_H, W, PANEL_H, 0, C.panel, C.panelBorder, 2);
+    panelBg.lineStyle(1, C.primary, 0.4);
+    panelBg.moveTo(0, BATTLE_H); panelBg.lineTo(W, BATTLE_H);
+    L.ui.addChild(panelBg);
+
+    // ── Enemy HP card (top right) ──
+    const eCard = G();
+    drawRect(eCard, W - 340, 10, 326, 62, 8, C.panel, C.enemyBorder, 2);
+    L.ui.addChild(eCard);
+
+    const eName = T(`${GS.enemy.name}  [${GS.enemy.cls}]  Lv${GS.enemy.lv}`, { size: 7, fill: C.enemy });
+    eName.x = W - 330; eName.y = 18;
+    L.ui.addChild(eName);
+
+    const eHPtxt = T(`${GS.enemy.hp} / ${GS.enemy.maxHP} HP`, { size: 7, fill: C.textDim });
+    eHPtxt.x = W - 330; eHPtxt.y = 34;
+    L.ui.addChild(eHPtxt);
+
+    const eBar = G();
+    const eR = GS.enemy.hp / GS.enemy.maxHP;
+    drawBar(eBar, W - 330, 48, 312, 12, GS.enemy.hp, GS.enemy.maxHP,
+        eR > 0.5 ? C.enemy : (eR > 0.25 ? C.hpMid : C.hpLow));
+    L.ui.addChild(eBar);
+
+    // ── Player status card (bottom-left of battle area) ──
+    const pCard = G();
+    drawRect(pCard, 10, BATTLE_H - 96, 375, 88, 8, C.panel, C.primary, 2);
+    L.ui.addChild(pCard);
+
+    const pName = T(`${GS.player.name}  [${GS.player.cls}]  Lv${GS.player.lv}`, { size: 7, fill: C.primary });
+    pName.x = 20; pName.y = BATTLE_H - 88;
+    L.ui.addChild(pName);
+
+    const pHPtxt = T(`${GS.player.hp} / ${GS.player.maxHP} HP`, { size: 7, fill: C.textDim });
+    pHPtxt.x = 20; pHPtxt.y = BATTLE_H - 72;
+    L.ui.addChild(pHPtxt);
+
+    const pHPBar = G();
+    const pR = GS.player.hp / GS.player.maxHP;
+    drawBar(pHPBar, 20, BATTLE_H - 59, 355, 12, GS.player.hp, GS.player.maxHP,
+        pR > 0.5 ? C.hp : (pR > 0.25 ? C.hpMid : C.hpLow));
+    L.ui.addChild(pHPBar);
+
+    const pResTxt = T(`${GS.player.resName}: ${GS.player.res} / ${GS.player.maxRes}`, { size: 7, fill: C.textDim });
+    pResTxt.x = 20; pResTxt.y = BATTLE_H - 40;
+    L.ui.addChild(pResTxt);
+
+    const pResBar = G();
+    drawBar(pResBar, 20, BATTLE_H - 28, 355, 12, GS.player.res, GS.player.maxRes, GS.player.resColor);
+    L.ui.addChild(pResBar);
+
+    // ── Turn counter ──
+    const turnTxt = T(`TURNO  ${GS.turn}`, { size: 8, fill: C.textDim });
+    turnTxt.anchor.set(0.5); turnTxt.x = W / 2; turnTxt.y = 22;
+    L.ui.addChild(turnTxt);
+}
+
+// ---- TIMER UI (updated each tick, not full redraw) ----
+let _tBar = null, _tTxt = null, _tLabel = null;
+
+function drawTimerUI(remaining, total, label) {
+    if (_tBar)   { L.ui.removeChild(_tBar);   _tBar   = null; }
+    if (_tTxt)   { L.ui.removeChild(_tTxt);   _tTxt   = null; }
+    if (_tLabel) { L.ui.removeChild(_tLabel); _tLabel = null; }
+
+    const ty = BATTLE_H + 8;
+    _tLabel = T(label, { size: 7, fill: C.secondary });
+    _tLabel.anchor.set(0.5); _tLabel.x = W / 2; _tLabel.y = ty;
+    L.ui.addChild(_tLabel);
+
+    const bx = 14, by = ty + 18, bw = W - 28, bh = 10;
+    const ratio = Math.max(0, remaining / total);
+    _tBar = G();
+    drawRect(_tBar, bx, by, bw, bh, 4, 0x1a1040);
+    if (ratio > 0) drawRect(_tBar, bx, by, bw * ratio, bh, 4, ratio > 0.35 ? C.timer : C.timerLow);
+    L.ui.addChild(_tBar);
+
+    _tTxt = T(`${remaining.toFixed(1)}s`, { size: 8, fill: C.text });
+    _tTxt.anchor.set(1, 0.5); _tTxt.x = W - 16; _tTxt.y = by + bh / 2;
+    L.ui.addChild(_tTxt);
+}
+
+// ================================================================
+// PHASES
+// ================================================================
+const PY = BATTLE_H + 48; // Y start for panel content (below timer bar)
+
+function setPhase(phase) {
+    stopTimer();
+    GS.phase = phase;
+    L.ui.removeChildren();
+    _tBar = null; _tTxt = null; _tLabel = null;
+    drawStaticUI();
+
+    switch (phase) {
+        case 'action':       phaseAction();      break;
+        case 'dir_attack':   phaseDirAttack();   break;
+        case 'magic_attack': phaseMagicAtk();    break;
+        case 'def_physical': phaseDefPhys();     break;
+        case 'def_magic':    phaseDefMagic();    break;
+        case 'resolution':   phaseResolution();  break;
+    }
+}
+
+// ---- ACTION PHASE ----
+function phaseAction() {
+    const tip = T('Scegli la tua azione:', { size: 8, fill: C.textDim });
+    tip.anchor.set(0.5); tip.x = W / 2; tip.y = PY + 6;
+    L.ui.addChild(tip);
+
+    const actions = [
+        { key: 'attack',  label: '⚔  ATTACCA', sub: 'Attacco fisico direzionale', color: 0xdc2626, kb: '1' },
+        { key: 'ability', label: '✨  ABILITÀ', sub: 'Sequenza magica (Rabbia)',   color: C.primary, kb: '2' },
+        { key: 'item',    label: '🧪  OGGETTO', sub: 'Usa una pozione curativa',   color: 0x16a34a, kb: '3' },
+    ];
+
+    const bw = 238, bh = 112, gap = 18;
+    const sx = (W - (actions.length * bw + (actions.length - 1) * gap)) / 2;
+    const sy = PY + 26;
+
+    actions.forEach((a, i) => {
+        const btn = new PIXI.Container();
+        btn.interactive = true; btn.buttonMode = true;
+
+        const bg = G();
+        const draw = (hover) => {
+            bg.clear();
+            bg.lineStyle(2, a.color, hover ? 1 : 0.65);
+            bg.beginFill(a.color, hover ? 0.25 : 0.1);
+            bg.drawRoundedRect(0, 0, bw, bh, 10);
+            bg.endFill();
+        };
+        draw(false);
+        btn.addChild(bg);
+
+        const lbl = T(a.label, { size: 11, fill: C.text });
+        lbl.anchor.set(0.5); lbl.x = bw / 2; lbl.y = 30;
+        btn.addChild(lbl);
+
+        const sub = T(a.sub, { size: 7, fill: C.textDim, wrap: true, wrapWidth: bw - 24, align: 'center' });
+        sub.anchor.set(0.5); sub.x = bw / 2; sub.y = 64;
+        btn.addChild(sub);
+
+        const kb = T(`[ ${a.kb} ]`, { size: 7, fill: a.color });
+        kb.anchor.set(0.5); kb.x = bw / 2; kb.y = 92;
+        btn.addChild(kb);
+
+        btn.on('pointerover', () => draw(true));
+        btn.on('pointerout',  () => draw(false));
+        btn.on('pointerdown', () => onActionSelect(a.key));
+
+        btn.x = sx + i * (bw + gap);
+        btn.y = sy;
+        L.ui.addChild(btn);
+    });
+
+    const kbH = (e) => {
+        if (e.key === '1') onActionSelect('attack');
+        if (e.key === '2') onActionSelect('ability');
+        if (e.key === '3') onActionSelect('item');
+    };
+    window.addEventListener('keydown', kbH);
+    L.ui._cleanup = () => window.removeEventListener('keydown', kbH);
+
+    startTimer(15,
+        (rem) => drawTimerUI(rem, 15, 'FASE 1 — AZIONE  (15 secondi)'),
+        () => { if (L.ui._cleanup) L.ui._cleanup(); onActionSelect('attack'); }
+    );
+}
+
+function onActionSelect(key) {
+    if (L.ui._cleanup) { L.ui._cleanup(); L.ui._cleanup = null; }
+    stopTimer();
+    GS.playerAction = key;
+
+    // Pre-roll enemy decision
+    GS.enemyAtkType = Math.random() < 0.45 ? 'magic' : 'physical';
+    GS.enemyDir  = ['up','down','left','right'][Math.floor(Math.random() * 4)];
+    GS.enemySeq  = shuffled([0, 1, 2, 3]);
+
+    if (key === 'item') {
+        GS.playerAtkType = null;
+        GS.playerDir  = null;
+        GS.playerSeq  = [];
+        setPhase(GS.enemyAtkType === 'physical' ? 'def_physical' : 'def_magic');
+    } else if (key === 'ability') {
+        GS.playerAtkType = 'magic';
+        setPhase('magic_attack');
+    } else {
+        GS.playerAtkType = 'physical';
+        setPhase('dir_attack');
+    }
+}
+
+// ---- DIRECTIONAL ATTACK ----
+function phaseDirAttack() {
+    const tip = T('Scegli la direzione dell\'attacco!', { size: 8, fill: C.textDim });
+    tip.anchor.set(0.5); tip.x = W / 2; tip.y = PY + 6;
+    L.ui.addChild(tip);
+
+    const cx = W / 2, cy = PY + 105, sz = 55, gap = 5;
+
+    const kbH = (e) => {
+        const m = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right',
+                    w:'up', s:'down', a:'left', d:'right' };
+        if (m[e.key]) { window.removeEventListener('keydown', kbH); stopTimer(); onDirSelect(m[e.key]); }
+    };
+    window.addEventListener('keydown', kbH);
+
+    [
+        { key: 'up',    ox: 0,       oy: -(sz+gap) },
+        { key: 'down',  ox: 0,       oy:  sz+gap   },
+        { key: 'left',  ox: -(sz+gap), oy: 0       },
+        { key: 'right', ox:  sz+gap,  oy: 0        },
+    ].forEach(({ key, ox, oy }) => {
+        const btn = new PIXI.Container();
+        btn.interactive = true; btn.buttonMode = true;
+        const bg = G();
+        const draw = (h) => {
+            bg.clear();
+            bg.lineStyle(2, h ? C.dirH : C.dir);
+            bg.beginFill(h ? C.dir : C.panelLight, h ? 0.35 : 1);
+            bg.drawRoundedRect(0, 0, sz, sz, 10);
+            bg.endFill();
+        };
+        draw(false); btn.addChild(bg);
+        const sym = new PIXI.Text(DIRS[key].sym, { fontSize: 24, fill: C.dirH });
+        sym.anchor.set(0.5); sym.x = sz / 2; sym.y = sz / 2 - 1;
+        btn.addChild(sym);
+        btn.x = cx + ox - sz / 2; btn.y = cy + oy - sz / 2;
+        btn.on('pointerover', () => draw(true));
+        btn.on('pointerout',  () => draw(false));
+        btn.on('pointerdown', () => { window.removeEventListener('keydown', kbH); stopTimer(); onDirSelect(key); });
+        L.ui.addChild(btn);
+    });
+
+    // Center paw icon
+    const cb = G(); drawRect(cb, cx-22, cy-22, 44, 44, 8, C.primaryDark, C.primary, 2);
+    const cpaw = new PIXI.Text('🐾', { fontSize: 20 }); cpaw.anchor.set(0.5); cpaw.x = cx; cpaw.y = cy;
+    L.ui.addChild(cb, cpaw);
+
+    const hint = T('Frecce direzionali o WASD', { size: 7, fill: C.textDim });
+    hint.anchor.set(0.5); hint.x = W / 2; hint.y = cy + sz + gap + 16;
+    L.ui.addChild(hint);
+
+    startTimer(15,
+        (rem) => drawTimerUI(rem, 15, 'SCEGLI DIREZIONE ATTACCO'),
+        () => { window.removeEventListener('keydown', kbH); onDirSelect(shuffled(['up','down','left','right'])[0]); }
+    );
+}
+
+function onDirSelect(dir) {
+    GS.playerDir = dir;
+    setPhase(GS.enemyAtkType === 'physical' ? 'def_physical' : 'def_magic');
+}
+
+// ---- MAGIC ATTACK ----
+function phaseMagicAtk() {
+    GS.playerSeq = [];
+
+    const tip = T('Collega i 4 cristalli nell\'ordine che preferisci!', { size: 7, fill: C.textDim });
+    tip.anchor.set(0.5); tip.x = W / 2; tip.y = PY + 6;
+    L.ui.addChild(tip);
+
+    let seqDisp = null;
+    const updateSD = () => {
+        if (seqDisp) L.ui.removeChild(seqDisp);
+        const s = GS.playerSeq;
+        const txt = s.length === 0 ? 'Clicca i cristalli...' : s.map(i => i + 1).join(' → ');
+        seqDisp = T(txt, { size: 9, fill: s.length === 4 ? C.success : C.gold });
+        seqDisp.anchor.set(0.5); seqDisp.x = W / 2; seqDisp.y = PY + 22;
+        L.ui.addChild(seqDisp);
+    };
+
+    const cx = W / 2, cy = PY + 105, orbR = 28, gap = 22;
+    const pos = [
+        { i:0, x: cx - orbR - gap/2, y: cy - orbR - gap/2 },
+        { i:1, x: cx + orbR + gap/2, y: cy - orbR - gap/2 },
+        { i:2, x: cx - orbR - gap/2, y: cy + orbR + gap/2 },
+        { i:3, x: cx + orbR + gap/2, y: cy + orbR + gap/2 },
+    ];
+
+    const orbGs = [];
+    const updateOrbs = () => {
+        orbGs.forEach((og, i) => {
+            og.clear();
+            if (GS.playerSeq.includes(i)) {
+                og.lineStyle(3, C.magic[i]); og.beginFill(C.magic[i], 0.45);
+            } else {
+                og.lineStyle(2, C.magic[i], 0.7); og.beginFill(C.panelLight);
+            }
+            og.drawCircle(0, 0, orbR); og.endFill();
+        });
+    };
+
+    const kbH = (e) => { const k = parseInt(e.key); if (k >= 1 && k <= 4) clickOrb(k - 1); };
+    window.addEventListener('keydown', kbH);
+
+    const clickOrb = (i) => {
+        if (GS.playerSeq.includes(i)) return;
+        GS.playerSeq.push(i);
+        updateOrbs(); updateSD();
+        if (GS.playerSeq.length === 4) {
+            stopTimer(); window.removeEventListener('keydown', kbH);
+            setTimeout(() => setPhase(GS.enemyAtkType === 'physical' ? 'def_physical' : 'def_magic'), 350);
+        }
+    };
+
+    pos.forEach(({ i, x, y }) => {
+        const og = G();
+        og.lineStyle(2, C.magic[i], 0.7); og.beginFill(C.panelLight);
+        og.drawCircle(0, 0, orbR); og.endFill();
+        og.x = x; og.y = y;
+        og.interactive = true; og.buttonMode = true;
+        const num = T(`${i + 1}`, { size: 14, fill: C.magic[i] }); num.anchor.set(0.5);
+        og.addChild(num);
+        orbGs.push(og); L.ui.addChild(og);
+        og.on('pointerdown', () => clickOrb(i));
+        og.on('pointerover', () => { if (!GS.playerSeq.includes(i)) og.scale.set(1.12); });
+        og.on('pointerout',  () => og.scale.set(1));
+    });
+
+    const hint = T('[1] [2] [3] [4] da tastiera', { size: 7, fill: C.textDim });
+    hint.anchor.set(0.5); hint.x = W / 2; hint.y = cy + orbR + gap + 18;
+    L.ui.addChild(hint);
+
+    updateSD();
+
+    startTimer(15,
+        (rem) => drawTimerUI(rem, 15, 'SEQUENZA MAGIA'),
+        () => {
+            window.removeEventListener('keydown', kbH);
+            while (GS.playerSeq.length < 4) {
+                const av = [0,1,2,3].filter(x => !GS.playerSeq.includes(x));
+                GS.playerSeq.push(av[Math.floor(Math.random() * av.length)]);
+            }
+            setPhase(GS.enemyAtkType === 'physical' ? 'def_physical' : 'def_magic');
+        }
+    );
+}
+
+// ---- DEFENSE: PHYSICAL ----
+function phaseDefPhys() {
+    const tip = T('Il nemico attacca! Da che lato arriva il colpo?', { size: 7, fill: C.enemy });
+    tip.anchor.set(0.5); tip.x = W / 2; tip.y = PY + 6;
+    L.ui.addChild(tip);
+
+    const tip2 = T('Difesa fisica — 5 secondi!', { size: 7, fill: C.textDim });
+    tip2.anchor.set(0.5); tip2.x = W / 2; tip2.y = PY + 22;
+    L.ui.addChild(tip2);
+
+    const cx = W / 2, cy = PY + 105, sz = 50, gap = 5;
+
+    const kbH = (e) => {
+        const m = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right',
+                    w:'up', s:'down', a:'left', d:'right' };
+        if (m[e.key]) { window.removeEventListener('keydown', kbH); stopTimer(); onDefDirSelect(m[e.key]); }
+    };
+    window.addEventListener('keydown', kbH);
+
+    [
+        { key: 'up',    ox: 0,       oy: -(sz+gap) },
+        { key: 'down',  ox: 0,       oy:  sz+gap   },
+        { key: 'left',  ox: -(sz+gap), oy: 0       },
+        { key: 'right', ox:  sz+gap,  oy: 0        },
+    ].forEach(({ key, ox, oy }) => {
+        const btn = new PIXI.Container();
+        btn.interactive = true; btn.buttonMode = true;
+        const bg = G();
+        const draw = (h) => {
+            bg.clear();
+            bg.lineStyle(2, h ? 0x94a3b8 : 0x475569);
+            bg.beginFill(h ? 0x1e3a5f : C.panelLight, 1);
+            bg.drawRoundedRect(0, 0, sz, sz, 10); bg.endFill();
+        };
+        draw(false); btn.addChild(bg);
+        const sym = new PIXI.Text(DIRS[key].sym, { fontSize: 22, fill: 0x94a3b8 });
+        sym.anchor.set(0.5); sym.x = sz / 2; sym.y = sz / 2 - 1; btn.addChild(sym);
+        btn.x = cx + ox - sz / 2; btn.y = cy + oy - sz / 2;
+        btn.on('pointerover', () => draw(true));
+        btn.on('pointerout',  () => draw(false));
+        btn.on('pointerdown', () => { window.removeEventListener('keydown', kbH); stopTimer(); onDefDirSelect(key); });
+        L.ui.addChild(btn);
+    });
+
+    const cb = G(); drawRect(cb, cx-20, cy-20, 40, 40, 8, 0x1e293b, 0x475569, 2);
+    const sh = new PIXI.Text('🛡', { fontSize: 18 }); sh.anchor.set(0.5); sh.x = cx; sh.y = cy;
+    L.ui.addChild(cb, sh);
+
+    startTimer(5,
+        (rem) => drawTimerUI(rem, 5, 'FASE 2 — DIFESA FISICA  (5 secondi)'),
+        () => { window.removeEventListener('keydown', kbH); onDefDirSelect(null); }
+    );
+}
+
+function onDefDirSelect(dir) {
+    GS.playerDefDir = dir;
+    resolveRound();
+}
+
+// ---- DEFENSE: MAGIC ----
+function phaseDefMagic() {
+    GS.playerDefSeq = [];
+
+    const seqStr = GS.enemySeq.map(i => i + 1).join(' → ');
+    const tip = T(`Magia nemica in arrivo!  Replica:  ${seqStr}`, { size: 7, fill: C.enemy });
+    tip.anchor.set(0.5); tip.x = W / 2; tip.y = PY + 6;
+    L.ui.addChild(tip);
+
+    let seqDisp = null;
+    const updateSD = () => {
+        if (seqDisp) L.ui.removeChild(seqDisp);
+        const s = GS.playerDefSeq;
+        const correct = s.every((v, i) => v === GS.enemySeq[i]);
+        const txt = s.length === 0 ? 'Clicca nell\'ordine corretto...' : `Tua: ${s.map(i => i+1).join(' → ')}`;
+        seqDisp = T(txt, { size: 8, fill: s.length === 4 ? (correct ? C.success : C.failure) : C.gold });
+        seqDisp.anchor.set(0.5); seqDisp.x = W / 2; seqDisp.y = PY + 22;
+        L.ui.addChild(seqDisp);
+    };
+
+    const cx = W / 2, cy = PY + 105, orbR = 26, gap = 18;
+    const pos = [
+        { i:0, x: cx - orbR - gap/2, y: cy - orbR - gap/2 },
+        { i:1, x: cx + orbR + gap/2, y: cy - orbR - gap/2 },
+        { i:2, x: cx - orbR - gap/2, y: cy + orbR + gap/2 },
+        { i:3, x: cx + orbR + gap/2, y: cy + orbR + gap/2 },
+    ];
+
+    const orbGs = [];
+    const updateOrbs = () => {
+        orbGs.forEach((og, i) => {
+            og.clear();
+            const idx = GS.playerDefSeq.indexOf(i);
+            if (idx >= 0) {
+                const match = GS.playerDefSeq[idx] === GS.enemySeq[idx];
+                og.lineStyle(3, match ? C.success : C.failure);
+                og.beginFill(match ? C.success : C.failure, 0.3);
+            } else {
+                og.lineStyle(2, C.magic[i], 0.7); og.beginFill(C.panelLight);
+            }
+            og.drawCircle(0, 0, orbR); og.endFill();
+        });
+    };
+
+    const kbH = (e) => { const k = parseInt(e.key); if (k >= 1 && k <= 4) clickOrb(k - 1); };
+    window.addEventListener('keydown', kbH);
+
+    const clickOrb = (i) => {
+        if (GS.playerDefSeq.includes(i)) return;
+        GS.playerDefSeq.push(i);
+        updateOrbs(); updateSD();
+        if (GS.playerDefSeq.length === 4) {
+            stopTimer(); window.removeEventListener('keydown', kbH);
+            setTimeout(() => resolveRound(), 350);
+        }
+    };
+
+    pos.forEach(({ i, x, y }) => {
+        const og = G();
+        og.lineStyle(2, C.magic[i], 0.7); og.beginFill(C.panelLight);
+        og.drawCircle(0, 0, orbR); og.endFill();
+        og.x = x; og.y = y;
+        og.interactive = true; og.buttonMode = true;
+        const num = T(`${i + 1}`, { size: 13, fill: C.magic[i] }); num.anchor.set(0.5);
+        og.addChild(num);
+        orbGs.push(og); L.ui.addChild(og);
+        og.on('pointerdown', () => clickOrb(i));
+        og.on('pointerover', () => { if (!GS.playerDefSeq.includes(i)) og.scale.set(1.1); });
+        og.on('pointerout',  () => og.scale.set(1));
+    });
+
+    updateSD();
+
+    startTimer(5,
+        (rem) => drawTimerUI(rem, 5, 'FASE 2 — DIFESA MAGICA  (5 secondi)'),
+        () => {
+            window.removeEventListener('keydown', kbH);
+            while (GS.playerDefSeq.length < 4) {
+                const av = [0,1,2,3].filter(x => !GS.playerDefSeq.includes(x));
+                GS.playerDefSeq.push(av[Math.floor(Math.random() * av.length)]);
+            }
+            resolveRound();
+        }
+    );
+}
+
+// ================================================================
+// RESOLUTION
+// ================================================================
+function resolveRound() {
+    stopTimer();
+    const p = GS.player, e = GS.enemy;
+    let pDmg = 0, eDmg = 0;
+    const msgs = [];
+
+    // Enemy → Player
+    if (GS.enemyAtkType === 'physical') {
+        const base = Math.round(e.atk + Math.random() * 8);
+        if (GS.playerDefDir === GS.enemyDir) {
+            pDmg = Math.max(1, Math.round(base * 0.12));
+            msgs.push({ t: `🛡 Parata! Solo ${pDmg} danni ricevuti`, c: C.success });
+        } else {
+            pDmg = base;
+            msgs.push({ t: `⚔ Colpo nemico: ${pDmg} danni ricevuti`, c: C.failure });
+        }
+    } else {
+        const base = Math.round(e.matk + Math.random() * 10);
+        if (GS.playerDefSeq.join(',') === GS.enemySeq.join(',')) {
+            pDmg = Math.max(1, Math.round(base * 0.1));
+            msgs.push({ t: `✨ Contro-magia! Solo ${pDmg} danni`, c: C.success });
+        } else {
+            pDmg = base;
+            msgs.push({ t: `🔮 Magia nemica: ${pDmg} danni ricevuti`, c: C.magic[0] });
+        }
+    }
+
+    // Player → Enemy
+    if (GS.playerAction === 'item') {
+        const heal = 25 + Math.floor(Math.random() * 15);
+        p.hp = Math.min(p.maxHP, p.hp + heal);
+        p.res = Math.min(p.maxRes, p.res + 8);
+        msgs.push({ t: `🧪 Pozione: +${heal} HP recuperati`, c: C.hp });
+    } else if (GS.playerAtkType === 'physical') {
+        const base = Math.round(p.atk + Math.random() * 8);
+        eDmg = GS.playerDir ? base : Math.round(base * 0.45);
+        p.res = Math.min(p.maxRes, p.res + 15);
+        const tag = GS.playerDir ? '' : ' (affrettato)';
+        msgs.push({ t: `⚔ Tuo attacco${tag}: ${eDmg} danni inflitti`, c: C.secondary });
+    } else if (GS.playerAtkType === 'magic') {
+        const base = Math.round(28 + Math.random() * 12);
+        eDmg = base;
+        p.res = Math.max(0, p.res - 25);
+        msgs.push({ t: `✨ Incantesimo: ${eDmg} danni magici inflitti`, c: C.primary });
+    }
+
+    p.hp = Math.max(0, p.hp - pDmg);
+    e.hp = Math.max(0, e.hp - eDmg);
+    GS.turnResult = { pDmg, eDmg, msgs };
+
+    // Visual feedback
+    if (pDmg > 0) setTimeout(() => { floatDmg(playerSprite.x + 30, playerSprite.y - 60, `-${pDmg}`, C.failure); shake(playerSprite); }, 150);
+    if (eDmg > 0) setTimeout(() => { floatDmg(enemySprite.x - 30, enemySprite.y - 50,  `-${eDmg}`, C.secondary); shake(enemySprite); }, 350);
+    if (GS.playerAction === 'item') setTimeout(() => floatDmg(playerSprite.x, playerSprite.y - 70, `+HP`, C.hp), 150);
+
+    setTimeout(() => setPhase('resolution'), 150);
+}
+
+function phaseResolution() {
+    const res = GS.turnResult;
+    const py  = PY;
+
+    const title = T('— RISOLUZIONE —', { size: 9, fill: C.secondary });
+    title.anchor.set(0.5); title.x = W / 2; title.y = py + 8;
+    L.ui.addChild(title);
+
+    res.msgs.forEach((m, i) => {
+        const t = T(m.t, { size: 8, fill: m.c });
+        t.anchor.set(0.5); t.x = W / 2; t.y = py + 32 + i * 24;
+        L.ui.addChild(t);
+    });
+
+    const isDead = GS.player.hp <= 0 || GS.enemy.hp <= 0;
+    const baseY  = py + 32 + res.msgs.length * 24 + 12;
+
+    if (isDead) {
+        const win = GS.enemy.hp <= 0;
+        const ot = T(win ? '🏆  VITTORIA!' : '💀  SCONFITTA!', { size: 15, fill: win ? C.gold : C.failure });
+        ot.anchor.set(0.5); ot.x = W / 2; ot.y = baseY;
+        L.ui.addChild(ot);
+        L.ui.addChild(makeBtn(W / 2 - 80, baseY + 30, 160, 36, 'RICOMINCIA', C.primary, resetGame));
+    } else {
+        L.ui.addChild(makeBtn(W / 2 - 95, baseY, 190, 36, '▶  PROSSIMO TURNO', C.primary, nextTurn));
+    }
+}
+
+function nextTurn() {
+    GS.turn++;
+    GS.playerDir = null; GS.playerSeq  = [];
+    GS.playerDefDir = null; GS.playerDefSeq = [];
+    GS.turnResult = null;
+    setPhase('action');
+}
+
+function resetGame() {
+    GS.player.hp = GS.player.maxHP; GS.player.res = 60;
+    GS.enemy.hp  = GS.enemy.maxHP;
+    GS.turn = 1; GS.turnResult = null;
+    setPhase('action');
+}
+
+// ================================================================
+// BOOT
+// ================================================================
+async function boot() {
+    await document.fonts.load('10px "Press Start 2P"');
+    document.getElementById('loading').textContent = 'Caricamento sprites...';
+    await loadAllAssets();
+    document.getElementById('loading').remove();
+
+    drawBackground();
+    setupCharacters();
+    setPhase('action');
+}
+
+boot().catch(err => {
+    const el = document.getElementById('loading');
+    el.textContent = '⚠ Errore caricamento. Avvia con: python3 -m http.server 8080';
+    el.style.color = '#ef4444';
+    console.error(err);
+});
+</script>
+</body>
+</html>

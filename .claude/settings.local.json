@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find /Users/vittoriocutolo/Documents/PetsQuest/assets -type f | sort)",
+      "Bash(python3 -c ' *)",
+      "Bash(cp -R /Users/vittoriocutolo/Documents/PetsQuest/assets \"/Users/vittoriocutolo/Claude/PetsQuest Game/\")",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(git init *)",
+      "Bash(gh auth *)",
+      "Bash(gh repo *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}
