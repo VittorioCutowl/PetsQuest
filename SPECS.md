@@ -44,6 +44,11 @@ Ogni turno ha due fasi:
   - Rabbia: risorsa alternativa per abilita' quando il Mana non basta;
   - Pozioni: consumabili finite.
 - Stati vittoria/sconfitta con animazioni e feedback ricompensa.
+- Combat timing reale:
+  - countdown live per scelta azione, mira e difesa;
+  - azione non scelta: turno perso e passaggio alla difesa;
+  - direzione attacco non scelta: colpo mancato;
+  - difesa non scelta: danno pieno dal nemico.
 
 ### Ancora Da Implementare
 

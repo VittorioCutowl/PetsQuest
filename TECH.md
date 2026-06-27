@@ -39,7 +39,10 @@ Lo stato combat vive nell'oggetto `combat`:
   turn,
   awaitingDirection,
   playerAction,
-  enemyIntent
+  enemyIntent,
+  timerFrame,
+  timerToken,
+  timerPhase
 }
 ```
 
@@ -51,6 +54,12 @@ Fasi principali:
 - `defense`: lettura segnale nemico e scelta difesa;
 - `resolve-enemy`: risoluzione attacco nemico;
 - `won` / `lost`.
+
+Le fasi interattive `action`, `aim` e `defense` usano un countdown live basato su `requestAnimationFrame`:
+
+- `action`: 12 secondi; se scade, il player perde l'azione e parte la difesa;
+- `aim`: 6 secondi; se scade, l'attacco arma manca il bersaglio;
+- `defense`: 5 secondi; se scade, il nemico infligge danno pieno.
 
 ## Regole Risorse
 

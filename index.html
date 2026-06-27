@@ -1990,7 +1990,7 @@
                 </div>
                 <div class="timer-strip">
                     <div class="timer-track"><div id="combat-timer-fill" class="timer-fill"></div></div>
-                    <div class="time-box tag">12 SEC</div>
+                    <div class="time-box tag" id="combat-time-box">12 SEC</div>
                 </div>
                 <div class="combat-status" id="combat-status" hidden aria-hidden="true" style="display:none!important">Scegli ARMA, poi una direzione.</div>
             </div>
@@ -2232,6 +2232,7 @@ function showScreen(id) {
     applyGameStateToUI();
     screens.forEach(screen => screen.classList.toggle("active", screen.id === id));
     document.getElementById("game").classList.toggle("combat-active", id === "combat-screen");
+    if (id !== "combat-screen") stopCombatTimer();
     if (id === "combat-screen") startCombat();
 }
 
@@ -2486,6 +2487,9 @@ const combat = {
     awaitingDirection: false,
     playerAction: null,
     enemyIntent: null,
+    timerFrame: null,
+    timerToken: 0,
+    timerPhase: null,
 };
 
 const actionCosts = {
@@ -2504,6 +2508,7 @@ const phaseBanner = document.getElementById("phase-banner");
 const phaseCallout = document.getElementById("phase-callout");
 const directionHint = document.getElementById("direction-hint");
 const timerFill = document.getElementById("combat-timer-fill");
+const timerBox = document.getElementById("combat-time-box");
 const intentLeftIcon = document.getElementById("intent-left-icon");
 const intentRightIcon = document.getElementById("intent-right-icon");
 const actionButtons = [...document.querySelectorAll("[data-action]")];
@@ -2553,6 +2558,12 @@ const enemyPatterns = [
     { dir: "left", label: "Fendente laterale", tell: "Passo di lato", damage: 20 },
     { dir: "down", label: "Spazzata bassa", tell: "Peso sulle ginocchia", damage: 14 },
 ];
+
+const phaseDurations = {
+    action: 12,
+    aim: 6,
+    defense: 5,
+};
 
 function setCombatStatus(text) {
     if (combatStatus) combatStatus.textContent = text;
@@ -2619,8 +2630,52 @@ function updateResources() {
     if (potionCount) potionCount.textContent = `x${combat.potions}`;
 }
 
-function setTimer(percent) {
+function formatTimer(seconds) {
+    return `${Math.max(0, Math.ceil(seconds))} SEC`;
+}
+
+function setTimer(percent, seconds = null) {
     if (timerFill) timerFill.style.width = `${percent}%`;
+    if (timerBox && seconds !== null) timerBox.textContent = formatTimer(seconds);
+}
+
+function stopCombatTimer() {
+    combat.timerToken += 1;
+    combat.timerPhase = null;
+    if (combat.timerFrame) {
+        window.cancelAnimationFrame(combat.timerFrame);
+        combat.timerFrame = null;
+    }
+}
+
+function startCombatTimer(phase, seconds, onTimeout) {
+    stopCombatTimer();
+    combat.timerPhase = phase;
+    const token = combat.timerToken;
+    const durationMs = seconds * 1000;
+    const startedAt = performance.now();
+
+    function tick(now) {
+        if (combat.timerToken !== token || combat.phase !== phase) return;
+        if (!combatScreen?.classList.contains("active")) {
+            stopCombatTimer();
+            return;
+        }
+        const elapsed = now - startedAt;
+        const remainingMs = Math.max(0, durationMs - elapsed);
+        const percent = durationMs > 0 ? (remainingMs / durationMs) * 100 : 0;
+        setTimer(percent, remainingMs / 1000);
+
+        if (remainingMs <= 0) {
+            stopCombatTimer();
+            onTimeout();
+            return;
+        }
+        combat.timerFrame = window.requestAnimationFrame(tick);
+    }
+
+    setTimer(100, seconds);
+    combat.timerFrame = window.requestAnimationFrame(tick);
 }
 
 function setDpadActive(active, mode = "attack") {
@@ -2733,6 +2788,7 @@ function startCombat() {
     combat.turn = 1;
     combat.playerAction = null;
     combat.enemyIntent = null;
+    stopCombatTimer();
     spriteDefaults.player = profile.stem;
     spriteAnims.playerAttack = profile.attack;
     spriteAnims.playerHit = profile.hit;
@@ -2745,13 +2801,13 @@ function startCombat() {
     updateResources();
     updateActionButtons();
     setDpadActive(false);
-    setTimer(100);
     setIntentVisual(
         getClassRule().weapon,
         "assets/generated_ui/endgame/role_tank.png",
         `${selection.node.toUpperCase()}<br>${reward.exp} EXP IN PALIO`
     );
     setCombatStatus("TURNO 1: scegli arma, abilita o oggetto.");
+    startCombatTimer("action", phaseDurations.action, timeoutAction);
 }
 
 function showDamage(amount) {
@@ -2820,13 +2876,14 @@ function chooseWeapon() {
         updateActionButtons();
         return;
     }
+    stopCombatTimer();
     combat.energy = Math.max(0, combat.energy - actionCosts.weapon.energy);
     updateResources();
     combat.phase = "aim";
     combat.playerAction = "weapon";
     updateActionButtons("weapon");
     setDpadActive(true, "attack");
-    setTimer(74);
+    startCombatTimer("aim", phaseDurations.aim, timeoutAim);
     showPhaseCallout("ATTACCO", "attack");
     setIntentVisual(
         getClassRule().weapon,
@@ -2843,6 +2900,7 @@ function castAbility() {
         updateActionButtons();
         return;
     }
+    stopCombatTimer();
     const rule = getClassRule();
     payAbilityCost();
     updateResources();
@@ -2850,7 +2908,7 @@ function castAbility() {
     combat.playerAction = "ability";
     updateActionButtons("ability");
     setDpadActive(false);
-    setTimer(62);
+    setTimer(62, 0);
     showPhaseCallout("ATTACCO", "attack");
     setIntentVisual(
         getAbilityIcon(),
@@ -2878,6 +2936,7 @@ function useItem() {
         updateActionButtons();
         return;
     }
+    stopCombatTimer();
     combat.potions = Math.max(0, combat.potions - 1);
     playerState.potions = combat.potions;
     saveGame();
@@ -2886,7 +2945,7 @@ function useItem() {
     combat.playerAction = "item";
     updateActionButtons("item");
     setDpadActive(false);
-    setTimer(62);
+    setTimer(62, 0);
     setIntentVisual(
         "art_input/assets/inventory/potions/hp_potion.png",
         "assets/generated_ui/endgame/role_tank.png",
@@ -2906,9 +2965,10 @@ function useItem() {
 
 function resolvePlayerDirection(dir) {
     if (combat.phase !== "aim" || combat.enemyHp <= 0) return;
+    stopCombatTimer();
     combat.phase = "resolve-player";
     setDpadActive(false);
-    setTimer(62);
+    setTimer(62, 0);
     showPhaseCallout("ATTACCO", "attack");
     const enemyGuard = enemyPatterns[(combat.turn + 1) % enemyPatterns.length].dir;
     const baseDamage = { up: 18, right: 24, down: 16, left: 20 }[dir] || 16;
@@ -2935,12 +2995,13 @@ function resolvePlayerDirection(dir) {
 
 function startEnemyIntent() {
     if (combat.enemyHp <= 0 || combat.playerHp <= 0) return;
+    stopCombatTimer();
     combat.phase = "defense";
     combat.enemyIntent = enemyPatterns[(combat.turn - 1) % enemyPatterns.length];
     updateActionButtons();
     setDpadActive(true, "defense");
     setEnemyTell(combat.enemyIntent.dir);
-    setTimer(38);
+    startCombatTimer("defense", phaseDurations.defense, timeoutDefense);
     showPhaseCallout("DIFESA", "defense");
     setIntentVisual(
         "art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png",
@@ -2950,13 +3011,14 @@ function startEnemyIntent() {
     setCombatStatus(`DIFESA: il Necro Scheletro prepara ${combat.enemyIntent.label}.`);
 }
 
-function resolveDefense(dir) {
+function resolveDefense(dir, timedOut = false) {
     if (combat.phase !== "defense" || !combat.enemyIntent) return;
+    stopCombatTimer();
     combat.phase = "resolve-enemy";
     setDpadActive(false);
     clearEnemyTell();
-    setTimer(18);
-    const blocked = dir === combat.enemyIntent.dir;
+    setTimer(18, 0);
+    const blocked = !timedOut && dir === combat.enemyIntent.dir;
     const damage = blocked ? Math.max(4, Math.floor(combat.enemyIntent.damage * 0.35)) : combat.enemyIntent.damage;
     playSpriteAnimation(enemySprite, spriteAnims.enemyAttack, spriteDefaults.enemy, { frameMs: 130 });
     window.setTimeout(() => {
@@ -2970,13 +3032,18 @@ function resolveDefense(dir) {
         );
         const lost = damagePlayer(damage, blocked);
         if (lost) return;
-        setCombatStatus(blocked ? "DIFESA RIUSCITA: hai letto il segnale, danno ridotto." : `DIFESA SBAGLIATA: subisci ${damage} danni.`);
+        setCombatStatus(blocked
+            ? "DIFESA RIUSCITA: hai letto il segnale, danno ridotto."
+            : timedOut
+                ? `TEMPO SCADUTO: difesa mancata, subisci ${damage} danni.`
+                : `DIFESA SBAGLIATA: subisci ${damage} danni.`);
         window.setTimeout(nextTurn, 700);
     }, 560);
 }
 
 function nextTurn() {
     if (combat.enemyHp <= 0 || combat.playerHp <= 0) return;
+    stopCombatTimer();
     combat.turn += 1;
     combat.energy = Math.min(combat.energyMax, combat.energy + 10);
     combat.mana = Math.min(combat.manaMax, combat.mana + 4);
@@ -2987,20 +3054,21 @@ function nextTurn() {
     updateActionButtons();
     updateResources();
     setDpadActive(false);
-    setTimer(100);
     setIntentVisual(
         getClassRule().weapon,
         "assets/generated_ui/endgame/role_tank.png",
         "SCEGLI UNA AZIONE<br>PER IL NUOVO TURNO"
     );
     setCombatStatus(`TURNO ${combat.turn}: scegli la prossima azione.`);
+    startCombatTimer("action", phaseDurations.action, timeoutAction);
 }
 
 function endCombat(won) {
+    stopCombatTimer();
     combat.phase = won ? "won" : "lost";
     setDpadActive(false);
     updateActionButtons();
-    setTimer(won ? 100 : 0);
+    setTimer(won ? 100 : 0, 0);
     if (won) {
         playSpriteAnimation(enemySprite, spriteAnims.enemyDeath, spriteAnims.enemyDeath, { holdLast: true, frameMs: 95 });
     } else {
@@ -3016,6 +3084,44 @@ function endCombat(won) {
         won ? "VITTORIA<br>LOOT OTTENUTO" : "SCONFITTA<br>RIPROVA IL NODO"
     );
     setCombatStatus(won ? rewardSummary : "SCONFITTA: il gruppo cade in combattimento.");
+}
+
+function timeoutAction() {
+    if (combat.phase !== "action" || combat.enemyHp <= 0 || combat.playerHp <= 0) return;
+    combat.phase = "resolve-player";
+    combat.playerAction = "timeout";
+    updateActionButtons();
+    setDpadActive(false);
+    setTimer(0, 0);
+    setIntentVisual(
+        "assets/generated_ui/combat_fx/fx_broken_guard.png",
+        "art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png",
+        "TEMPO SCADUTO<br>IL TURNO PASSA AL NEMICO"
+    );
+    setCombatStatus("TEMPO SCADUTO: nessuna azione scelta. Preparati alla difesa.");
+    window.setTimeout(startEnemyIntent, 520);
+}
+
+function timeoutAim() {
+    if (combat.phase !== "aim" || combat.enemyHp <= 0 || combat.playerHp <= 0) return;
+    combat.phase = "resolve-player";
+    setDpadActive(false);
+    setTimer(0, 0);
+    showPhaseCallout("ATTACCO", "attack");
+    spawnFx("assets/generated_ui/combat_fx/fx_sword_slash.png", "slash", 1048, 278, 520);
+    showFloatingText("MISS", 1164, 360, "#9ed7ff");
+    setIntentVisual(
+        getClassRule().weapon,
+        "assets/generated_ui/endgame/role_tank.png",
+        "MIRA FALLITA<br>NESSUN DANNO"
+    );
+    setCombatStatus("TEMPO SCADUTO: non hai scelto la direzione, il colpo va a vuoto.");
+    window.setTimeout(startEnemyIntent, 760);
+}
+
+function timeoutDefense() {
+    if (combat.phase !== "defense" || !combat.enemyIntent) return;
+    resolveDefense(null, true);
 }
 
 function handleDirection(dir) {
