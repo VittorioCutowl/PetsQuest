@@ -239,6 +239,19 @@
             height: 610px;
             padding: 22px;
             overflow: hidden;
+            cursor: pointer;
+        }
+
+        .race-card.selected {
+            filter: brightness(1.15) drop-shadow(0 0 16px rgba(255, 216, 112, 0.46));
+        }
+
+        .race-card.selected::after {
+            content: "";
+            position: absolute;
+            inset: 8px;
+            border: 4px solid rgba(255, 216, 112, 0.92);
+            pointer-events: none;
         }
 
         .race-card[data-race="dogs"] { background-color: rgba(12, 42, 29, 0.72); }
@@ -300,6 +313,16 @@
             background: rgba(10, 14, 18, 0.74);
             border: 3px solid #1b0f0a;
             box-shadow: inset 0 0 0 3px #b88132, inset 0 0 0 5px #efc66a;
+            cursor: pointer;
+        }
+
+        .class-slot.selected {
+            filter: brightness(1.24) drop-shadow(0 0 12px rgba(255, 216, 112, 0.72));
+        }
+
+        .class-slot.locked {
+            filter: grayscale(0.75) brightness(0.75);
+            cursor: default;
         }
 
         .class-slot img {
@@ -409,11 +432,13 @@
             height: 90px;
             display: grid;
             place-items: center;
+            cursor: pointer;
         }
 
         .node img { width: 90px; height: 90px; object-fit: contain; }
         .node.current { filter: drop-shadow(0 0 20px #42c7ff); }
         .node.final { filter: drop-shadow(0 0 18px #ffd04f); }
+        .node.selected { filter: drop-shadow(0 0 20px #ffd04f) brightness(1.2); }
 
         .stone-path {
             position: absolute;
@@ -705,6 +730,10 @@
 
         .action-card:hover { filter: brightness(1.12); }
 
+        .action-card.selected {
+            filter: brightness(1.22) drop-shadow(0 0 12px rgba(255, 216, 112, 0.55));
+        }
+
         .direction-panel {
             display: grid;
             grid-template-columns: 180px 1fr;
@@ -725,6 +754,16 @@
             height: 58px;
             object-fit: contain;
             filter: drop-shadow(0 0 8px rgba(255,216,112,0.24));
+            cursor: pointer;
+        }
+
+        .dpad.locked img {
+            cursor: default;
+            filter: grayscale(0.55) brightness(0.7);
+        }
+
+        .dpad:not(.locked) img:hover {
+            filter: brightness(1.35) drop-shadow(0 0 12px rgba(255, 216, 112, 0.8));
         }
 
         .dpad .up { left: 56px; top: 0; }
@@ -780,6 +819,33 @@
             display: grid;
             place-items: center;
             font-size: 20px;
+        }
+
+        .combat-status {
+            position: absolute;
+            right: 260px;
+            bottom: 76px;
+            width: 430px;
+            text-align: center;
+            color: #ffe7a6;
+            font-size: 13px;
+            line-height: 1.6;
+            text-shadow: 0 3px 0 #170b08;
+        }
+
+        .hit-pop {
+            position: absolute;
+            z-index: 12;
+            color: #ffd86f;
+            font-size: 28px;
+            text-shadow: 0 4px 0 #40120c;
+            animation: popDamage 720ms ease-out forwards;
+        }
+
+        @keyframes popDamage {
+            0% { transform: translateY(0) scale(0.8); opacity: 0; }
+            18% { transform: translateY(-18px) scale(1.08); opacity: 1; }
+            100% { transform: translateY(-64px) scale(1); opacity: 0; }
         }
 
         /* Endgame */
@@ -1006,10 +1072,10 @@
                         <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_hunter/idle_left/dog_hunter_idle_left" src="art_input/assets/sprites/dog_hunter/idle_left/dog_hunter_idle_left_01.png" alt="">
                     </div>
                     <div class="class-row">
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_warrior.png" alt=""></div>
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_paladin.png" alt=""></div>
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_priest.png" alt=""></div>
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_hunter.png" alt=""></div>
+                        <div class="class-slot" data-class="Guerriero"><img src="assets/generated_ui/class_icons/class_warrior.png" alt=""></div>
+                        <div class="class-slot" data-class="Paladino"><img src="assets/generated_ui/class_icons/class_paladin.png" alt=""></div>
+                        <div class="class-slot" data-class="Prete"><img src="assets/generated_ui/class_icons/class_priest.png" alt=""></div>
+                        <div class="class-slot" data-class="Cacciatore"><img src="assets/generated_ui/class_icons/class_hunter.png" alt=""></div>
                     </div>
                 </article>
 
@@ -1021,10 +1087,10 @@
                         <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_priest/idle_left/mouse_priest_idle_left" src="art_input/assets/sprites/mouse_priest/idle_left/mouse_priest_idle_left_01.png" alt="">
                     </div>
                     <div class="class-row">
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_warrior.png" alt=""></div>
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_thief.png" alt=""></div>
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_priest.png" alt=""></div>
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_locked.png" alt=""></div>
+                        <div class="class-slot" data-class="Guerriero"><img src="assets/generated_ui/class_icons/class_warrior.png" alt=""></div>
+                        <div class="class-slot" data-class="Ladro"><img src="assets/generated_ui/class_icons/class_thief.png" alt=""></div>
+                        <div class="class-slot" data-class="Prete"><img src="assets/generated_ui/class_icons/class_priest.png" alt=""></div>
+                        <div class="class-slot locked" data-class="Bloccata"><img src="assets/generated_ui/class_icons/class_locked.png" alt=""></div>
                     </div>
                 </article>
 
@@ -1037,10 +1103,10 @@
                         <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_priest/idle_left/cat_priest_idle_left" src="art_input/assets/sprites/cat_priest/idle_left/cat_priest_idle_left_01.png" alt="">
                     </div>
                     <div class="class-row">
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_thief.png" alt=""></div>
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_necromancer.png" alt=""></div>
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_mage.png" alt=""></div>
-                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_priest.png" alt=""></div>
+                        <div class="class-slot" data-class="Ladro"><img src="assets/generated_ui/class_icons/class_thief.png" alt=""></div>
+                        <div class="class-slot" data-class="Negromante"><img src="assets/generated_ui/class_icons/class_necromancer.png" alt=""></div>
+                        <div class="class-slot" data-class="Mago"><img src="assets/generated_ui/class_icons/class_mage.png" alt=""></div>
+                        <div class="class-slot" data-class="Prete"><img src="assets/generated_ui/class_icons/class_priest.png" alt=""></div>
                     </div>
                 </article>
             </div>
@@ -1077,21 +1143,21 @@
             <img class="stone-path" style="left:700px;top:385px;transform:rotate(-20deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
             <img class="stone-path" style="left:860px;top:310px;transform:rotate(8deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
 
-            <div class="node current" style="left:126px;top:250px"><img src="assets/generated_ui/campaign/marker_paw_banner.png" alt=""></div>
-            <div class="node" style="left:330px;top:238px"><img src="assets/generated_ui/campaign/node_rest.png" alt=""></div>
-            <div class="node" style="left:460px;top:190px"><img src="assets/generated_ui/campaign/node_treasure.png" alt=""></div>
-            <div class="node" style="left:610px;top:280px"><img src="assets/generated_ui/campaign/node_combat.png" alt=""></div>
-            <div class="node" style="left:740px;top:405px"><img src="assets/generated_ui/campaign/node_shop.png" alt=""></div>
-            <div class="node" style="left:900px;top:290px"><img src="assets/generated_ui/campaign/node_combat.png" alt=""></div>
-            <div class="node" style="left:1030px;top:240px"><img src="assets/generated_ui/campaign/node_treasure.png" alt=""></div>
-            <div class="node" style="left:270px;top:520px"><img src="assets/generated_ui/campaign/node_miniboss.png" alt=""></div>
-            <div class="node" style="left:430px;top:520px"><img src="assets/generated_ui/campaign/node_miniboss.png" alt=""></div>
-            <div class="node final" style="left:970px;top:580px"><img src="assets/generated_ui/campaign/node_final_boss.png" alt=""></div>
+            <div class="node current" data-node="Quadro" style="left:126px;top:250px"><img src="assets/generated_ui/campaign/marker_paw_banner.png" alt=""></div>
+            <div class="node" data-node="Riposo" style="left:330px;top:238px"><img src="assets/generated_ui/campaign/node_rest.png" alt=""></div>
+            <div class="node" data-node="Tesoro" style="left:460px;top:190px"><img src="assets/generated_ui/campaign/node_treasure.png" alt=""></div>
+            <div class="node" data-node="Combattimento" style="left:610px;top:280px"><img src="assets/generated_ui/campaign/node_combat.png" alt=""></div>
+            <div class="node" data-node="Negozio" style="left:740px;top:405px"><img src="assets/generated_ui/campaign/node_shop.png" alt=""></div>
+            <div class="node" data-node="Combattimento" style="left:900px;top:290px"><img src="assets/generated_ui/campaign/node_combat.png" alt=""></div>
+            <div class="node" data-node="Tesoro" style="left:1030px;top:240px"><img src="assets/generated_ui/campaign/node_treasure.png" alt=""></div>
+            <div class="node" data-node="Miniboss" style="left:270px;top:520px"><img src="assets/generated_ui/campaign/node_miniboss.png" alt=""></div>
+            <div class="node" data-node="Miniboss" style="left:430px;top:520px"><img src="assets/generated_ui/campaign/node_miniboss.png" alt=""></div>
+            <div class="node final" data-node="Boss finale" style="left:970px;top:580px"><img src="assets/generated_ui/campaign/node_final_boss.png" alt=""></div>
 
             <aside class="right-panel panel">
                 <div class="panel-title" style="font-size:22px">PROSSIMO</div>
                 <img class="big-medal" src="assets/generated_ui/campaign/node_current.png" alt="">
-                <p>Completa il nodo per proseguire nel cammino.</p>
+                <p id="campaign-node-copy">Completa il nodo per proseguire nel cammino.</p>
                 <div class="panel-title" style="font-size:20px;margin-bottom:16px">RICOMPENSE</div>
                 <div class="reward-row">
                     <div class="reward-card"><img src="assets/generated_ui/rewards/gold_coin_pile.png" alt="">500</div>
@@ -1109,7 +1175,7 @@
                 <div class="legend-item"><img src="assets/generated_ui/campaign/node_miniboss.png" alt="">MINIBOSS</div>
                 <div class="legend-item"><img src="assets/generated_ui/campaign/node_final_boss.png" alt="">BOSS FINALE</div>
             </div>
-            <button class="next-chest panel" data-go="combat-screen"><span class="panel-title" style="position:absolute;top:18px;font-size:19px">PROSSIMO</span><img src="assets/generated_ui/rewards/loot_chest_epic.png" alt=""></button>
+            <button class="next-chest panel" id="campaign-next" data-go="combat-screen"><span class="panel-title" style="position:absolute;top:18px;font-size:19px">PROSSIMO</span><img src="assets/generated_ui/rewards/loot_chest_epic.png" alt=""></button>
         </section>
 
         <section id="combat-screen" class="screen">
@@ -1120,7 +1186,7 @@
                     <div class="portrait panel"><img src="art_input/assets/sprites/main_character/idle_left/main_character_idle_left_01.png" alt=""></div>
                     <div class="stat-block panel">
                         <div class="fighter-name">GUERRIERO</div>
-                        <div class="bar"><div class="bar-fill" style="width:82%"></div><span>124 / 150</span></div>
+                        <div class="bar"><div id="player-hp-fill" class="bar-fill" style="width:82%"></div><span id="player-hp-text">124 / 150</span></div>
                         <div class="bar blue"><div class="bar-fill" style="width:67%"></div><span>40 / 60</span></div>
                     </div>
                 </div>
@@ -1128,7 +1194,7 @@
                     <div class="portrait panel"><img src="art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png" alt=""></div>
                     <div class="stat-block panel">
                         <div class="fighter-name">NECRO SCHELETRO</div>
-                        <div class="bar"><div class="bar-fill" style="width:80%"></div><span>96 / 120</span></div>
+                        <div class="bar"><div id="enemy-hp-fill" class="bar-fill" style="width:80%"></div><span id="enemy-hp-text">96 / 120</span></div>
                         <div class="bar blue"><div class="bar-fill" style="width:60%"></div><span>30 / 50</span></div>
                     </div>
                 </div>
@@ -1144,16 +1210,16 @@
                     <div class="mini-resource energy"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><div><div class="label">ENERGIA</div><div class="segbar"><i></i><i></i><i></i><i></i><i></i><i></i><span></span><span></span></div></div></div>
                 </div>
                 <div class="action-cards">
-                    <button class="action-card panel"><img src="art_input/assets/inventory/weapons/weapon_sword.png" alt=""><strong>ARMA</strong></button>
-                    <button class="action-card panel"><img src="art_input/assets/ui/abilities/ability_necro_skull.png" alt=""><strong>ABILITA</strong></button>
-                    <button class="action-card panel"><img src="art_input/assets/inventory/potions/hp_potion.png" alt=""><strong>OGGETTO</strong></button>
+                    <button class="action-card panel" data-action="weapon"><img src="art_input/assets/inventory/weapons/weapon_sword.png" alt=""><strong>ARMA</strong></button>
+                    <button class="action-card panel" data-action="ability"><img src="art_input/assets/ui/abilities/ability_necro_skull.png" alt=""><strong>ABILITA</strong></button>
+                    <button class="action-card panel" data-action="item"><img src="art_input/assets/inventory/potions/hp_potion.png" alt=""><strong>OGGETTO</strong></button>
                 </div>
                 <div class="direction-panel panel">
-                    <div class="dpad">
-                        <img class="up" src="assets/generated_ui/combat_fx/control_arrow_up.png" alt="">
-                        <img class="down" src="assets/generated_ui/combat_fx/control_arrow_down.png" alt="">
-                        <img class="left" src="assets/generated_ui/combat_fx/control_arrow_left.png" alt="">
-                        <img class="right" src="assets/generated_ui/combat_fx/control_arrow_right.png" alt="">
+                    <div class="dpad locked">
+                        <img class="up" data-dir="up" src="assets/generated_ui/combat_fx/control_arrow_up.png" alt="">
+                        <img class="down" data-dir="down" src="assets/generated_ui/combat_fx/control_arrow_down.png" alt="">
+                        <img class="left" data-dir="left" src="assets/generated_ui/combat_fx/control_arrow_left.png" alt="">
+                        <img class="right" data-dir="right" src="assets/generated_ui/combat_fx/control_arrow_right.png" alt="">
                         <img class="center" src="assets/generated_ui/combat_fx/control_dpad_frame.png" alt="">
                     </div>
                     <div class="direction-copy">
@@ -1168,6 +1234,7 @@
                     <div class="timer-track"><div class="timer-fill"></div></div>
                     <div class="time-box tag">12 SEC</div>
                 </div>
+                <div class="combat-status" id="combat-status">Scegli ARMA, poi una direzione.</div>
             </div>
         </section>
 
@@ -1254,6 +1321,11 @@
 <script>
 const screens = [...document.querySelectorAll(".screen")];
 const goButtons = [...document.querySelectorAll("[data-go]")];
+const selection = {
+    race: "Cani",
+    className: "Guerriero",
+    node: "Quadro",
+};
 
 function showScreen(id) {
     screens.forEach(screen => screen.classList.toggle("active", screen.id === id));
@@ -1261,6 +1333,66 @@ function showScreen(id) {
 
 goButtons.forEach(button => {
     button.addEventListener("click", () => showScreen(button.dataset.go));
+});
+
+function updateRaceSelection(card) {
+    const raceNames = { dogs: "Cani", mice: "Topi", cats: "Gatti" };
+    selection.race = raceNames[card.dataset.race] || "Cani";
+    document.querySelectorAll(".race-card").forEach(item => item.classList.toggle("selected", item === card));
+    const firstClass = card.querySelector(".class-slot:not(.locked)");
+    if (firstClass) updateClassSelection(firstClass);
+}
+
+function updateClassSelection(slot) {
+    if (slot.classList.contains("locked")) return;
+    selection.className = slot.dataset.class;
+    document.querySelectorAll(".class-slot").forEach(item => item.classList.remove("selected"));
+    slot.classList.add("selected");
+    const confirm = document.querySelector(".confirm-race");
+    if (confirm) confirm.textContent = `${selection.race} / ${selection.className}`;
+}
+
+document.querySelectorAll(".race-card").forEach(card => {
+    card.addEventListener("click", event => {
+        updateRaceSelection(card);
+        const slot = event.target.closest(".class-slot");
+        if (slot) updateClassSelection(slot);
+    });
+});
+
+document.querySelectorAll(".class-slot").forEach(slot => {
+    slot.addEventListener("click", event => {
+        event.stopPropagation();
+        updateRaceSelection(slot.closest(".race-card"));
+        updateClassSelection(slot);
+    });
+});
+
+updateRaceSelection(document.querySelector('.race-card[data-race="dogs"]'));
+
+function updateCampaignNode(node) {
+    selection.node = node.dataset.node;
+    document.querySelectorAll(".node").forEach(item => item.classList.remove("selected"));
+    node.classList.add("selected");
+    const copy = document.getElementById("campaign-node-copy");
+    const next = document.getElementById("campaign-next");
+    const descriptions = {
+        Quadro: "Punto corrente della campagna.",
+        Riposo: "Recupera risorse prima del prossimo scontro.",
+        Tesoro: "Apri il forziere per ottenere loot.",
+        Combattimento: "Entra in battaglia contro i nemici del quadro.",
+        Negozio: "Compra pozioni e consumabili.",
+        Miniboss: "Scontro speciale con loot migliorato.",
+        "Boss finale": "Sfida decisiva della zona.",
+    };
+    if (copy) copy.textContent = descriptions[selection.node] || "Scegli un nodo sulla mappa.";
+    if (next) {
+        next.dataset.go = selection.node === "Combattimento" || selection.node === "Miniboss" || selection.node === "Boss finale" ? "combat-screen" : "campaign-screen";
+    }
+}
+
+document.querySelectorAll(".node").forEach(node => {
+    node.addEventListener("click", () => updateCampaignNode(node));
 });
 
 function fitGame() {
@@ -1284,6 +1416,150 @@ setInterval(() => {
         sprite.src = `${sprite.dataset.stem}_${suffix}.png`;
     });
 }, 170);
+
+const combat = {
+    playerHp: 124,
+    playerMaxHp: 150,
+    enemyHp: 96,
+    enemyMaxHp: 120,
+    awaitingDirection: false,
+};
+
+const combatStatus = document.getElementById("combat-status");
+const dpad = document.querySelector("#combat-screen .dpad");
+const playerHpFill = document.getElementById("player-hp-fill");
+const playerHpText = document.getElementById("player-hp-text");
+const enemyHpFill = document.getElementById("enemy-hp-fill");
+const enemyHpText = document.getElementById("enemy-hp-text");
+const combatScreen = document.getElementById("combat-screen");
+
+function setCombatStatus(text) {
+    if (combatStatus) combatStatus.textContent = text;
+}
+
+function updateEnemyHp() {
+    if (!enemyHpFill || !enemyHpText) return;
+    const ratio = Math.max(0, combat.enemyHp / combat.enemyMaxHp);
+    enemyHpFill.style.width = `${Math.round(ratio * 100)}%`;
+    enemyHpText.textContent = `${combat.enemyHp} / ${combat.enemyMaxHp}`;
+}
+
+function updatePlayerHp() {
+    if (!playerHpFill || !playerHpText) return;
+    const ratio = Math.max(0, combat.playerHp / combat.playerMaxHp);
+    playerHpFill.style.width = `${Math.round(ratio * 100)}%`;
+    playerHpText.textContent = `${combat.playerHp} / ${combat.playerMaxHp}`;
+}
+
+function chooseWeapon() {
+    combat.awaitingDirection = true;
+    dpad?.classList.remove("locked");
+    document.querySelectorAll("[data-action]").forEach(button => {
+        button.classList.toggle("selected", button.dataset.action === "weapon");
+    });
+    setCombatStatus("Direzione pronta: scegli su, giu, sinistra o destra.");
+}
+
+function showDamage(amount) {
+    const pop = document.createElement("div");
+    pop.className = "hit-pop";
+    pop.textContent = `-${amount}`;
+    pop.style.left = "1180px";
+    pop.style.top = "360px";
+    combatScreen.appendChild(pop);
+    window.setTimeout(() => pop.remove(), 760);
+}
+
+function showFloatingText(text, x, y, color = "#ffd86f") {
+    const pop = document.createElement("div");
+    pop.className = "hit-pop";
+    pop.textContent = text;
+    pop.style.left = `${x}px`;
+    pop.style.top = `${y}px`;
+    pop.style.color = color;
+    combatScreen.appendChild(pop);
+    window.setTimeout(() => pop.remove(), 760);
+}
+
+function damageEnemy(amount, label) {
+    if (combat.enemyHp <= 0) return;
+    combat.enemyHp = Math.max(0, combat.enemyHp - amount);
+    updateEnemyHp();
+    showDamage(amount);
+    if (combat.enemyHp <= 0) {
+        setCombatStatus(`${label}: Necro Scheletro sconfitto.`);
+    } else {
+        setCombatStatus(`${label}: ${amount} danni. Continua il turno.`);
+    }
+}
+
+function playAttack(dir) {
+    if (!combat.awaitingDirection || combat.enemyHp <= 0) return;
+    combat.awaitingDirection = false;
+    dpad?.classList.add("locked");
+    document.querySelectorAll("[data-action]").forEach(button => button.classList.remove("selected"));
+
+    const damageByDir = { up: 18, right: 24, down: 16, left: 12 };
+    const damage = damageByDir[dir] || 14;
+    const label = { up: "alto", right: "destra", down: "basso", left: "sinistra" }[dir] || "scelta";
+    damageEnemy(damage, `Colpo verso ${label}`);
+}
+
+function castAbility() {
+    combat.awaitingDirection = false;
+    dpad?.classList.add("locked");
+    document.querySelectorAll("[data-action]").forEach(button => {
+        button.classList.toggle("selected", button.dataset.action === "ability");
+    });
+    damageEnemy(15, "Abilita");
+    window.setTimeout(() => document.querySelector('[data-action="ability"]')?.classList.remove("selected"), 360);
+}
+
+function useItem() {
+    combat.awaitingDirection = false;
+    dpad?.classList.add("locked");
+    document.querySelectorAll("[data-action]").forEach(button => {
+        button.classList.toggle("selected", button.dataset.action === "item");
+    });
+    const before = combat.playerHp;
+    combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + 22);
+    updatePlayerHp();
+    showFloatingText(`+${combat.playerHp - before}`, 420, 360, "#7cf58a");
+    setCombatStatus("Pozione usata: HP recuperati.");
+    window.setTimeout(() => document.querySelector('[data-action="item"]')?.classList.remove("selected"), 360);
+}
+
+document.querySelectorAll("[data-action]").forEach(button => {
+    button.addEventListener("click", () => {
+        if (button.dataset.action === "weapon") {
+            chooseWeapon();
+        } else if (button.dataset.action === "ability") {
+            castAbility();
+        } else {
+            useItem();
+        }
+    });
+});
+
+document.querySelectorAll("[data-dir]").forEach(button => {
+    button.addEventListener("click", () => playAttack(button.dataset.dir));
+});
+
+window.addEventListener("keydown", event => {
+    if (!combat.awaitingDirection || !document.getElementById("combat-screen").classList.contains("active")) return;
+    const dirs = {
+        ArrowUp: "up",
+        ArrowDown: "down",
+        ArrowLeft: "left",
+        ArrowRight: "right",
+        w: "up",
+        s: "down",
+        a: "left",
+        d: "right",
+    };
+    const dir = dirs[event.key];
+    if (dir) playAttack(dir);
+});
 </script>
 </body>
 </html>
