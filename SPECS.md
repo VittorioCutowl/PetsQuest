@@ -54,10 +54,14 @@ Ogni turno ha due fasi:
   - azione non scelta: turno perso e passaggio alla difesa;
   - direzione attacco non scelta: colpo mancato;
   - difesa non scelta: danno pieno dal nemico.
+- Sequenza magica prototipale:
+  - Paladino, Prete, Negromante e Mago risolvono `ABILITA` con 4 cristalli direzionali;
+  - input corretti aumentano danno e cura;
+  - timeout o errori producono una magia piu' debole.
 
 ### Ancora Da Implementare
 
-- Sequenza magica a 4 punti per caster.
+- Sequenza magica finale per caster: ora esiste una versione prototipale a 4 cristalli, manca bilanciamento finale e varianti per abilita' multiple.
 - Cura con selezione bersaglio per Prete/Paladino. Ora esiste solo una cura self semplificata su abilita' dedicate.
 - Inventario completo con piu' oggetti.
 - Progressione EXP/livelli/talenti finale. Ora esiste una progressione prototipale salvata con level up e talent point.

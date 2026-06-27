@@ -1417,6 +1417,10 @@
             filter: hue-rotate(145deg) saturate(1.22) drop-shadow(0 0 8px rgba(88, 195, 255, 0.36));
         }
 
+        .dpad.magic .dpad-btn {
+            filter: hue-rotate(205deg) saturate(1.25) drop-shadow(0 0 9px rgba(181, 123, 255, 0.4));
+        }
+
         .dpad.tell-up .up,
         .dpad.tell-right .right,
         .dpad.tell-down .down,
@@ -1464,6 +1468,72 @@
 
         .direction-copy img.intent {
             filter: drop-shadow(0 0 12px rgba(255, 216, 112, 0.34));
+        }
+
+        .magic-sequence {
+            grid-column: 1 / -1;
+            display: grid;
+            place-items: center;
+            min-height: 62px;
+            margin-top: -2px;
+        }
+
+        .magic-sequence[hidden] {
+            display: none;
+        }
+
+        .magic-slots {
+            display: grid;
+            grid-template-columns: repeat(4, 54px);
+            gap: 10px;
+        }
+
+        .magic-slot {
+            position: relative;
+            width: 54px;
+            height: 54px;
+            display: grid;
+            place-items: center;
+            opacity: 0.72;
+            filter: grayscale(0.25) brightness(0.85);
+        }
+
+        .magic-slot::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: url("assets/generated_ui/endgame/matchmaking_crystal.png") center / contain no-repeat;
+            filter: drop-shadow(0 0 10px rgba(116, 196, 255, 0.4));
+        }
+
+        .magic-slot img {
+            position: relative;
+            z-index: 1;
+            width: 26px;
+            height: 26px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 0 #25120a);
+        }
+
+        .magic-slot.current {
+            opacity: 1;
+            filter: brightness(1.28) drop-shadow(0 0 14px rgba(255, 222, 118, 0.62));
+            animation: magicPulse 720ms ease-in-out infinite;
+        }
+
+        .magic-slot.ok {
+            opacity: 1;
+            filter: hue-rotate(75deg) brightness(1.2) drop-shadow(0 0 12px rgba(112, 255, 170, 0.56));
+        }
+
+        .magic-slot.miss {
+            opacity: 0.9;
+            filter: grayscale(0.55) brightness(0.78) drop-shadow(0 0 10px rgba(255, 114, 88, 0.42));
+        }
+
+        @keyframes magicPulse {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-3px) scale(1.08); }
         }
 
         .timer-strip {
@@ -1986,6 +2056,9 @@
                         <img id="intent-right-icon" class="intent" src="assets/generated_ui/endgame/role_tank.png" alt="">
                         <p id="direction-hint">SCEGLI UNA AZIONE<br>PER INIZIARE IL TURNO</p>
                     </div>
+                    <div class="magic-sequence" id="magic-sequence" hidden aria-hidden="true">
+                        <div class="magic-slots" id="magic-slots"></div>
+                    </div>
                     <div class="phase-banner" id="phase-banner">TURNO 1: scegli arma, abilita o oggetto.</div>
                 </div>
                 <div class="timer-strip">
@@ -2141,6 +2214,7 @@ const classRules = {
         cost: { mana: 12, rage: 16 },
         weapon: "art_input/assets/inventory/weapons/weapon_paladin_hammer.png",
         healsSelf: 8,
+        magicSequence: true,
         stats: { maxHp: 165, energyMax: 70, manaMax: 58, rageMax: 72, startHp: 146, startEnergy: 56, startMana: 42, startRage: 48, weaponCost: 12, weaponDamage: { up: 18, right: 23, down: 17, left: 21 }, regen: { energy: 7, mana: 5, rage: 7 }, guardRate: 0.25 },
     },
     Prete: {
@@ -2149,6 +2223,7 @@ const classRules = {
         cost: { mana: 16 },
         weapon: "art_input/assets/inventory/weapons/weapon_priest_staff.png",
         healsSelf: 18,
+        magicSequence: true,
         stats: { maxHp: 130, energyMax: 62, manaMax: 88, rageMax: 34, startHp: 116, startEnergy: 46, startMana: 66, startRage: 18, weaponCost: 10, weaponDamage: { up: 12, right: 16, down: 11, left: 14 }, regen: { energy: 6, mana: 8, rage: 3 }, guardRate: 0.45 },
     },
     Cacciatore: {
@@ -2170,6 +2245,7 @@ const classRules = {
         damage: 22,
         cost: { mana: 18 },
         weapon: "art_input/assets/inventory/weapons/weapon_necromancer_staff.png",
+        magicSequence: true,
         stats: { maxHp: 132, energyMax: 64, manaMax: 92, rageMax: 42, startHp: 116, startEnergy: 48, startMana: 70, startRage: 26, weaponCost: 11, weaponDamage: { up: 14, right: 18, down: 13, left: 16 }, regen: { energy: 6, mana: 9, rage: 5 }, guardRate: 0.48 },
     },
     Mago: {
@@ -2177,6 +2253,7 @@ const classRules = {
         damage: 24,
         cost: { mana: 20 },
         weapon: "art_input/assets/inventory/weapons/weapon_mage_wand.png",
+        magicSequence: true,
         stats: { maxHp: 120, energyMax: 58, manaMax: 104, rageMax: 32, startHp: 106, startEnergy: 42, startMana: 82, startRage: 16, weaponCost: 10, weaponDamage: { up: 13, right: 17, down: 12, left: 15 }, regen: { energy: 5, mana: 10, rage: 3 }, guardRate: 0.52 },
     },
 };
@@ -2582,6 +2659,10 @@ const combat = {
     awaitingDirection: false,
     playerAction: null,
     enemyIntent: null,
+    magicSequence: [],
+    magicResults: [],
+    magicIndex: 0,
+    magicHits: 0,
     timerFrame: null,
     timerToken: 0,
     timerPhase: null,
@@ -2599,6 +2680,8 @@ const combatScreen = document.getElementById("combat-screen");
 const phaseBanner = document.getElementById("phase-banner");
 const phaseCallout = document.getElementById("phase-callout");
 const directionHint = document.getElementById("direction-hint");
+const magicSequencePanel = document.getElementById("magic-sequence");
+const magicSlots = document.getElementById("magic-slots");
 const timerFill = document.getElementById("combat-timer-fill");
 const timerBox = document.getElementById("combat-time-box");
 const intentLeftIcon = document.getElementById("intent-left-icon");
@@ -2644,6 +2727,13 @@ const oppositeDirs = {
     left: "right",
 };
 
+const dirArrowAssets = {
+    up: "assets/generated_ui/combat_fx/control_arrow_up.png",
+    right: "assets/generated_ui/combat_fx/control_arrow_right.png",
+    down: "assets/generated_ui/combat_fx/control_arrow_down.png",
+    left: "assets/generated_ui/combat_fx/control_arrow_left.png",
+};
+
 const enemyPatterns = [
     { dir: "right", label: "Affondo d'ossa", tell: "Spalla armata in avanti", damage: 18 },
     { dir: "up", label: "Colpo alto", tell: "Lama sollevata", damage: 16 },
@@ -2654,6 +2744,7 @@ const enemyPatterns = [
 const phaseDurations = {
     action: 12,
     aim: 6,
+    magic: 8,
     defense: 5,
 };
 
@@ -2787,6 +2878,7 @@ function setDpadActive(active, mode = "attack") {
     if (!dpad) return;
     dpad.classList.toggle("locked", !active);
     dpad.classList.toggle("defense", active && mode === "defense");
+    dpad.classList.toggle("magic", active && mode === "magic");
     if (!active || mode !== "defense") clearEnemyTell();
     combat.awaitingDirection = active;
 }
@@ -2814,6 +2906,42 @@ function clearEnemyTell() {
 function setEnemyTell(dir) {
     clearEnemyTell();
     if (dpad && dir) dpad.classList.add(`tell-${dir}`);
+}
+
+function isSequencedAbility(rule = getClassRule()) {
+    return Boolean(rule.magicSequence);
+}
+
+function buildMagicSequence() {
+    const dirs = ["up", "right", "down", "left"];
+    const seed = combat.turn + selection.className.length + selection.raceKey.length;
+    return [0, 1, 2, 3].map(index => dirs[(seed + index) % dirs.length]);
+}
+
+function setMagicSequenceVisible(visible) {
+    if (!magicSequencePanel) return;
+    magicSequencePanel.hidden = !visible;
+    magicSequencePanel.setAttribute("aria-hidden", visible ? "false" : "true");
+}
+
+function updateMagicSequenceUI() {
+    if (!magicSlots) return;
+    setMagicSequenceVisible(combat.phase === "magic");
+    magicSlots.innerHTML = combat.magicSequence.map((dir, index) => {
+        const result = combat.magicResults[index];
+        const state = result || (index === combat.magicIndex ? "current" : "");
+        const alt = dirNames[dir] || dir;
+        return `<div class="magic-slot ${state}"><img src="${dirArrowAssets[dir]}" alt="${alt}"></div>`;
+    }).join("");
+}
+
+function resetMagicSequence() {
+    combat.magicSequence = [];
+    combat.magicResults = [];
+    combat.magicIndex = 0;
+    combat.magicHits = 0;
+    setMagicSequenceVisible(false);
+    if (magicSlots) magicSlots.innerHTML = "";
 }
 
 function setSpriteIdle(sprite, stem) {
@@ -3015,12 +3143,33 @@ function castAbility() {
     const rule = getClassRule();
     payAbilityCost();
     updateResources();
-    combat.phase = "resolve-player";
     combat.playerAction = "ability";
+    showPhaseCallout("ATTACCO", "attack");
+
+    if (isSequencedAbility(rule)) {
+        combat.phase = "magic";
+        updateActionButtons("ability");
+        combat.magicSequence = buildMagicSequence();
+        combat.magicResults = Array(combat.magicSequence.length).fill("");
+        combat.magicIndex = 0;
+        combat.magicHits = 0;
+        setDpadActive(true, "magic");
+        updateMagicSequenceUI();
+        startCombatTimer("magic", phaseDurations.magic, timeoutMagic);
+        setIntentVisual(
+            getAbilityIcon(),
+            "assets/generated_ui/endgame/matchmaking_crystal.png",
+            "SEQUENZA MAGICA<br>USA I 4 CRISTALLI"
+        );
+        setCombatStatus(`MAGIA: esegui la sequenza di ${rule.abilityName}.`);
+        return;
+    }
+
+    combat.phase = "resolve-player";
     updateActionButtons("ability");
     setDpadActive(false);
+    resetMagicSequence();
     setTimer(62, 0);
-    showPhaseCallout("ATTACCO", "attack");
     setIntentVisual(
         getAbilityIcon(),
         "assets/generated_ui/endgame/role_tank.png",
@@ -3056,6 +3205,7 @@ function useItem() {
     combat.playerAction = "item";
     updateActionButtons("item");
     setDpadActive(false);
+    resetMagicSequence();
     setTimer(62, 0);
     setIntentVisual(
         "art_input/assets/inventory/potions/hp_potion.png",
@@ -3072,6 +3222,66 @@ function useItem() {
     showFloatingText(healed > 0 ? `+${healed}` : "MAX", 420, 360, "#7cf58a");
     setCombatStatus(healed > 0 ? `POZIONE: +${healed} HP. Preparati alla difesa.` : "POZIONE: HP gia pieni. Preparati alla difesa.");
     window.setTimeout(startEnemyIntent, 720);
+}
+
+function resolveMagicDirection(dir) {
+    if (combat.phase !== "magic" || combat.enemyHp <= 0) return;
+    const expected = combat.magicSequence[combat.magicIndex];
+    const correct = dir === expected;
+    combat.magicResults[combat.magicIndex] = correct ? "ok" : "miss";
+    if (correct) combat.magicHits += 1;
+    combat.magicIndex += 1;
+    updateMagicSequenceUI();
+
+    if (combat.magicIndex >= combat.magicSequence.length) {
+        finishMagicSequence(false);
+        return;
+    }
+
+    setCombatStatus(correct
+        ? `CRISTALLO ${combat.magicIndex}: risonanza corretta.`
+        : `CRISTALLO ${combat.magicIndex}: risonanza instabile.`);
+}
+
+function finishMagicSequence(timedOut) {
+    if (combat.phase !== "magic") return;
+    stopCombatTimer();
+    const rule = getClassRule();
+    const hits = combat.magicHits;
+    const multipliers = [0.35, 0.55, 0.75, 1, 1.25];
+    const multiplier = timedOut ? Math.min(0.55, multipliers[hits] || 0.35) : multipliers[hits] || 0.35;
+    const damage = Math.max(3, Math.round(rule.damage * multiplier));
+
+    combat.phase = "resolve-player";
+    setDpadActive(false);
+    resetMagicSequence();
+    setTimer(62, 0);
+    showPhaseCallout("ATTACCO", "attack");
+    setIntentVisual(
+        getAbilityIcon(),
+        "assets/generated_ui/endgame/matchmaking_crystal.png",
+        `${hits}/4 CRISTALLI<br>${timedOut ? "MAGIA INTERROTTA" : "MAGIA RISOLTA"}`
+    );
+    spawnFx("assets/generated_ui/combat_fx/fx_magic_projectile.png", "magic", 900, 318, 620);
+    spawnFx("assets/generated_ui/combat_fx/fx_necromancy_particles.png", "magic", 1084, 290, 700);
+
+    if (rule.healsSelf) {
+        const before = combat.playerHp;
+        const heal = Math.max(1, Math.round(rule.healsSelf * multiplier));
+        combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + heal);
+        playerState.hp = combat.playerHp;
+        updatePlayerHp();
+        showFloatingText(`+${combat.playerHp - before}`, 420, 360, "#7cf58a");
+        spawnFx("assets/generated_ui/combat_fx/fx_heal_sparkle.png", "heal", 378, 292, 700);
+    }
+
+    const resultLabel = hits === 4
+        ? `MAGIA PERFETTA: ${rule.abilityName} esplode sul bersaglio.`
+        : hits >= 2
+            ? `MAGIA PARZIALE: ${rule.abilityName} colpisce con potenza ridotta.`
+            : `MAGIA DEBOLE: ${rule.abilityName} si manifesta appena.`;
+    const won = damageEnemy(damage, resultLabel);
+    if (!won) window.setTimeout(startEnemyIntent, 760);
 }
 
 function resolvePlayerDirection(dir) {
@@ -3108,6 +3318,7 @@ function resolvePlayerDirection(dir) {
 function startEnemyIntent() {
     if (combat.enemyHp <= 0 || combat.playerHp <= 0) return;
     stopCombatTimer();
+    resetMagicSequence();
     combat.phase = "defense";
     combat.enemyIntent = enemyPatterns[(combat.turn - 1) % enemyPatterns.length];
     updateActionButtons();
@@ -3165,6 +3376,7 @@ function nextTurn() {
     combat.phase = "action";
     combat.playerAction = null;
     combat.enemyIntent = null;
+    resetMagicSequence();
     updateActionButtons();
     updateResources();
     setDpadActive(false);
@@ -3179,6 +3391,7 @@ function nextTurn() {
 
 function endCombat(won) {
     stopCombatTimer();
+    resetMagicSequence();
     combat.phase = won ? "won" : "lost";
     setDpadActive(false);
     updateActionButtons();
@@ -3240,9 +3453,16 @@ function timeoutDefense() {
     resolveDefense(null, true);
 }
 
+function timeoutMagic() {
+    if (combat.phase !== "magic") return;
+    finishMagicSequence(true);
+}
+
 function handleDirection(dir) {
     if (!combat.awaitingDirection || !document.getElementById("combat-screen").classList.contains("active")) return;
-    if (combat.phase === "aim") {
+    if (combat.phase === "magic") {
+        resolveMagicDirection(dir);
+    } else if (combat.phase === "aim") {
         resolvePlayerDirection(dir);
     } else if (combat.phase === "defense") {
         resolveDefense(dir);
