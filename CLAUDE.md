@@ -14,6 +14,16 @@ Per qualunque lavoro su asset raster PetsQuest usare:
 
 La skill copre sprite personaggi/nemici, animazioni combat, mappe campagna, sfondi battaglia, icone UI/inventario/endgame, badge rank, naming, dimensioni, direzioni, validazione PNG e regole git sugli asset generati.
 
+## Memoria Sprite
+
+Non dedurre mai l'orientamento di uno sprite dal nome file o dal suffisso `_left`. Prima di cambiare uno stem sprite nel codice, controllare l'audit:
+
+```text
+SPRITE_ORIENTATION_AUDIT.md
+```
+
+Stato verificato: `main_character` e' un'eccezione, perche' usa `idle_left` per guardare a destra ma `attack`, `hit` e `death` senza suffisso per guardare a destra. Gli altri giocabili verificati usano `idle` per guardare a destra. Lo scheletro nemico usa `idle`, `attack`, `hit`, `death` per guardare a sinistra.
+
 ## Repo e Avvio
 
 - Entry point: `index.html`.

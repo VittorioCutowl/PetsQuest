@@ -66,6 +66,15 @@ I pulsanti azione vengono disabilitati quando la risorsa richiesta non e' dispon
 
 ## Direzioni Combat
 
+Nota importante: il nome file non e' una fonte affidabile per dedurre l'orientamento dello sprite. Prima di cambiare uno stem `idle`, `idle_left`, `attack`, `attack_left`, ecc. bisogna verificare visivamente i frame. La tabella completa e' in `SPRITE_ORIENTATION_AUDIT.md`.
+
+Stato verificato per il cane guerriero:
+
+- idle verso destra: `assets/sprites/main_character/idle_left/main_character_idle_left`;
+- attack verso destra: `assets/sprites/main_character/attack/main_character_attack`;
+- hit verso destra: `assets/sprites/main_character/hit/main_character_hit`;
+- death verso destra: `assets/sprites/main_character/death/main_character_death`.
+
 Attacco player:
 
 - direzione bloccata dal nemico: danno `0`, feedback parata;

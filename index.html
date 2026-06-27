@@ -120,7 +120,9 @@
         .icon-btn,
         .gold-btn {
             border: 3px solid #1c1110;
-            background: linear-gradient(#223044, #101822);
+            background:
+                url("art_input/assets/ui/buttons/panel_button_normal.png") center / 100% 100% no-repeat,
+                linear-gradient(#223044, #101822);
             box-shadow: inset 0 0 0 3px #b77d2c, inset 0 0 0 5px #ffd870, 0 6px 0 rgba(0, 0, 0, 0.55);
             cursor: pointer;
         }
@@ -152,7 +154,17 @@
 
         .gold-btn:hover,
         .icon-btn:hover {
+            background-image:
+                url("art_input/assets/ui/buttons/panel_button_hover.png"),
+                linear-gradient(#283a52, #142033);
             filter: brightness(1.16);
+        }
+
+        .gold-btn:active,
+        .icon-btn:active {
+            background-image:
+                url("art_input/assets/ui/buttons/panel_button_pressed.png"),
+                linear-gradient(#111923, #0a1018);
         }
 
         .title-plaque {
@@ -395,6 +407,12 @@
             mix-blend-mode: screen;
         }
 
+        .campaign-map.mouse {
+            left: 0;
+            opacity: 0.34;
+            mix-blend-mode: soft-light;
+        }
+
         .campaign-header {
             position: absolute;
             z-index: 8;
@@ -443,6 +461,8 @@
         }
 
         .node img { width: 90px; height: 90px; object-fit: contain; }
+        .node img.event-icon { width: 76px; height: 76px; }
+        .node img.tile-icon { width: 96px; height: 96px; }
         .node.current { filter: drop-shadow(0 0 20px #42c7ff); }
         .node.final { filter: drop-shadow(0 0 18px #ffd04f); }
         .node.selected { filter: drop-shadow(0 0 20px #ffd04f) brightness(1.2); }
@@ -450,10 +470,10 @@
         .stone-path {
             position: absolute;
             z-index: 4;
-            height: 42px;
-            width: 190px;
-            object-fit: fill;
-            opacity: 0.95;
+            height: 76px;
+            width: 164px;
+            object-fit: contain;
+            opacity: 0.88;
         }
 
         .right-panel {
@@ -527,6 +547,11 @@
             width: 64px;
             height: 64px;
             object-fit: contain;
+        }
+
+        .legend-item img.event-icon {
+            width: 58px;
+            height: 58px;
         }
 
         .next-chest {
@@ -667,7 +692,18 @@
             box-shadow: inset 0 0 0 2px #9b6425;
         }
 
+        .bar::after {
+            content: "";
+            position: absolute;
+            inset: -6px -5px;
+            z-index: 3;
+            pointer-events: none;
+            background: url("art_input/assets/ui/hp_bar/hp_bar_frame.png") center / 100% 100% no-repeat;
+        }
+
         .bar-fill {
+            position: relative;
+            z-index: 1;
             height: 100%;
             background: linear-gradient(#ef6955, #9a261e);
             box-shadow: inset 0 4px rgba(255,255,255,0.22);
@@ -678,6 +714,7 @@
         .bar span {
             position: absolute;
             inset: 0;
+            z-index: 4;
             display: grid;
             place-items: center;
             font-size: 17px;
@@ -1299,9 +1336,9 @@
                     <div class="race-banner"><img src="assets/generated_ui/campaign/banner_dogs.png" alt="">CANI</div>
                     <div class="party-line">
                         <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/main_character/idle_left/main_character_idle_left" src="art_input/assets/sprites/main_character/idle_left/main_character_idle_left_01.png" alt="">
-                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_paladin/idle_left/dog_paladin_idle_left" src="art_input/assets/sprites/dog_paladin/idle_left/dog_paladin_idle_left_01.png" alt="">
-                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_priest/idle_left/dog_priest_idle_left" src="art_input/assets/sprites/dog_priest/idle_left/dog_priest_idle_left_01.png" alt="">
-                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_hunter/idle_left/dog_hunter_idle_left" src="art_input/assets/sprites/dog_hunter/idle_left/dog_hunter_idle_left_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_paladin/idle/dog_paladin_idle" src="art_input/assets/sprites/dog_paladin/idle/dog_paladin_idle_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_priest/idle/dog_priest_idle" src="art_input/assets/sprites/dog_priest/idle/dog_priest_idle_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_hunter/idle/dog_hunter_idle" src="art_input/assets/sprites/dog_hunter/idle/dog_hunter_idle_01.png" alt="">
                     </div>
                     <div class="class-row">
                         <div class="class-slot" data-class="Guerriero"><img src="assets/generated_ui/class_icons/class_warrior.png" alt=""></div>
@@ -1314,9 +1351,9 @@
                 <article class="race-card panel" data-race="mice">
                     <div class="race-banner"><img src="assets/generated_ui/campaign/banner_mice.png" alt="">TOPI</div>
                     <div class="party-line">
-                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_warrior/idle_left/mouse_warrior_idle_left" src="art_input/assets/sprites/mouse_warrior/idle_left/mouse_warrior_idle_left_01.png" alt="">
-                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_thief/idle_left/mouse_thief_idle_left" src="art_input/assets/sprites/mouse_thief/idle_left/mouse_thief_idle_left_01.png" alt="">
-                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_priest/idle_left/mouse_priest_idle_left" src="art_input/assets/sprites/mouse_priest/idle_left/mouse_priest_idle_left_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_warrior/idle/mouse_warrior_idle" src="art_input/assets/sprites/mouse_warrior/idle/mouse_warrior_idle_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_thief/idle/mouse_thief_idle" src="art_input/assets/sprites/mouse_thief/idle/mouse_thief_idle_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_priest/idle/mouse_priest_idle" src="art_input/assets/sprites/mouse_priest/idle/mouse_priest_idle_01.png" alt="">
                     </div>
                     <div class="class-row">
                         <div class="class-slot" data-class="Guerriero"><img src="assets/generated_ui/class_icons/class_warrior.png" alt=""></div>
@@ -1329,10 +1366,10 @@
                 <article class="race-card panel" data-race="cats">
                     <div class="race-banner"><img src="assets/generated_ui/campaign/banner_cats.png" alt="">GATTI</div>
                     <div class="party-line">
-                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_thief/idle_left/cat_thief_idle_left" src="art_input/assets/sprites/cat_thief/idle_left/cat_thief_idle_left_01.png" alt="">
-                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_necromancer/idle_left/cat_necromancer_idle_left" src="art_input/assets/sprites/cat_necromancer/idle_left/cat_necromancer_idle_left_01.png" alt="">
-                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_mage/idle_left/cat_mage_idle_left" src="art_input/assets/sprites/cat_mage/idle_left/cat_mage_idle_left_01.png" alt="">
-                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_priest/idle_left/cat_priest_idle_left" src="art_input/assets/sprites/cat_priest/idle_left/cat_priest_idle_left_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_thief/idle/cat_thief_idle" src="art_input/assets/sprites/cat_thief/idle/cat_thief_idle_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_necromancer/idle/cat_necromancer_idle" src="art_input/assets/sprites/cat_necromancer/idle/cat_necromancer_idle_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_mage/idle/cat_mage_idle" src="art_input/assets/sprites/cat_mage/idle/cat_mage_idle_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_priest/idle/cat_priest_idle" src="art_input/assets/sprites/cat_priest/idle/cat_priest_idle_01.png" alt="">
                     </div>
                     <div class="class-row">
                         <div class="class-slot" data-class="Ladro"><img src="assets/generated_ui/class_icons/class_thief.png" alt=""></div>
@@ -1355,6 +1392,7 @@
         <section id="campaign-screen" class="screen">
             <img class="campaign-map" src="art_input/assets/campaign/maps/dog_campaign_map.png" alt="">
             <img class="campaign-map cat" src="art_input/assets/campaign/maps/cat_campaign_map.png" alt="">
+            <img class="campaign-map mouse" src="art_input/assets/campaign/maps/mouse_campaign_map.png" alt="">
             <div class="shade"></div>
             <div class="campaign-header">
                 <button class="icon-btn" data-go="race-screen">&lt;</button>
@@ -1369,26 +1407,26 @@
                 <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/endgame/season_badge.png" alt=""><span>850</span></div>
             </div>
 
-            <img class="stone-path" style="left:190px;top:300px;transform:rotate(-6deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
-            <img class="stone-path" style="left:360px;top:268px;transform:rotate(-14deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
-            <img class="stone-path" style="left:520px;top:310px;transform:rotate(12deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
-            <img class="stone-path" style="left:700px;top:385px;transform:rotate(-20deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
-            <img class="stone-path" style="left:860px;top:310px;transform:rotate(8deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
+            <img class="stone-path" style="left:190px;top:300px;transform:rotate(-6deg)" src="art_input/assets/campaign/tiles/path_normal.png" alt="">
+            <img class="stone-path" style="left:360px;top:268px;transform:rotate(-14deg)" src="art_input/assets/campaign/tiles/path_normal.png" alt="">
+            <img class="stone-path" style="left:520px;top:310px;transform:rotate(12deg)" src="art_input/assets/campaign/tiles/path_checkpoint.png" alt="">
+            <img class="stone-path" style="left:700px;top:385px;transform:rotate(-20deg)" src="art_input/assets/campaign/tiles/path_miniboss.png" alt="">
+            <img class="stone-path" style="left:860px;top:310px;transform:rotate(8deg)" src="art_input/assets/campaign/tiles/path_final_boss.png" alt="">
 
-            <div class="node current" data-node="Quadro" style="left:126px;top:250px"><img src="assets/generated_ui/campaign/marker_paw_banner.png" alt=""></div>
-            <div class="node" data-node="Riposo" style="left:330px;top:238px"><img src="assets/generated_ui/campaign/node_rest.png" alt=""></div>
-            <div class="node" data-node="Tesoro" style="left:460px;top:190px"><img src="assets/generated_ui/campaign/node_treasure.png" alt=""></div>
-            <div class="node" data-node="Combattimento" style="left:610px;top:280px"><img src="assets/generated_ui/campaign/node_combat.png" alt=""></div>
-            <div class="node" data-node="Negozio" style="left:740px;top:405px"><img src="assets/generated_ui/campaign/node_shop.png" alt=""></div>
-            <div class="node" data-node="Combattimento" style="left:900px;top:290px"><img src="assets/generated_ui/campaign/node_combat.png" alt=""></div>
-            <div class="node" data-node="Tesoro" style="left:1030px;top:240px"><img src="assets/generated_ui/campaign/node_treasure.png" alt=""></div>
-            <div class="node" data-node="Miniboss" style="left:270px;top:520px"><img src="assets/generated_ui/campaign/node_miniboss.png" alt=""></div>
-            <div class="node" data-node="Miniboss" style="left:430px;top:520px"><img src="assets/generated_ui/campaign/node_miniboss.png" alt=""></div>
-            <div class="node final" data-node="Boss finale" style="left:970px;top:580px"><img src="assets/generated_ui/campaign/node_final_boss.png" alt=""></div>
+            <div class="node current" data-node="Quadro" style="left:126px;top:250px"><img class="tile-icon" src="art_input/assets/campaign/tiles/path_checkpoint.png" alt=""></div>
+            <div class="node" data-node="Riposo" style="left:330px;top:238px"><img class="event-icon" src="art_input/assets/campaign/icons/event_rest.png" alt=""></div>
+            <div class="node" data-node="Tesoro" style="left:460px;top:190px"><img class="event-icon" src="art_input/assets/campaign/icons/event_treasure.png" alt=""></div>
+            <div class="node" data-node="Combattimento" style="left:610px;top:280px"><img class="event-icon" src="art_input/assets/campaign/icons/event_combat.png" alt=""></div>
+            <div class="node" data-node="Negozio" style="left:740px;top:405px"><img class="event-icon" src="art_input/assets/campaign/icons/event_shop.png" alt=""></div>
+            <div class="node" data-node="Combattimento" style="left:900px;top:290px"><img class="event-icon" src="art_input/assets/campaign/icons/event_combat.png" alt=""></div>
+            <div class="node" data-node="Tesoro" style="left:1030px;top:240px"><img class="event-icon" src="art_input/assets/campaign/icons/event_treasure.png" alt=""></div>
+            <div class="node" data-node="Miniboss" style="left:270px;top:520px"><img class="tile-icon" src="art_input/assets/campaign/tiles/path_miniboss.png" alt=""></div>
+            <div class="node" data-node="Miniboss" style="left:430px;top:520px"><img class="tile-icon" src="art_input/assets/campaign/tiles/path_miniboss.png" alt=""></div>
+            <div class="node final" data-node="Boss finale" style="left:970px;top:580px"><img class="tile-icon" src="art_input/assets/campaign/tiles/path_final_boss.png" alt=""></div>
 
             <aside class="right-panel panel">
                 <div class="panel-title" style="font-size:22px">PROSSIMO</div>
-                <img class="big-medal" src="assets/generated_ui/campaign/node_current.png" alt="">
+                <img class="big-medal" src="art_input/assets/campaign/tiles/path_checkpoint.png" alt="">
                 <p id="campaign-node-copy">Completa il nodo per proseguire nel cammino.</p>
                 <div class="panel-title" style="font-size:20px;margin-bottom:16px">RICOMPENSE</div>
                 <div class="reward-row">
@@ -1399,15 +1437,15 @@
             </aside>
 
             <div class="legend panel">
-                <div class="legend-item"><img src="assets/generated_ui/campaign/marker_paw_banner.png" alt="">QUADRO</div>
-                <div class="legend-item"><img src="assets/generated_ui/campaign/node_combat.png" alt="">COMBATTIMENTO</div>
-                <div class="legend-item"><img src="assets/generated_ui/campaign/node_treasure.png" alt="">TESORO</div>
-                <div class="legend-item"><img src="assets/generated_ui/campaign/node_rest.png" alt="">RIPOSO</div>
-                <div class="legend-item"><img src="assets/generated_ui/campaign/node_shop.png" alt="">NEGOZIO</div>
-                <div class="legend-item"><img src="assets/generated_ui/campaign/node_miniboss.png" alt="">MINIBOSS</div>
-                <div class="legend-item"><img src="assets/generated_ui/campaign/node_final_boss.png" alt="">BOSS FINALE</div>
+                <div class="legend-item"><img src="art_input/assets/campaign/tiles/path_checkpoint.png" alt="">QUADRO</div>
+                <div class="legend-item"><img class="event-icon" src="art_input/assets/campaign/icons/event_combat.png" alt="">COMBATTIMENTO</div>
+                <div class="legend-item"><img class="event-icon" src="art_input/assets/campaign/icons/event_treasure.png" alt="">TESORO</div>
+                <div class="legend-item"><img class="event-icon" src="art_input/assets/campaign/icons/event_rest.png" alt="">RIPOSO</div>
+                <div class="legend-item"><img class="event-icon" src="art_input/assets/campaign/icons/event_shop.png" alt="">NEGOZIO</div>
+                <div class="legend-item"><img src="art_input/assets/campaign/tiles/path_miniboss.png" alt="">MINIBOSS</div>
+                <div class="legend-item"><img src="art_input/assets/campaign/tiles/path_final_boss.png" alt="">BOSS FINALE</div>
             </div>
-            <button class="next-chest panel" id="campaign-next" data-go="combat-screen"><span class="panel-title" style="position:absolute;top:18px;font-size:19px">PROSSIMO</span><img src="assets/generated_ui/rewards/loot_chest_epic.png" alt=""></button>
+            <button class="next-chest panel" id="campaign-next" data-go="combat-screen"><span class="panel-title" style="position:absolute;top:18px;font-size:19px">PROSSIMO</span><img src="art_input/assets/inventory/loot/loot_epic.png" alt=""></button>
         </section>
 
         <section id="combat-screen" class="screen">
@@ -1443,7 +1481,7 @@
                 </div>
                 <div class="action-cards">
                     <button class="action-card panel" data-action="weapon"><small>-12 EN</small><img src="art_input/assets/inventory/weapons/weapon_sword.png" alt=""><strong>ARMA</strong></button>
-                    <button class="action-card panel" data-action="ability"><small>18 MA<br>24 RA</small><img src="art_input/assets/ui/abilities/ability_necro_skull.png" alt=""><strong>ABILITA</strong></button>
+                    <button class="action-card panel" data-action="ability"><small>18 MA<br>24 RA</small><img src="art_input/assets/ui/abilities/ability_sword_slash.png" alt=""><strong>ABILITA</strong></button>
                     <button class="action-card panel" data-action="item"><small id="potion-count">x1</small><img src="art_input/assets/inventory/potions/hp_potion.png" alt=""><strong>OGGETTO</strong></button>
                 </div>
                 <div class="direction-panel panel">
@@ -1490,15 +1528,15 @@
             <div class="mode-cards">
                 <button class="mode-card panel"><div class="mode-title tag">HERO DUNGEON</div><img class="mode-bg" src="art_input/assets/endgame/backgrounds/hero_dungeon.png" alt=""><img class="mode-icon" src="assets/generated_ui/endgame/portal_hero_dungeon.png" alt=""></button>
                 <button class="mode-card panel"><div class="mode-title tag" style="background:linear-gradient(#7e2019,#2a0f0b)">RAID</div><img class="mode-bg" src="art_input/assets/endgame/backgrounds/raid.png" alt=""><img class="mode-icon" src="assets/generated_ui/endgame/portal_raid.png" alt=""></button>
-                <button class="mode-card panel"><div class="mode-title tag" style="background:linear-gradient(#314354,#141b23)">RANKED</div><img class="mode-bg" src="assets/generated_ui/endgame/portal_ranked_dungeon.png" alt=""><img class="mode-icon" src="assets/generated_ui/endgame/difficulty_keystone.png" alt=""></button>
+                <button class="mode-card panel"><div class="mode-title tag" style="background:linear-gradient(#314354,#141b23)">RANKED</div><img class="mode-bg" src="art_input/assets/endgame/backgrounds/ranked_pvp_arena.png" alt=""><img class="mode-icon" src="assets/generated_ui/endgame/difficulty_keystone.png" alt=""></button>
                 <button class="mode-card panel"><div class="mode-title tag" style="background:linear-gradient(#8b651d,#34210b)">ARENA</div><img class="mode-bg" src="art_input/assets/endgame/backgrounds/ranked_pvp_arena.png" alt=""><img class="mode-icon" src="assets/generated_ui/endgame/portal_arena.png" alt=""></button>
             </div>
 
             <div class="party-sprites">
-                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_priest/idle_left/dog_priest_idle_left" src="art_input/assets/sprites/dog_priest/idle_left/dog_priest_idle_left_01.png" alt="">
-                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_mage/idle_left/cat_mage_idle_left" src="art_input/assets/sprites/cat_mage/idle_left/cat_mage_idle_left_01.png" alt="">
-                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_hunter/idle_left/dog_hunter_idle_left" src="art_input/assets/sprites/dog_hunter/idle_left/dog_hunter_idle_left_01.png" alt="">
-                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_warrior/idle_left/mouse_warrior_idle_left" src="art_input/assets/sprites/mouse_warrior/idle_left/mouse_warrior_idle_left_01.png" alt="">
+                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_priest/idle/dog_priest_idle" src="art_input/assets/sprites/dog_priest/idle/dog_priest_idle_01.png" alt="">
+                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_mage/idle/cat_mage_idle" src="art_input/assets/sprites/cat_mage/idle/cat_mage_idle_01.png" alt="">
+                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_hunter/idle/dog_hunter_idle" src="art_input/assets/sprites/dog_hunter/idle/dog_hunter_idle_01.png" alt="">
+                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_warrior/idle/mouse_warrior_idle" src="art_input/assets/sprites/mouse_warrior/idle/mouse_warrior_idle_01.png" alt="">
             </div>
 
             <aside class="season-panel panel">
@@ -1515,9 +1553,9 @@
                 <div class="loot-preview panel">
                     <div class="dock-title">LOOT PREVIEW</div>
                     <div class="loot-icons">
-                        <img src="assets/generated_ui/rewards/loot_chest_epic.png" alt="">
-                        <img src="assets/generated_ui/rewards/loot_chest_common.png" alt="">
-                        <img src="assets/generated_ui/rewards/loot_chest_rare.png" alt="">
+                        <img src="art_input/assets/inventory/loot/loot_epic.png" alt="">
+                        <img src="art_input/assets/inventory/loot/loot_common.png" alt="">
+                        <img src="art_input/assets/inventory/loot/loot_rare.png" alt="">
                         <img src="assets/generated_ui/rewards/gold_coin_pile.png" alt="">
                         <img src="assets/generated_ui/endgame/matchmaking_crystal.png" alt="">
                         <img src="art_input/assets/inventory/weapons/weapon_sword.png" alt="">
@@ -1705,9 +1743,9 @@ const spriteDefaults = {
 };
 
 const spriteAnims = {
-    playerAttack: "art_input/assets/sprites/main_character/attack_left/main_character_attack_left",
-    playerHit: "art_input/assets/sprites/main_character/hit_left/main_character_hit_left",
-    playerDeath: "art_input/assets/sprites/main_character/death_left/main_character_death_left",
+    playerAttack: "art_input/assets/sprites/main_character/attack/main_character_attack",
+    playerHit: "art_input/assets/sprites/main_character/hit/main_character_hit",
+    playerDeath: "art_input/assets/sprites/main_character/death/main_character_death",
     enemyAttack: "art_input/assets/sprites/enemy_skeleton/attack/enemy_skeleton_attack",
     enemyHit: "art_input/assets/sprites/enemy_skeleton/hit/enemy_skeleton_hit",
     enemyDeath: "art_input/assets/sprites/enemy_skeleton/death/enemy_skeleton_death",
@@ -2006,7 +2044,7 @@ function castAbility() {
     setDpadActive(false);
     setTimer(62);
     setIntentVisual(
-        "art_input/assets/ui/abilities/ability_necro_skull.png",
+        "art_input/assets/ui/abilities/ability_sword_slash.png",
         "assets/generated_ui/endgame/role_tank.png",
         "ABILITA RAPIDA<br>DANNO GARANTITO"
     );
@@ -2146,7 +2184,7 @@ function endCombat(won) {
         playSpriteAnimation(playerSprite, spriteAnims.playerDeath, spriteAnims.playerDeath, { holdLast: true, frameMs: 95 });
     }
     setIntentVisual(
-        won ? "assets/generated_ui/rewards/loot_chest_rare.png" : "art_input/assets/ui/abilities/ability_necro_skull.png",
+        won ? "art_input/assets/inventory/loot/loot_rare.png" : "art_input/assets/ui/abilities/ability_necro_skull.png",
         won ? "assets/generated_ui/rewards/gold_coin_pile.png" : "art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png",
         won ? "VITTORIA<br>RICOMPENSA PRONTA" : "SCONFITTA<br>RIPROVA IL NODO"
     );
