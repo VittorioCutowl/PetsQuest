@@ -2,1115 +2,1288 @@
 <html lang="it">
 <head>
     <meta charset="UTF-8">
-    <title>PetsQuest – Combat Demo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PetsQuest</title>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-    <script src="https://pixijs.download/v7.4.2/pixi.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --ink: #071018;
+            --panel: #111923;
+            --panel-2: #162235;
+            --gold: #d9a64a;
+            --gold-bright: #ffd870;
+            --blue: #1e7fbd;
+            --green: #315d34;
+            --purple: #4c2f68;
+            --red: #8d2b21;
+            --text: #f4ead0;
+            --muted: #c8b98c;
+        }
+
+        * { box-sizing: border-box; }
+
         body {
-            background: #050510;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
+            margin: 0;
             min-height: 100vh;
+            overflow: hidden;
+            background: radial-gradient(circle at 50% 20%, #132b3d 0, #061016 48%, #020407 100%);
+            color: var(--text);
+            font-family: "Press Start 2P", monospace;
+            letter-spacing: 0;
         }
-        #title {
-            font-family: 'Press Start 2P', monospace;
-            color: #8b5cf6;
-            font-size: 13px;
-            letter-spacing: 6px;
-            margin-bottom: 10px;
-            text-shadow: 0 0 20px rgba(139,92,246,0.8);
+
+        button {
+            font: inherit;
+            color: inherit;
         }
-        #canvas-wrap {
-            transform-origin: top center;
+
+        #viewport {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
         }
-        canvas {
-            border: 2px solid #3d1a7a;
-            border-radius: 4px;
-            box-shadow: 0 0 60px rgba(106,63,160,0.5), 0 0 120px rgba(106,63,160,0.2);
+
+        #game {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1640px;
+            height: 920px;
+            overflow: hidden;
+            background: #071018;
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
+            transform-origin: top left;
             image-rendering: pixelated;
+        }
+
+        .screen {
+            position: absolute;
+            inset: 0;
+            display: none;
+            overflow: hidden;
+            background: #071018;
+        }
+
+        .screen.active { display: block; }
+
+        .screen::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            box-shadow: inset 0 0 0 6px rgba(6, 4, 4, 0.9), inset 0 0 0 10px rgba(211, 156, 66, 0.7);
+            z-index: 20;
+        }
+
+        .bg-img {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-rendering: pixelated;
+        }
+
+        .shade {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.34)),
+                radial-gradient(circle at 50% 42%, rgba(255, 211, 126, 0.16), transparent 38%);
+            pointer-events: none;
+        }
+
+        .top-nav {
+            position: absolute;
+            z-index: 30;
+            top: 16px;
+            right: 16px;
+            display: flex;
+            gap: 10px;
+            opacity: 0.18;
+            transform: scale(0.78);
+            transform-origin: top right;
+            transition: opacity 120ms ease;
+        }
+
+        .top-nav:hover {
+            opacity: 1;
+        }
+
+        .icon-btn,
+        .gold-btn {
+            border: 3px solid #1c1110;
+            background: linear-gradient(#223044, #101822);
+            box-shadow: inset 0 0 0 3px #b77d2c, inset 0 0 0 5px #ffd870, 0 6px 0 rgba(0, 0, 0, 0.55);
+            cursor: pointer;
+        }
+
+        .icon-btn {
+            width: 68px;
+            height: 58px;
+            display: grid;
+            place-items: center;
+            font-size: 26px;
+            color: var(--gold-bright);
+        }
+
+        .icon-btn img {
+            width: 38px;
+            height: 38px;
+            object-fit: contain;
+        }
+
+        .gold-btn {
+            min-width: 250px;
+            height: 72px;
+            padding: 0 28px;
+            color: #ffe59a;
+            text-shadow: 0 3px 0 #2c1710;
+            font-size: 22px;
+            text-transform: uppercase;
+        }
+
+        .gold-btn:hover,
+        .icon-btn:hover {
+            filter: brightness(1.16);
+        }
+
+        .title-plaque {
+            position: absolute;
+            top: 22px;
+            left: 50%;
+            z-index: 8;
+            transform: translateX(-50%);
+            min-width: 560px;
+            height: 88px;
+            display: grid;
+            place-items: center;
+            padding: 0 80px;
+            color: var(--gold-bright);
+            font-size: 36px;
+            text-shadow: 0 4px 0 #2d1a10;
+            background: linear-gradient(#1f2b38, #0c1218);
+            border: 4px solid #160d0a;
+            box-shadow: inset 0 0 0 4px #b17b2e, inset 0 0 0 7px #f6ce68, 0 8px 0 rgba(0,0,0,0.42);
+        }
+
+        .panel {
+            background: linear-gradient(180deg, rgba(22, 33, 45, 0.95), rgba(8, 13, 18, 0.96));
+            border: 4px solid #130b08;
+            box-shadow: inset 0 0 0 3px #9c6727, inset 0 0 0 5px #efc76a, 0 12px 22px rgba(0, 0, 0, 0.45);
+        }
+
+        .panel-title {
+            color: #ffd870;
+            text-shadow: 0 3px 0 #2b1710;
+            text-transform: uppercase;
+        }
+
+        .tag {
+            background: linear-gradient(#233247, #111923);
+            border: 3px solid #101010;
+            box-shadow: inset 0 0 0 3px #b87d2f, inset 0 0 0 5px #f3c66b;
+            color: #ffe7a6;
+        }
+
+        .sprite {
+            position: absolute;
+            object-fit: contain;
+            image-rendering: pixelated;
+            filter: drop-shadow(0 8px 2px rgba(0, 0, 0, 0.45));
+        }
+
+        .small-icon {
+            width: 58px;
+            height: 58px;
+            object-fit: contain;
+            image-rendering: pixelated;
+        }
+
+        /* Race screen */
+        #race-screen {
+            background:
+                linear-gradient(90deg, rgba(6, 29, 27, 0.84), rgba(15, 11, 8, 0.35) 35%, rgba(25, 8, 38, 0.82)),
+                #071018;
+        }
+
+        .race-bg {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 38%;
+            object-fit: cover;
+            opacity: 0.88;
+            filter: saturate(1.1) contrast(1.04);
+        }
+
+        .race-bg.dog { left: 0; }
+        .race-bg.mouse { left: 31%; width: 38%; }
+        .race-bg.cat { right: 0; }
+
+        .race-bg.cat { opacity: 0.9; }
+
+        .race-cards {
+            position: absolute;
+            left: 24px;
+            right: 24px;
+            top: 130px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 26px;
+            z-index: 5;
+        }
+
+        .race-card {
+            position: relative;
+            height: 610px;
+            padding: 22px;
+            overflow: hidden;
+        }
+
+        .race-card[data-race="dogs"] { background-color: rgba(12, 42, 29, 0.72); }
+        .race-card[data-race="mice"] { background-color: rgba(55, 37, 23, 0.72); }
+        .race-card[data-race="cats"] { background-color: rgba(39, 20, 61, 0.72); }
+
+        .race-banner {
+            position: absolute;
+            left: 52px;
+            right: 52px;
+            top: 24px;
+            height: 82px;
+            display: grid;
+            grid-template-columns: 72px 1fr;
+            align-items: center;
+            padding: 0 28px;
+            color: #ffe07a;
+            font-size: 34px;
+            text-shadow: 0 4px 0 #26120c;
+            background: linear-gradient(#24402b, #102018);
+            border: 4px solid #170d08;
+            box-shadow: inset 0 0 0 4px #bd852d, inset 0 0 0 7px #f7cf6a;
+        }
+
+        .race-card[data-race="mice"] .race-banner { background: linear-gradient(#46301f, #1b120d); }
+        .race-card[data-race="cats"] .race-banner { background: linear-gradient(#40245a, #191225); }
+
+        .race-banner img { width: 62px; height: 62px; object-fit: contain; }
+
+        .party-line {
+            position: absolute;
+            left: 28px;
+            right: 28px;
+            top: 170px;
+            height: 250px;
+        }
+
+        .party-line .sprite { bottom: 0; width: 138px; height: 250px; }
+        .party-line .sprite:nth-child(1) { left: 8px; }
+        .party-line .sprite:nth-child(2) { left: 124px; }
+        .party-line .sprite:nth-child(3) { left: 240px; }
+        .party-line .sprite:nth-child(4) { left: 356px; }
+
+        .class-row {
+            position: absolute;
+            left: 44px;
+            right: 44px;
+            bottom: 52px;
+            display: flex;
+            justify-content: center;
+            gap: 22px;
+        }
+
+        .class-slot {
+            width: 86px;
+            height: 86px;
+            display: grid;
+            place-items: center;
+            background: rgba(10, 14, 18, 0.74);
+            border: 3px solid #1b0f0a;
+            box-shadow: inset 0 0 0 3px #b88132, inset 0 0 0 5px #efc66a;
+        }
+
+        .class-slot img {
+            width: 72px;
+            height: 72px;
+            object-fit: contain;
+        }
+
+        .resource-strip {
+            position: absolute;
+            z-index: 7;
+            left: 340px;
+            right: 340px;
+            bottom: 92px;
+            height: 74px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            align-items: center;
+            gap: 12px;
+            padding: 8px 24px;
+        }
+
+        .resource {
+            display: grid;
+            grid-template-columns: 52px 1fr;
+            align-items: center;
+            gap: 12px;
+            font-size: 13px;
+            color: #ffe1a2;
+        }
+
+        .resource strong {
+            display: block;
+            margin-top: 7px;
+            font-size: 20px;
+            color: var(--gold-bright);
+        }
+
+        .confirm-race {
+            position: absolute;
+            left: 50%;
+            bottom: 20px;
+            z-index: 9;
+            transform: translateX(-50%);
+        }
+
+        /* Campaign */
+        #campaign-screen { background: #071018; }
+
+        .campaign-map {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 1180px;
+            height: 920px;
+            object-fit: cover;
+            filter: saturate(1.08) contrast(1.05);
+        }
+
+        .campaign-map.cat {
+            left: 0;
+            opacity: 0.42;
+            mix-blend-mode: screen;
+        }
+
+        .campaign-header {
+            position: absolute;
+            z-index: 8;
+            left: 34px;
+            top: 28px;
+            display: flex;
+            gap: 22px;
+            align-items: center;
+        }
+
+        .campaign-title {
+            font-size: 34px;
+            color: var(--gold-bright);
+            text-shadow: 0 4px 0 #2b160e;
+        }
+
+        .hud-row {
+            position: absolute;
+            z-index: 8;
+            right: 30px;
+            top: 28px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .hud-pill {
+            min-width: 150px;
+            height: 54px;
+            display: grid;
+            grid-template-columns: 42px 1fr;
+            align-items: center;
+            gap: 8px;
+            padding: 0 12px;
+            font-size: 14px;
+        }
+
+        .node {
+            position: absolute;
+            z-index: 6;
+            width: 90px;
+            height: 90px;
+            display: grid;
+            place-items: center;
+        }
+
+        .node img { width: 90px; height: 90px; object-fit: contain; }
+        .node.current { filter: drop-shadow(0 0 20px #42c7ff); }
+        .node.final { filter: drop-shadow(0 0 18px #ffd04f); }
+
+        .stone-path {
+            position: absolute;
+            z-index: 4;
+            height: 42px;
+            width: 190px;
+            object-fit: fill;
+            opacity: 0.95;
+        }
+
+        .right-panel {
+            position: absolute;
+            z-index: 8;
+            right: 32px;
+            top: 145px;
+            width: 300px;
+            height: 470px;
+            padding: 28px 24px;
+            text-align: center;
+        }
+
+        .right-panel .big-medal {
+            width: 132px;
+            height: 132px;
+            object-fit: contain;
+            margin: 22px auto 22px;
             display: block;
         }
-        #loading {
-            font-family: 'Press Start 2P', monospace;
-            color: #8b5cf6;
-            font-size: 10px;
-            margin-top: 12px;
-            letter-spacing: 2px;
+
+        .right-panel p {
+            margin: 0 auto 28px;
+            color: #f6dfb0;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .reward-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .reward-card {
+            width: 72px;
+            height: 78px;
+            display: grid;
+            place-items: center;
+            padding: 7px;
+            background: #121923;
+            border: 3px solid #190e08;
+            box-shadow: inset 0 0 0 2px #b77d2c, inset 0 0 0 4px #f1c86a;
+            font-size: 11px;
+        }
+
+        .reward-card img { width: 48px; height: 48px; object-fit: contain; }
+
+        .legend {
+            position: absolute;
+            z-index: 9;
+            left: 62px;
+            bottom: 28px;
+            width: 1120px;
+            height: 126px;
+            display: flex;
+            align-items: center;
+            gap: 34px;
+            padding: 16px 34px;
+        }
+
+        .legend-item {
+            display: grid;
+            place-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #ffe5a9;
+        }
+
+        .legend-item img {
+            width: 64px;
+            height: 64px;
+            object-fit: contain;
+        }
+
+        .next-chest {
+            position: absolute;
+            right: 32px;
+            bottom: 28px;
+            z-index: 8;
+            width: 300px;
+            height: 232px;
+            display: grid;
+            place-items: center;
+            padding-top: 46px;
+        }
+
+        .next-chest img { width: 156px; height: 156px; object-fit: contain; }
+
+        /* Combat */
+        #combat-screen { background: #071018; }
+
+        .battle-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 1640px;
+            height: 585px;
+            object-fit: cover;
+            filter: saturate(1.08) contrast(1.08);
+        }
+
+        .combat-hud {
+            position: absolute;
+            z-index: 8;
+            left: 18px;
+            right: 18px;
+            top: 20px;
+            height: 160px;
+            pointer-events: none;
+        }
+
+        .fighter-card {
+            position: absolute;
+            top: 0;
+            width: 620px;
+            height: 150px;
+        }
+
+        .fighter-card.enemy { right: 0; }
+        .fighter-card.player { left: 0; }
+
+        .portrait {
+            position: absolute;
+            top: 0;
+            width: 150px;
+            height: 150px;
+            display: grid;
+            place-items: center;
+            overflow: hidden;
+        }
+
+        .fighter-card.player .portrait { left: 0; }
+        .fighter-card.enemy .portrait { right: 0; }
+
+        .portrait img {
+            width: 142px;
+            height: 142px;
+            object-fit: cover;
+            object-position: center 34%;
+            image-rendering: pixelated;
+        }
+
+        .stat-block {
+            position: absolute;
+            top: 15px;
+            width: 500px;
+            height: 120px;
+            padding: 16px 18px 0;
+        }
+
+        .fighter-card.player .stat-block { left: 146px; }
+        .fighter-card.enemy .stat-block { right: 146px; text-align: right; }
+
+        .fighter-name {
+            margin-bottom: 14px;
+            font-size: 23px;
+            color: #fff8d8;
+            text-shadow: 0 4px 0 #25120a;
+        }
+
+        .bar {
+            position: relative;
+            height: 31px;
+            margin-bottom: 9px;
+            overflow: hidden;
+            background: #1b1010;
+            border: 3px solid #100806;
+            box-shadow: inset 0 0 0 2px #9b6425;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(#ef6955, #9a261e);
+            box-shadow: inset 0 4px rgba(255,255,255,0.22);
+        }
+
+        .bar.blue .bar-fill { background: linear-gradient(#39adff, #0d6197); }
+        .bar.gold .bar-fill { background: linear-gradient(#ffd25f, #c77818); }
+        .bar span {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            place-items: center;
+            font-size: 18px;
+            text-shadow: 0 3px 0 #1a0c06;
+        }
+
+        .combat-sprite.player {
+            left: 355px;
+            top: 318px;
+            width: 205px;
+            height: 250px;
+        }
+
+        .combat-sprite.enemy {
+            right: 300px;
+            top: 332px;
+            width: 220px;
+            height: 250px;
+        }
+
+        .combat-panel {
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            bottom: 18px;
+            height: 330px;
+            z-index: 8;
+            display: grid;
+            grid-template-columns: 420px 610px 1fr;
+            gap: 22px;
+            padding: 22px;
+        }
+
+        .resource-bars {
+            display: grid;
+            align-content: center;
+            gap: 22px;
+            padding: 14px 18px;
+        }
+
+        .mini-resource {
+            display: grid;
+            grid-template-columns: 58px 1fr;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .mini-resource .label {
+            font-size: 17px;
+            color: #ffd870;
+            margin-bottom: 8px;
+        }
+
+        .segbar {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 3px;
+            height: 24px;
+            padding: 3px;
+            background: #080c10;
+            border: 3px solid #593a19;
+        }
+
+        .segbar i {
+            display: block;
+            background: #a13a24;
+            box-shadow: inset 0 3px rgba(255,255,255,0.2);
+        }
+
+        .mini-resource.mana .segbar i { background: #258ed0; }
+        .mini-resource.energy .segbar i { background: #daa035; }
+
+        .action-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+        }
+
+        .action-card {
+            position: relative;
+            display: grid;
+            grid-template-rows: 128px 1fr;
+            place-items: center;
+            padding: 14px;
+            cursor: pointer;
+        }
+
+        .action-card img {
+            width: 110px;
+            height: 110px;
+            object-fit: contain;
+        }
+
+        .action-card strong {
+            font-size: 27px;
+            color: #fff2c4;
+            text-shadow: 0 4px 0 #2b170d;
+        }
+
+        .action-card:hover { filter: brightness(1.12); }
+
+        .direction-panel {
+            display: grid;
+            grid-template-columns: 180px 1fr;
+            align-items: center;
+            gap: 24px;
+            padding: 20px;
+        }
+
+        .dpad {
+            position: relative;
+            width: 170px;
+            height: 170px;
+        }
+
+        .dpad img {
+            position: absolute;
+            width: 58px;
+            height: 58px;
+            object-fit: contain;
+            filter: drop-shadow(0 0 8px rgba(255,216,112,0.24));
+        }
+
+        .dpad .up { left: 56px; top: 0; }
+        .dpad .down { left: 56px; bottom: 0; }
+        .dpad .left { left: 0; top: 56px; }
+        .dpad .right { right: 0; top: 56px; }
+        .dpad .center { left: 56px; top: 56px; opacity: 0.82; }
+
+        .direction-copy {
+            display: grid;
+            grid-template-columns: 88px 54px 88px;
+            align-items: center;
+            gap: 18px;
+        }
+
+        .direction-copy img { width: 88px; height: 88px; object-fit: contain; }
+        .direction-copy .arrow { color: #d89933; font-size: 40px; }
+        .direction-copy p {
+            grid-column: 1 / -1;
+            margin: 10px 0 0;
+            font-size: 17px;
+            line-height: 1.6;
+            color: #f7dfb0;
+        }
+
+        .timer-strip {
+            position: absolute;
+            left: 32px;
+            right: 32px;
+            bottom: 6px;
+            height: 58px;
+            display: grid;
+            grid-template-columns: 260px 1fr 150px;
+            gap: 18px;
+            align-items: center;
+        }
+
+        .timer-track {
+            height: 28px;
+            background: #05080b;
+            border: 3px solid #533719;
+            padding: 3px;
+        }
+
+        .timer-fill {
+            width: 64%;
+            height: 100%;
+            background: linear-gradient(90deg, #d17a25, #ffd15a);
+        }
+
+        .time-box {
+            height: 44px;
+            display: grid;
+            place-items: center;
+            font-size: 20px;
+        }
+
+        /* Endgame */
+        #endgame-screen {
+            background:
+                radial-gradient(circle at 42% 58%, rgba(222, 158, 63, 0.28), transparent 28%),
+                linear-gradient(90deg, #121a24, #0b1118 55%, #070b10);
+        }
+
+        .hall-bg {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(90deg, rgba(3, 7, 10, 0.58), transparent 20%, transparent 75%, rgba(3, 7, 10, 0.72)),
+                repeating-linear-gradient(90deg, rgba(255,255,255,0.03) 0 4px, transparent 4px 92px),
+                repeating-linear-gradient(0deg, rgba(255,255,255,0.025) 0 4px, transparent 4px 76px);
+        }
+
+        .player-top {
+            position: absolute;
+            z-index: 9;
+            left: 650px;
+            top: 18px;
+            height: 76px;
+            display: grid;
+            grid-template-columns: 72px 180px;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .player-top img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            object-position: center 34%;
+        }
+
+        .mode-cards {
+            position: absolute;
+            z-index: 7;
+            left: 120px;
+            top: 120px;
+            width: 1120px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        .mode-card {
+            position: relative;
+            height: 430px;
+            overflow: hidden;
+        }
+
+        .mode-card .mode-title {
+            position: absolute;
+            left: 14px;
+            right: 14px;
+            top: 18px;
+            height: 66px;
+            display: grid;
+            place-items: center;
+            z-index: 2;
+            font-size: 22px;
+            color: #fff2c8;
+            text-shadow: 0 4px 0 #2b170d;
+        }
+
+        .mode-card .mode-bg {
+            position: absolute;
+            left: 18px;
+            right: 18px;
+            top: 92px;
+            width: calc(100% - 36px);
+            height: 266px;
+            object-fit: cover;
+            border: 4px solid #0d0806;
+            box-shadow: inset 0 0 0 4px #b77d2c;
+        }
+
+        .mode-card .mode-icon {
+            position: absolute;
+            left: 50%;
+            bottom: 28px;
+            width: 82px;
+            height: 82px;
+            transform: translateX(-50%);
+            object-fit: contain;
+            z-index: 3;
+        }
+
+        .party-sprites {
+            position: absolute;
+            z-index: 8;
+            left: 320px;
+            top: 498px;
+            width: 720px;
+            height: 210px;
+        }
+
+        .party-sprites .sprite {
+            width: 154px;
+            height: 210px;
+            bottom: 0;
+        }
+
+        .party-sprites .sprite:nth-child(1) { left: 0; }
+        .party-sprites .sprite:nth-child(2) { left: 150px; }
+        .party-sprites .sprite:nth-child(3) { left: 310px; }
+        .party-sprites .sprite:nth-child(4) { left: 470px; }
+
+        .season-panel {
+            position: absolute;
+            z-index: 8;
+            right: 38px;
+            top: 115px;
+            width: 310px;
+            height: 590px;
+            padding: 28px 22px;
+        }
+
+        .rank-row {
+            display: grid;
+            grid-template-columns: 88px 1fr;
+            align-items: center;
+            gap: 18px;
+            margin: 16px 0;
+            color: #f1dfba;
+            font-size: 15px;
+        }
+
+        .rank-row img { width: 78px; height: 78px; object-fit: contain; }
+
+        .bottom-dock {
+            position: absolute;
+            z-index: 9;
+            left: 70px;
+            right: 360px;
+            bottom: 118px;
+            height: 130px;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 24px;
+        }
+
+        .loot-preview,
+        .resource-preview {
+            padding: 16px 22px;
+        }
+
+        .dock-title {
+            font-size: 16px;
+            color: #f8d67b;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
+        .loot-icons,
+        .resource-icons {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+        }
+
+        .loot-icons img,
+        .resource-icons img {
+            width: 58px;
+            height: 58px;
+            object-fit: contain;
+        }
+
+        .main-tabs {
+            position: absolute;
+            z-index: 9;
+            left: 72px;
+            bottom: 13px;
+            display: flex;
+            gap: 14px;
+        }
+
+        .tab-btn {
+            width: 156px;
+            height: 62px;
+            font-size: 13px;
+        }
+
+        .party-btn {
+            position: absolute;
+            z-index: 10;
+            right: 58px;
+            bottom: 22px;
+        }
+
+        @media (max-width: 900px) {
+            #game { transform-origin: top center; }
         }
     </style>
 </head>
 <body>
-<div id="title">⚔ PETSQUEST ⚔</div>
-<div id="canvas-wrap">
-<div id="loading">Caricamento sprites...</div>
+<div id="viewport">
+    <main id="game">
+        <nav class="top-nav" aria-label="Schermate">
+            <button class="icon-btn" data-go="race-screen">R</button>
+            <button class="icon-btn" data-go="campaign-screen">C</button>
+            <button class="icon-btn" data-go="combat-screen">B</button>
+            <button class="icon-btn" data-go="endgame-screen">E</button>
+        </nav>
+
+        <section id="race-screen" class="screen active">
+            <img class="race-bg dog" src="art_input/assets/backgrounds/battle/dog_forest_night.png" alt="">
+            <img class="race-bg mouse" src="art_input/assets/backgrounds/battle/mouse_ruined_city.png" alt="">
+            <img class="race-bg cat" src="art_input/assets/backgrounds/battle/cat_dark_dungeon.png" alt="">
+            <div class="shade"></div>
+            <button class="icon-btn" style="position:absolute;left:14px;top:14px;z-index:10" data-go="combat-screen">&lt;</button>
+            <div class="title-plaque">SCEGLI RAZZA</div>
+
+            <div class="race-cards">
+                <article class="race-card panel" data-race="dogs">
+                    <div class="race-banner"><img src="assets/generated_ui/campaign/banner_dogs.png" alt="">CANI</div>
+                    <div class="party-line">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/main_character/idle_left/main_character_idle_left" src="art_input/assets/sprites/main_character/idle_left/main_character_idle_left_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_paladin/idle_left/dog_paladin_idle_left" src="art_input/assets/sprites/dog_paladin/idle_left/dog_paladin_idle_left_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_priest/idle_left/dog_priest_idle_left" src="art_input/assets/sprites/dog_priest/idle_left/dog_priest_idle_left_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_hunter/idle_left/dog_hunter_idle_left" src="art_input/assets/sprites/dog_hunter/idle_left/dog_hunter_idle_left_01.png" alt="">
+                    </div>
+                    <div class="class-row">
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_warrior.png" alt=""></div>
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_paladin.png" alt=""></div>
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_priest.png" alt=""></div>
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_hunter.png" alt=""></div>
+                    </div>
+                </article>
+
+                <article class="race-card panel" data-race="mice">
+                    <div class="race-banner"><img src="assets/generated_ui/campaign/banner_mice.png" alt="">TOPI</div>
+                    <div class="party-line">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_warrior/idle_left/mouse_warrior_idle_left" src="art_input/assets/sprites/mouse_warrior/idle_left/mouse_warrior_idle_left_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_thief/idle_left/mouse_thief_idle_left" src="art_input/assets/sprites/mouse_thief/idle_left/mouse_thief_idle_left_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_priest/idle_left/mouse_priest_idle_left" src="art_input/assets/sprites/mouse_priest/idle_left/mouse_priest_idle_left_01.png" alt="">
+                    </div>
+                    <div class="class-row">
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_warrior.png" alt=""></div>
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_thief.png" alt=""></div>
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_priest.png" alt=""></div>
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_locked.png" alt=""></div>
+                    </div>
+                </article>
+
+                <article class="race-card panel" data-race="cats">
+                    <div class="race-banner"><img src="assets/generated_ui/campaign/banner_cats.png" alt="">GATTI</div>
+                    <div class="party-line">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_thief/idle_left/cat_thief_idle_left" src="art_input/assets/sprites/cat_thief/idle_left/cat_thief_idle_left_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_necromancer/idle_left/cat_necromancer_idle_left" src="art_input/assets/sprites/cat_necromancer/idle_left/cat_necromancer_idle_left_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_mage/idle_left/cat_mage_idle_left" src="art_input/assets/sprites/cat_mage/idle_left/cat_mage_idle_left_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_priest/idle_left/cat_priest_idle_left" src="art_input/assets/sprites/cat_priest/idle_left/cat_priest_idle_left_01.png" alt="">
+                    </div>
+                    <div class="class-row">
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_thief.png" alt=""></div>
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_necromancer.png" alt=""></div>
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_mage.png" alt=""></div>
+                        <div class="class-slot"><img src="assets/generated_ui/class_icons/class_priest.png" alt=""></div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="resource-strip panel">
+                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_rage.png" alt=""><span>Rabbia<strong>120</strong></span></div>
+                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><span>Energia<strong>200</strong></span></div>
+                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_mana.png" alt=""><span>Mana<strong>150</strong></span></div>
+                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_faith.png" alt=""><span>Fede<strong>180</strong></span></div>
+            </div>
+            <button class="gold-btn confirm-race" data-go="campaign-screen">CONFERMA</button>
+        </section>
+
+        <section id="campaign-screen" class="screen">
+            <img class="campaign-map" src="art_input/assets/campaign/maps/dog_campaign_map.png" alt="">
+            <img class="campaign-map cat" src="art_input/assets/campaign/maps/cat_campaign_map.png" alt="">
+            <div class="shade"></div>
+            <div class="campaign-header">
+                <button class="icon-btn" data-go="race-screen">&lt;</button>
+                <div class="campaign-title">CAMPAGNA</div>
+                <div class="tag" style="height:58px;display:grid;place-items:center;padding:0 26px;font-size:18px">QUADRO 7</div>
+            </div>
+            <div class="hud-row">
+                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/endgame/role_tank.png" alt=""><span>Lv. 18</span></div>
+                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/rewards/emblem_level_up.png" alt=""><span>2.450 / 4.800</span></div>
+                <div class="hud-pill tag"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><span>78/100</span></div>
+                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/rewards/gold_coin_pile.png" alt=""><span>12.340</span></div>
+                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/endgame/season_badge.png" alt=""><span>850</span></div>
+            </div>
+
+            <img class="stone-path" style="left:190px;top:300px;transform:rotate(-6deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
+            <img class="stone-path" style="left:360px;top:268px;transform:rotate(-14deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
+            <img class="stone-path" style="left:520px;top:310px;transform:rotate(12deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
+            <img class="stone-path" style="left:700px;top:385px;transform:rotate(-20deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
+            <img class="stone-path" style="left:860px;top:310px;transform:rotate(8deg)" src="assets/generated_ui/campaign/path_connector_stone.png" alt="">
+
+            <div class="node current" style="left:126px;top:250px"><img src="assets/generated_ui/campaign/marker_paw_banner.png" alt=""></div>
+            <div class="node" style="left:330px;top:238px"><img src="assets/generated_ui/campaign/node_rest.png" alt=""></div>
+            <div class="node" style="left:460px;top:190px"><img src="assets/generated_ui/campaign/node_treasure.png" alt=""></div>
+            <div class="node" style="left:610px;top:280px"><img src="assets/generated_ui/campaign/node_combat.png" alt=""></div>
+            <div class="node" style="left:740px;top:405px"><img src="assets/generated_ui/campaign/node_shop.png" alt=""></div>
+            <div class="node" style="left:900px;top:290px"><img src="assets/generated_ui/campaign/node_combat.png" alt=""></div>
+            <div class="node" style="left:1030px;top:240px"><img src="assets/generated_ui/campaign/node_treasure.png" alt=""></div>
+            <div class="node" style="left:270px;top:520px"><img src="assets/generated_ui/campaign/node_miniboss.png" alt=""></div>
+            <div class="node" style="left:430px;top:520px"><img src="assets/generated_ui/campaign/node_miniboss.png" alt=""></div>
+            <div class="node final" style="left:970px;top:580px"><img src="assets/generated_ui/campaign/node_final_boss.png" alt=""></div>
+
+            <aside class="right-panel panel">
+                <div class="panel-title" style="font-size:22px">PROSSIMO</div>
+                <img class="big-medal" src="assets/generated_ui/campaign/node_current.png" alt="">
+                <p>Completa il nodo per proseguire nel cammino.</p>
+                <div class="panel-title" style="font-size:20px;margin-bottom:16px">RICOMPENSE</div>
+                <div class="reward-row">
+                    <div class="reward-card"><img src="assets/generated_ui/rewards/gold_coin_pile.png" alt="">500</div>
+                    <div class="reward-card"><img src="art_input/assets/inventory/potions/mp_potion.png" alt="">1</div>
+                    <div class="reward-card"><img src="assets/generated_ui/rewards/emblem_level_up.png" alt="">250</div>
+                </div>
+            </aside>
+
+            <div class="legend panel">
+                <div class="legend-item"><img src="assets/generated_ui/campaign/marker_paw_banner.png" alt="">QUADRO</div>
+                <div class="legend-item"><img src="assets/generated_ui/campaign/node_combat.png" alt="">COMBATTIMENTO</div>
+                <div class="legend-item"><img src="assets/generated_ui/campaign/node_treasure.png" alt="">TESORO</div>
+                <div class="legend-item"><img src="assets/generated_ui/campaign/node_rest.png" alt="">RIPOSO</div>
+                <div class="legend-item"><img src="assets/generated_ui/campaign/node_shop.png" alt="">NEGOZIO</div>
+                <div class="legend-item"><img src="assets/generated_ui/campaign/node_miniboss.png" alt="">MINIBOSS</div>
+                <div class="legend-item"><img src="assets/generated_ui/campaign/node_final_boss.png" alt="">BOSS FINALE</div>
+            </div>
+            <button class="next-chest panel" data-go="combat-screen"><span class="panel-title" style="position:absolute;top:18px;font-size:19px">PROSSIMO</span><img src="assets/generated_ui/rewards/loot_chest_epic.png" alt=""></button>
+        </section>
+
+        <section id="combat-screen" class="screen">
+            <img class="battle-bg" src="art_input/assets/backgrounds/battle/dog_forest_night.png" alt="">
+            <div class="shade"></div>
+            <div class="combat-hud">
+                <div class="fighter-card player">
+                    <div class="portrait panel"><img src="art_input/assets/sprites/main_character/idle_left/main_character_idle_left_01.png" alt=""></div>
+                    <div class="stat-block panel">
+                        <div class="fighter-name">GUERRIERO</div>
+                        <div class="bar"><div class="bar-fill" style="width:82%"></div><span>124 / 150</span></div>
+                        <div class="bar blue"><div class="bar-fill" style="width:67%"></div><span>40 / 60</span></div>
+                    </div>
+                </div>
+                <div class="fighter-card enemy">
+                    <div class="portrait panel"><img src="art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png" alt=""></div>
+                    <div class="stat-block panel">
+                        <div class="fighter-name">NECRO SCHELETRO</div>
+                        <div class="bar"><div class="bar-fill" style="width:80%"></div><span>96 / 120</span></div>
+                        <div class="bar blue"><div class="bar-fill" style="width:60%"></div><span>30 / 50</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <img class="sprite sprite-anim combat-sprite player" data-stem="art_input/assets/sprites/main_character/idle_left/main_character_idle_left" src="art_input/assets/sprites/main_character/idle_left/main_character_idle_left_01.png" alt="">
+            <img class="sprite sprite-anim combat-sprite enemy" data-stem="art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle" src="art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png" alt="">
+
+            <div class="combat-panel panel">
+                <div class="resource-bars panel">
+                    <div class="mini-resource rage"><img class="small-icon" src="art_input/assets/ui/resources/resource_rage.png" alt=""><div><div class="label">RABBIA</div><div class="segbar"><i></i><i></i><i></i><i></i><i></i><span></span><span></span><span></span></div></div></div>
+                    <div class="mini-resource mana"><img class="small-icon" src="art_input/assets/ui/resources/resource_mana.png" alt=""><div><div class="label">MANA</div><div class="segbar"><i></i><i></i><i></i><i></i><i></i><span></span><span></span><span></span></div></div></div>
+                    <div class="mini-resource energy"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><div><div class="label">ENERGIA</div><div class="segbar"><i></i><i></i><i></i><i></i><i></i><i></i><span></span><span></span></div></div></div>
+                </div>
+                <div class="action-cards">
+                    <button class="action-card panel"><img src="art_input/assets/inventory/weapons/weapon_sword.png" alt=""><strong>ARMA</strong></button>
+                    <button class="action-card panel"><img src="art_input/assets/ui/abilities/ability_necro_skull.png" alt=""><strong>ABILITA</strong></button>
+                    <button class="action-card panel"><img src="art_input/assets/inventory/potions/hp_potion.png" alt=""><strong>OGGETTO</strong></button>
+                </div>
+                <div class="direction-panel panel">
+                    <div class="dpad">
+                        <img class="up" src="assets/generated_ui/combat_fx/control_arrow_up.png" alt="">
+                        <img class="down" src="assets/generated_ui/combat_fx/control_arrow_down.png" alt="">
+                        <img class="left" src="assets/generated_ui/combat_fx/control_arrow_left.png" alt="">
+                        <img class="right" src="assets/generated_ui/combat_fx/control_arrow_right.png" alt="">
+                        <img class="center" src="assets/generated_ui/combat_fx/control_dpad_frame.png" alt="">
+                    </div>
+                    <div class="direction-copy">
+                        <img src="art_input/assets/inventory/weapons/weapon_sword.png" alt="">
+                        <div class="arrow">→</div>
+                        <img src="assets/generated_ui/endgame/role_tank.png" alt="">
+                        <p>SCEGLI LA DIREZIONE<br>DEL TUO ATTACCO</p>
+                    </div>
+                </div>
+                <div class="timer-strip">
+                    <img class="small-icon" src="assets/generated_ui/combat_fx/timer_frame.png" alt="">
+                    <div class="timer-track"><div class="timer-fill"></div></div>
+                    <div class="time-box tag">12 SEC</div>
+                </div>
+            </div>
+        </section>
+
+        <section id="endgame-screen" class="screen">
+            <div class="hall-bg"></div>
+            <div class="shade"></div>
+            <div class="campaign-header">
+                <img class="small-icon" src="assets/generated_ui/campaign/banner_dogs.png" alt="">
+                <div class="campaign-title">ENDGAME</div>
+            </div>
+            <div class="player-top">
+                <div class="portrait panel" style="position:static;width:72px;height:72px"><img src="art_input/assets/sprites/main_character/idle_left/main_character_idle_left_01.png" alt=""></div>
+                <div style="font-size:14px;line-height:1.8">PetsMaster<br>Liv. 60<br><span style="color:#ffda59">MAX</span></div>
+            </div>
+            <div class="hud-row">
+                <div class="hud-pill tag"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><span>120/120</span></div>
+                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/rewards/gold_coin_pile.png" alt=""><span>1,245,678</span></div>
+                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/endgame/season_badge.png" alt=""><span>8,450</span></div>
+            </div>
+
+            <div class="mode-cards">
+                <button class="mode-card panel"><div class="mode-title tag">HERO DUNGEON</div><img class="mode-bg" src="art_input/assets/endgame/backgrounds/hero_dungeon.png" alt=""><img class="mode-icon" src="assets/generated_ui/endgame/portal_hero_dungeon.png" alt=""></button>
+                <button class="mode-card panel"><div class="mode-title tag" style="background:linear-gradient(#7e2019,#2a0f0b)">RAID</div><img class="mode-bg" src="art_input/assets/endgame/backgrounds/raid.png" alt=""><img class="mode-icon" src="assets/generated_ui/endgame/portal_raid.png" alt=""></button>
+                <button class="mode-card panel"><div class="mode-title tag" style="background:linear-gradient(#314354,#141b23)">RANKED</div><img class="mode-bg" src="assets/generated_ui/endgame/portal_ranked_dungeon.png" alt=""><img class="mode-icon" src="assets/generated_ui/endgame/difficulty_keystone.png" alt=""></button>
+                <button class="mode-card panel"><div class="mode-title tag" style="background:linear-gradient(#8b651d,#34210b)">ARENA</div><img class="mode-bg" src="art_input/assets/endgame/backgrounds/ranked_pvp_arena.png" alt=""><img class="mode-icon" src="assets/generated_ui/endgame/portal_arena.png" alt=""></button>
+            </div>
+
+            <div class="party-sprites">
+                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_priest/idle_left/dog_priest_idle_left" src="art_input/assets/sprites/dog_priest/idle_left/dog_priest_idle_left_01.png" alt="">
+                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_mage/idle_left/cat_mage_idle_left" src="art_input/assets/sprites/cat_mage/idle_left/cat_mage_idle_left_01.png" alt="">
+                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/dog_hunter/idle_left/dog_hunter_idle_left" src="art_input/assets/sprites/dog_hunter/idle_left/dog_hunter_idle_left_01.png" alt="">
+                <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/mouse_warrior/idle_left/mouse_warrior_idle_left" src="art_input/assets/sprites/mouse_warrior/idle_left/mouse_warrior_idle_left_01.png" alt="">
+            </div>
+
+            <aside class="season-panel panel">
+                <div class="panel-title" style="font-size:25px;text-align:center;margin-bottom:18px">STAGIONE</div>
+                <div class="rank-row"><img src="art_input/assets/endgame/ranks/rank_bronze.png" alt="">BRONZE</div>
+                <div class="rank-row"><img src="art_input/assets/endgame/ranks/rank_silver.png" alt="">SILVER</div>
+                <div class="rank-row"><img src="art_input/assets/endgame/ranks/rank_gold.png" alt="">GOLD</div>
+                <div class="rank-row"><img src="art_input/assets/endgame/ranks/rank_platinum.png" alt="">PLATINUM</div>
+                <div class="rank-row"><img src="art_input/assets/endgame/ranks/rank_diamond.png" alt="">DIAMOND</div>
+                <button class="gold-btn" style="width:100%;height:66px;margin-top:10px;font-size:18px">STAGIONE</button>
+            </aside>
+
+            <div class="bottom-dock">
+                <div class="loot-preview panel">
+                    <div class="dock-title">LOOT PREVIEW</div>
+                    <div class="loot-icons">
+                        <img src="assets/generated_ui/rewards/loot_chest_epic.png" alt="">
+                        <img src="assets/generated_ui/rewards/loot_chest_common.png" alt="">
+                        <img src="assets/generated_ui/rewards/loot_chest_rare.png" alt="">
+                        <img src="assets/generated_ui/rewards/gold_coin_pile.png" alt="">
+                        <img src="assets/generated_ui/endgame/matchmaking_crystal.png" alt="">
+                        <img src="art_input/assets/inventory/weapons/weapon_sword.png" alt="">
+                        <img src="art_input/assets/inventory/equipment/equip_plate_armor.png" alt="">
+                    </div>
+                </div>
+                <div class="resource-preview panel">
+                    <div class="dock-title">RISORSE</div>
+                    <div class="resource-icons">
+                        <img src="art_input/assets/inventory/potions/mp_potion.png" alt="">
+                        <img src="art_input/assets/inventory/potions/hp_potion.png" alt="">
+                        <img src="art_input/assets/inventory/potions/buff_potion.png" alt="">
+                        <img src="art_input/assets/inventory/weapons/weapon_priest_staff.png" alt="">
+                        <img src="art_input/assets/inventory/equipment/equip_magic_ring.png" alt="">
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-tabs">
+                <button class="gold-btn tab-btn">MISSIONI</button>
+                <button class="gold-btn tab-btn">COMPAGNI</button>
+                <button class="gold-btn tab-btn">INVENTARIO</button>
+                <button class="gold-btn tab-btn">TALENTI</button>
+                <button class="gold-btn tab-btn">CLASSIFICA</button>
+                <button class="gold-btn tab-btn">GILDA</button>
+                <button class="gold-btn tab-btn">NEGOZIO</button>
+            </div>
+            <button class="gold-btn party-btn">PARTY</button>
+        </section>
+    </main>
 </div>
 
 <script>
-// ================================================================
-// PETSQUEST — COMBAT DEMO v0.1
-// ================================================================
+const screens = [...document.querySelectorAll(".screen")];
+const goButtons = [...document.querySelectorAll("[data-go]")];
 
-const W = 820, H = 640;
-const BATTLE_H = 400;
-const PANEL_H  = H - BATTLE_H; // 240
-
-// ---- PALETTE ----
-const C = {
-    bg:          0x050510,
-    panel:       0x0e0b28,
-    panelBorder: 0x3d1a7a,
-    panelLight:  0x18124a,
-    primary:     0x8b5cf6,
-    primaryH:    0xa78bfa,
-    primaryDark: 0x4c1d95,
-    secondary:   0xf59e0b,
-    hp:          0x22c55e,
-    hpMid:       0xf59e0b,
-    hpLow:       0xef4444,
-    rage:        0xef4444,
-    enemy:       0xe11d48,
-    enemyBorder: 0xf43f5e,
-    text:        0xf1f5f9,
-    textDim:     0x94a3b8,
-    gold:        0xfbbf24,
-    timer:       0xf97316,
-    timerLow:    0xef4444,
-    success:     0x4ade80,
-    failure:     0xf87171,
-    dir:         0x6366f1,
-    dirH:        0x818cf8,
-    magic:       [0xe879f9, 0x60a5fa, 0x4ade80, 0xfbbf24],
-};
-
-// ---- MINI-HELPERS ----
-function T(str, opts = {}) {
-    return new PIXI.Text(str, {
-        fontFamily:      'Press Start 2P',
-        fontSize:        opts.size  || 10,
-        fill:            opts.fill  !== undefined ? opts.fill : C.text,
-        align:           opts.align || 'left',
-        wordWrap:        opts.wrap  || false,
-        wordWrapWidth:   opts.wrapWidth || 300,
-        stroke:          opts.stroke || 0,
-        strokeThickness: opts.strokeThickness || 0,
-    });
+function showScreen(id) {
+    screens.forEach(screen => screen.classList.toggle("active", screen.id === id));
 }
 
-function G() { return new PIXI.Graphics(); }
-
-function drawRect(g, x, y, w, h, r, fill, stroke, sw = 2, fa = 1) {
-    if (stroke !== undefined) g.lineStyle(sw, stroke, 1); else g.lineStyle(0);
-    g.beginFill(fill, fa);
-    g.drawRoundedRect(x, y, w, h, r || 0);
-    g.endFill();
-}
-
-function drawBar(g, x, y, w, h, val, max, fillC, emptyC = 0x1a1040) {
-    drawRect(g, x, y, w, h, 3, emptyC);
-    const fw = Math.max(0, Math.min(1, val / max)) * w;
-    if (fw > 0) drawRect(g, x, y, fw, h, 3, fillC);
-}
-
-function shuffled(arr) {
-    const a = [...arr];
-    for (let i = a.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [a[i], a[j]] = [a[j], a[i]];
-    }
-    return a;
-}
-
-function makeBtn(x, y, w, h, label, color, onClick) {
-    const c = new PIXI.Container();
-    c.interactive = true; c.buttonMode = true;
-    const bg = G();
-    const draw = (hover) => {
-        bg.clear();
-        bg.lineStyle(2, color, hover ? 1 : 0.75);
-        bg.beginFill(color, hover ? 0.35 : 0.15);
-        bg.drawRoundedRect(0, 0, w, h, 8);
-        bg.endFill();
-    };
-    draw(false);
-    c.addChild(bg);
-    const txt = T(label, { size: 8, fill: C.text });
-    txt.anchor.set(0.5); txt.x = w / 2; txt.y = h / 2;
-    c.addChild(txt);
-    c.on('pointerover', () => draw(true));
-    c.on('pointerout',  () => draw(false));
-    c.on('pointerdown', onClick);
-    c.x = x; c.y = y;
-    return c;
-}
-
-// ---- APP ----
-const app = new PIXI.Application({
-    width: W, height: H,
-    backgroundColor: C.bg,
-    antialias: false,
-    resolution: 1,
-    sharedTicker: true,
+goButtons.forEach(button => {
+    button.addEventListener("click", () => showScreen(button.dataset.go));
 });
-document.getElementById('canvas-wrap').appendChild(app.view);
 
-// Scale canvas to fit viewport
-function scaleCanvas() {
-    const wrap = document.getElementById('canvas-wrap');
-    const scale = Math.min(1, (window.innerWidth - 24) / W);
-    wrap.style.transform = `scale(${scale})`;
-    wrap.style.marginBottom = `${(scale - 1) * H}px`;
-}
-scaleCanvas();
-window.addEventListener('resize', scaleCanvas);
-
-// Layers (draw order)
-const L = {
-    bg:      new PIXI.Container(),
-    chars:   new PIXI.Container(),
-    effects: new PIXI.Container(),
-    ui:      new PIXI.Container(),
-};
-Object.values(L).forEach(l => app.stage.addChild(l));
-
-// ---- GAME STATE ----
-const GS = {
-    phase: 'loading',
-    turn:  1,
-    player: {
-        name: 'Biscotto', cls: 'Guerriero',
-        hp: 120, maxHP: 120,
-        res: 60, maxRes: 100, resName: 'Rabbia', resColor: C.rage,
-        lv: 7, atk: 22, def: 14, matk: 8,
-    },
-    enemy: {
-        name: 'Rattleclaw', cls: 'Scheletro',
-        hp: 95, maxHP: 95,
-        lv: 8, atk: 18, def: 10, matk: 6,
-    },
-    // Turn data
-    playerAction:  null,
-    playerAtkType: null,
-    playerDir:     null,
-    playerSeq:     [],
-    enemyAtkType:  'physical',
-    enemyDir:      null,
-    enemySeq:      [],
-    playerDefDir:  null,
-    playerDefSeq:  [],
-    turnResult:    null,
-};
-
-const DIRS = {
-    up:    { sym: '↑' },
-    down:  { sym: '↓' },
-    left:  { sym: '←' },
-    right: { sym: '→' },
-};
-
-// ---- TIMER ----
-let _timerInterval = null;
-
-function startTimer(duration, onTick, onDone) {
-    stopTimer();
-    let t = duration;
-    onTick(t);
-    _timerInterval = setInterval(() => {
-        t = Math.max(0, t - 0.1);
-        onTick(t);
-        if (t <= 0) { stopTimer(); onDone(); }
-    }, 100);
+function fitGame() {
+    const game = document.getElementById("game");
+    const scale = Math.min(window.innerWidth / 1640, window.innerHeight / 920);
+    game.style.left = "0px";
+    game.style.top = `${Math.round((window.innerHeight - 920 * scale) / 2)}px`;
+    game.style.transform = `scale(${scale})`;
 }
 
-function stopTimer() {
-    if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null; }
-}
+window.addEventListener("resize", fitGame);
+fitGame();
 
-// ---- ASSET LOADING ----
-let playerSprite, enemySprite;
-const frames = {
-    player: { idle: [], left: [], attack: [], attackLeft: [], hit: [], hitLeft: [], death: [], deathLeft: [] },
-    enemy:  { idle: [], left: [], attack: [], attackLeft: [], hit: [], hitLeft: [], death: [], deathLeft: [] },
-};
+const animatedSprites = [...document.querySelectorAll(".sprite-anim")];
+let frame = 1;
 
-async function loadFrames(basePath, count) {
-    const textures = [];
-    for (let i = 1; i <= count; i++) {
-        const num = String(i).padStart(2, '0');
-        const tex = await new Promise(resolve => {
-            const img = new Image();
-            img.onload = () => resolve(PIXI.Texture.from(img));
-            img.src = `${basePath}_${num}.png`;
-        });
-        textures.push(tex);
-    }
-    return textures;
-}
-
-async function loadAllAssets() {
-    const base = 'assets/sprites';
-    const mc   = `${base}/main_character`;
-    const sk   = `${base}/enemy_skeleton`;
-    const loadEl = document.getElementById('loading');
-
-    const sets = [
-        ['player.idle',       `${mc}/idle/main_character_idle`],
-        ['player.left',       `${mc}/idle_left/main_character_idle_left`],
-        ['player.attack',     `${mc}/attack/main_character_attack`],
-        ['player.attackLeft', `${mc}/attack_left/main_character_attack_left`],
-        ['player.hit',        `${mc}/hit/main_character_hit`],
-        ['player.hitLeft',    `${mc}/hit_left/main_character_hit_left`],
-        ['player.death',      `${mc}/death/main_character_death`],
-        ['player.deathLeft',  `${mc}/death_left/main_character_death_left`],
-        ['enemy.idle',        `${sk}/idle/enemy_skeleton_idle`],
-        ['enemy.left',        `${sk}/idle_left/enemy_skeleton_idle_left`],
-        ['enemy.attack',      `${sk}/attack/enemy_skeleton_attack`],
-        ['enemy.attackLeft',  `${sk}/attack_left/enemy_skeleton_attack_left`],
-        ['enemy.hit',         `${sk}/hit/enemy_skeleton_hit`],
-        ['enemy.hitLeft',     `${sk}/hit_left/enemy_skeleton_hit_left`],
-        ['enemy.death',       `${sk}/death/enemy_skeleton_death`],
-        ['enemy.deathLeft',   `${sk}/death_left/enemy_skeleton_death_left`],
-    ];
-
-    for (let i = 0; i < sets.length; i++) {
-        const [key, path] = sets[i];
-        if (loadEl) loadEl.textContent = `Caricamento ${i + 1}/${sets.length}...`;
-        const [char, anim] = key.split('.');
-        frames[char][anim] = await loadFrames(path, 6);
-    }
-}
-
-// ---- BACKGROUND ----
-function drawBackground() {
-    // Sky
-    const sky = G();
-    sky.beginFill(0x050510); sky.drawRect(0, 0, W, BATTLE_H); sky.endFill();
-    sky.beginFill(0x080620, 0.7); sky.drawRect(0, 0, W, BATTLE_H * 0.65); sky.endFill();
-    L.bg.addChild(sky);
-
-    // Moon
-    const moon = G();
-    moon.beginFill(0xfef9c3, 0.9); moon.drawCircle(120, 55, 38); moon.endFill();
-    moon.beginFill(0x050510, 1);   moon.drawCircle(136, 44, 34); moon.endFill();
-    L.bg.addChild(moon);
-
-    // Stars
-    const stars = G();
-    for (let i = 0; i < 80; i++) {
-        stars.beginFill(0xffffff, Math.random() * 0.55 + 0.1);
-        stars.drawCircle(Math.random() * W, Math.random() * BATTLE_H * 0.62, Math.random() * 1.5 + 0.3);
-        stars.endFill();
-    }
-    L.bg.addChild(stars);
-
-    // Mountains silhouette
-    const mtn = G();
-    mtn.beginFill(0x0c0820, 0.85);
-    mtn.moveTo(0,   BATTLE_H * 0.68);
-    mtn.lineTo(90,  BATTLE_H * 0.35);
-    mtn.lineTo(220, BATTLE_H * 0.52);
-    mtn.lineTo(320, BATTLE_H * 0.27);
-    mtn.lineTo(440, BATTLE_H * 0.48);
-    mtn.lineTo(560, BATTLE_H * 0.30);
-    mtn.lineTo(680, BATTLE_H * 0.50);
-    mtn.lineTo(800, BATTLE_H * 0.36);
-    mtn.lineTo(W,   BATTLE_H * 0.58);
-    mtn.lineTo(W,   BATTLE_H * 0.68);
-    mtn.endFill();
-    L.bg.addChild(mtn);
-
-    // Ground
-    const ground = G();
-    ground.beginFill(0x080415); ground.drawRect(0, BATTLE_H * 0.67, W, BATTLE_H * 0.33); ground.endFill();
-    ground.lineStyle(1, 0x3d1a7a, 0.5);
-    ground.moveTo(0, BATTLE_H * 0.67); ground.lineTo(W, BATTLE_H * 0.67);
-    // Ground texture
-    ground.lineStyle(1, 0x1a1040, 0.3);
-    for (let i = 0; i < 5; i++) {
-        const ly = BATTLE_H * 0.70 + i * 14;
-        ground.moveTo(0, ly); ground.lineTo(W, ly);
-    }
-    L.bg.addChild(ground);
-
-    // Character glows on ground
-    const glowP = G();
-    glowP.beginFill(C.primary, 0.07); glowP.drawEllipse(210, BATTLE_H * 0.68, 75, 11); glowP.endFill();
-    L.bg.addChild(glowP);
-
-    const glowE = G();
-    glowE.beginFill(C.enemy, 0.07); glowE.drawEllipse(620, BATTLE_H * 0.68, 65, 10); glowE.endFill();
-    L.bg.addChild(glowE);
-}
-
-// ---- CHARACTERS ----
-const CHAR_SCALE = 0.21; // 362*0.21 ≈ 76px wide, 724*0.21 ≈ 152px tall
-const GROUND_Y   = BATTLE_H * 0.72;
-
-function makeAnimSprite(frameList) {
-    const anim = new PIXI.AnimatedSprite(frameList);
-    anim.animationSpeed = 0.08;
-    anim.scale.set(CHAR_SCALE);
-    anim.anchor.set(0.5, 1);
-    anim.play();
-    return anim;
-}
-
-function setupCharacters() {
-    L.chars.removeChildren();
-
-    // Player — idle_left frames face right, so player on left looks toward enemy
-    playerSprite = makeAnimSprite(frames.player.left);
-    playerSprite.x = 210;
-    playerSprite.y = GROUND_Y;
-    let pt = 0;
-    app.ticker.add(() => { pt += 0.022; playerSprite.y = GROUND_Y + Math.sin(pt) * 4; });
-
-    // Enemy — faces left (idle frames face left), right side
-    enemySprite = makeAnimSprite(frames.enemy.idle);
-    enemySprite.x = 620;
-    enemySprite.y = GROUND_Y;
-    let et = Math.PI;
-    app.ticker.add(() => { et += 0.022; enemySprite.y = GROUND_Y + Math.sin(et) * 4; });
-
-    L.chars.addChild(playerSprite, enemySprite);
-}
-
-// ---- EFFECTS ----
-function shake(sprite, intensity = 10, duration = 350) {
-    const baseX = sprite.x;
-    const start = Date.now();
-    const tick = () => {
-        const elapsed = Date.now() - start;
-        if (elapsed >= duration) { sprite.x = baseX; app.ticker.remove(tick); return; }
-        sprite.x = baseX + (Math.random() - 0.5) * intensity * (1 - elapsed / duration) * 2;
-    };
-    app.ticker.add(tick);
-}
-
-function floatDmg(x, y, txt, color) {
-    const t = new PIXI.Text(txt, {
-        fontFamily: 'Press Start 2P', fontSize: 20,
-        fill: color, stroke: 0x000000, strokeThickness: 4,
+setInterval(() => {
+    frame = frame % 6 + 1;
+    const suffix = String(frame).padStart(2, "0");
+    animatedSprites.forEach(sprite => {
+        sprite.src = `${sprite.dataset.stem}_${suffix}.png`;
     });
-    t.anchor.set(0.5); t.x = x; t.y = y; t.alpha = 1;
-    L.effects.addChild(t);
-    let vy = -2.8, life = 1;
-    const tick = () => {
-        vy *= 0.94; t.y += vy;
-        life -= 0.017; t.alpha = life;
-        if (life <= 0) { app.ticker.remove(tick); L.effects.removeChild(t); }
-    };
-    app.ticker.add(tick);
-}
-
-// One-shot animation: play frameList once, then call cb.
-// setTimeout for callback timing (works regardless of tab focus / rAF throttling).
-// PixiJS animates the frames visually when the tab is in foreground.
-function playAnim(sprite, frameList, speed, cb) {
-    sprite.textures = frameList;
-    sprite.animationSpeed = speed;
-    sprite.loop = false;
-    sprite.gotoAndPlay(0);
-    // Duration: frames / (speed * 60fps) * 1000ms
-    const ms = Math.round((frameList.length / speed / 60) * 1000);
-    setTimeout(cb, ms);
-}
-
-function returnToIdle(sprite, idleFrames) {
-    sprite.textures = idleFrames;
-    sprite.animationSpeed = 0.08;
-    sprite.loop = true;
-    sprite.gotoAndPlay(0);
-}
-
-// ---- STATIC UI (header + panel bg) ----
-function drawStaticUI() {
-    // Panel bg
-    const panelBg = G();
-    drawRect(panelBg, 0, BATTLE_H, W, PANEL_H, 0, C.panel, C.panelBorder, 2);
-    panelBg.lineStyle(1, C.primary, 0.4);
-    panelBg.moveTo(0, BATTLE_H); panelBg.lineTo(W, BATTLE_H);
-    L.ui.addChild(panelBg);
-
-    // ── Enemy HP card (top right) ──
-    const eCard = G();
-    drawRect(eCard, W - 340, 10, 326, 62, 8, C.panel, C.enemyBorder, 2);
-    L.ui.addChild(eCard);
-
-    const eName = T(`${GS.enemy.name}  [${GS.enemy.cls}]  Lv${GS.enemy.lv}`, { size: 7, fill: C.enemy });
-    eName.x = W - 330; eName.y = 18;
-    L.ui.addChild(eName);
-
-    const eHPtxt = T(`${GS.enemy.hp} / ${GS.enemy.maxHP} HP`, { size: 7, fill: C.textDim });
-    eHPtxt.x = W - 330; eHPtxt.y = 34;
-    L.ui.addChild(eHPtxt);
-
-    const eBar = G();
-    const eR = GS.enemy.hp / GS.enemy.maxHP;
-    drawBar(eBar, W - 330, 48, 312, 12, GS.enemy.hp, GS.enemy.maxHP,
-        eR > 0.5 ? C.enemy : (eR > 0.25 ? C.hpMid : C.hpLow));
-    L.ui.addChild(eBar);
-
-    // ── Player status card (bottom-left of battle area) ──
-    const pCard = G();
-    drawRect(pCard, 10, BATTLE_H - 96, 375, 88, 8, C.panel, C.primary, 2);
-    L.ui.addChild(pCard);
-
-    const pName = T(`${GS.player.name}  [${GS.player.cls}]  Lv${GS.player.lv}`, { size: 7, fill: C.primary });
-    pName.x = 20; pName.y = BATTLE_H - 88;
-    L.ui.addChild(pName);
-
-    const pHPtxt = T(`${GS.player.hp} / ${GS.player.maxHP} HP`, { size: 7, fill: C.textDim });
-    pHPtxt.x = 20; pHPtxt.y = BATTLE_H - 72;
-    L.ui.addChild(pHPtxt);
-
-    const pHPBar = G();
-    const pR = GS.player.hp / GS.player.maxHP;
-    drawBar(pHPBar, 20, BATTLE_H - 59, 355, 12, GS.player.hp, GS.player.maxHP,
-        pR > 0.5 ? C.hp : (pR > 0.25 ? C.hpMid : C.hpLow));
-    L.ui.addChild(pHPBar);
-
-    const pResTxt = T(`${GS.player.resName}: ${GS.player.res} / ${GS.player.maxRes}`, { size: 7, fill: C.textDim });
-    pResTxt.x = 20; pResTxt.y = BATTLE_H - 40;
-    L.ui.addChild(pResTxt);
-
-    const pResBar = G();
-    drawBar(pResBar, 20, BATTLE_H - 28, 355, 12, GS.player.res, GS.player.maxRes, GS.player.resColor);
-    L.ui.addChild(pResBar);
-
-    // ── Turn counter ──
-    const turnTxt = T(`TURNO  ${GS.turn}`, { size: 8, fill: C.textDim });
-    turnTxt.anchor.set(0.5); turnTxt.x = W / 2; turnTxt.y = 22;
-    L.ui.addChild(turnTxt);
-}
-
-// ---- TIMER UI (updated each tick, not full redraw) ----
-let _tBar = null, _tTxt = null, _tLabel = null;
-
-function drawTimerUI(remaining, total, label) {
-    if (_tBar)   { L.ui.removeChild(_tBar);   _tBar   = null; }
-    if (_tTxt)   { L.ui.removeChild(_tTxt);   _tTxt   = null; }
-    if (_tLabel) { L.ui.removeChild(_tLabel); _tLabel = null; }
-
-    const ty = BATTLE_H + 8;
-    _tLabel = T(label, { size: 7, fill: C.secondary });
-    _tLabel.anchor.set(0.5); _tLabel.x = W / 2; _tLabel.y = ty;
-    L.ui.addChild(_tLabel);
-
-    const bx = 14, by = ty + 18, bw = W - 28, bh = 10;
-    const ratio = Math.max(0, remaining / total);
-    _tBar = G();
-    drawRect(_tBar, bx, by, bw, bh, 4, 0x1a1040);
-    if (ratio > 0) drawRect(_tBar, bx, by, bw * ratio, bh, 4, ratio > 0.35 ? C.timer : C.timerLow);
-    L.ui.addChild(_tBar);
-
-    _tTxt = T(`${remaining.toFixed(1)}s`, { size: 8, fill: C.text });
-    _tTxt.anchor.set(1, 0.5); _tTxt.x = W - 16; _tTxt.y = by + bh / 2;
-    L.ui.addChild(_tTxt);
-}
-
-// ================================================================
-// PHASES
-// ================================================================
-const PY = BATTLE_H + 48; // Y start for panel content (below timer bar)
-
-function setPhase(phase) {
-    stopTimer();
-    GS.phase = phase;
-    L.ui.removeChildren();
-    _tBar = null; _tTxt = null; _tLabel = null;
-    drawStaticUI();
-
-    switch (phase) {
-        case 'action':       phaseAction();      break;
-        case 'dir_attack':   phaseDirAttack();   break;
-        case 'magic_attack': phaseMagicAtk();    break;
-        case 'def_physical': phaseDefPhys();     break;
-        case 'def_magic':    phaseDefMagic();    break;
-        case 'resolution':   phaseResolution();  break;
-    }
-}
-
-// ---- ACTION PHASE ----
-function phaseAction() {
-    const tip = T('Scegli la tua azione:', { size: 8, fill: C.textDim });
-    tip.anchor.set(0.5); tip.x = W / 2; tip.y = PY + 6;
-    L.ui.addChild(tip);
-
-    const actions = [
-        { key: 'attack',  label: '⚔  ATTACCA', sub: 'Attacco fisico direzionale', color: 0xdc2626, kb: '1' },
-        { key: 'ability', label: '✨  ABILITÀ', sub: 'Sequenza magica (Rabbia)',   color: C.primary, kb: '2' },
-        { key: 'item',    label: '🧪  OGGETTO', sub: 'Usa una pozione curativa',   color: 0x16a34a, kb: '3' },
-    ];
-
-    const bw = 238, bh = 112, gap = 18;
-    const sx = (W - (actions.length * bw + (actions.length - 1) * gap)) / 2;
-    const sy = PY + 26;
-
-    actions.forEach((a, i) => {
-        const btn = new PIXI.Container();
-        btn.interactive = true; btn.buttonMode = true;
-
-        const bg = G();
-        const draw = (hover) => {
-            bg.clear();
-            bg.lineStyle(2, a.color, hover ? 1 : 0.65);
-            bg.beginFill(a.color, hover ? 0.25 : 0.1);
-            bg.drawRoundedRect(0, 0, bw, bh, 10);
-            bg.endFill();
-        };
-        draw(false);
-        btn.addChild(bg);
-
-        const lbl = T(a.label, { size: 11, fill: C.text });
-        lbl.anchor.set(0.5); lbl.x = bw / 2; lbl.y = 30;
-        btn.addChild(lbl);
-
-        const sub = T(a.sub, { size: 7, fill: C.textDim, wrap: true, wrapWidth: bw - 24, align: 'center' });
-        sub.anchor.set(0.5); sub.x = bw / 2; sub.y = 64;
-        btn.addChild(sub);
-
-        const kb = T(`[ ${a.kb} ]`, { size: 7, fill: a.color });
-        kb.anchor.set(0.5); kb.x = bw / 2; kb.y = 92;
-        btn.addChild(kb);
-
-        btn.on('pointerover', () => draw(true));
-        btn.on('pointerout',  () => draw(false));
-        btn.on('pointerdown', () => onActionSelect(a.key));
-
-        btn.x = sx + i * (bw + gap);
-        btn.y = sy;
-        L.ui.addChild(btn);
-    });
-
-    const kbH = (e) => {
-        if (e.key === '1') onActionSelect('attack');
-        if (e.key === '2') onActionSelect('ability');
-        if (e.key === '3') onActionSelect('item');
-    };
-    window.addEventListener('keydown', kbH);
-    L.ui._cleanup = () => window.removeEventListener('keydown', kbH);
-
-    startTimer(15,
-        (rem) => drawTimerUI(rem, 15, 'FASE 1 — AZIONE  (15 secondi)'),
-        () => { if (L.ui._cleanup) L.ui._cleanup(); onActionSelect('attack'); }
-    );
-}
-
-function onActionSelect(key) {
-    if (GS.phase !== 'action') return;
-    if (L.ui._cleanup) { L.ui._cleanup(); L.ui._cleanup = null; }
-    stopTimer();
-    GS.playerAction = key;
-
-    // Pre-roll enemy decision
-    GS.enemyAtkType = Math.random() < 0.45 ? 'magic' : 'physical';
-    GS.enemyDir  = ['up','down','left','right'][Math.floor(Math.random() * 4)];
-    GS.enemySeq  = shuffled([0, 1, 2, 3]);
-
-    if (key === 'item') {
-        GS.playerAtkType = null;
-        GS.playerDir  = null;
-        GS.playerSeq  = [];
-        setPhase(GS.enemyAtkType === 'physical' ? 'def_physical' : 'def_magic');
-    } else if (key === 'ability') {
-        GS.playerAtkType = 'magic';
-        setPhase('magic_attack');
-    } else {
-        GS.playerAtkType = 'physical';
-        setPhase('dir_attack');
-    }
-}
-
-// ---- DIRECTIONAL ATTACK ----
-function phaseDirAttack() {
-    const tip = T('Scegli la direzione dell\'attacco!', { size: 8, fill: C.textDim });
-    tip.anchor.set(0.5); tip.x = W / 2; tip.y = PY + 6;
-    L.ui.addChild(tip);
-
-    const cx = W / 2, cy = PY + 105, sz = 55, gap = 5;
-
-    const kbH = (e) => {
-        const m = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right',
-                    w:'up', s:'down', a:'left', d:'right' };
-        if (m[e.key]) { window.removeEventListener('keydown', kbH); stopTimer(); onDirSelect(m[e.key]); }
-    };
-    window.addEventListener('keydown', kbH);
-
-    [
-        { key: 'up',    ox: 0,       oy: -(sz+gap) },
-        { key: 'down',  ox: 0,       oy:  sz+gap   },
-        { key: 'left',  ox: -(sz+gap), oy: 0       },
-        { key: 'right', ox:  sz+gap,  oy: 0        },
-    ].forEach(({ key, ox, oy }) => {
-        const btn = new PIXI.Container();
-        btn.interactive = true; btn.buttonMode = true;
-        const bg = G();
-        const draw = (h) => {
-            bg.clear();
-            bg.lineStyle(2, h ? C.dirH : C.dir);
-            bg.beginFill(h ? C.dir : C.panelLight, h ? 0.35 : 1);
-            bg.drawRoundedRect(0, 0, sz, sz, 10);
-            bg.endFill();
-        };
-        draw(false); btn.addChild(bg);
-        const sym = new PIXI.Text(DIRS[key].sym, { fontSize: 24, fill: C.dirH });
-        sym.anchor.set(0.5); sym.x = sz / 2; sym.y = sz / 2 - 1;
-        btn.addChild(sym);
-        btn.x = cx + ox - sz / 2; btn.y = cy + oy - sz / 2;
-        btn.on('pointerover', () => draw(true));
-        btn.on('pointerout',  () => draw(false));
-        btn.on('pointerdown', () => { window.removeEventListener('keydown', kbH); stopTimer(); onDirSelect(key); });
-        L.ui.addChild(btn);
-    });
-
-    // Center paw icon
-    const cb = G(); drawRect(cb, cx-22, cy-22, 44, 44, 8, C.primaryDark, C.primary, 2);
-    const cpaw = new PIXI.Text('🐾', { fontSize: 20 }); cpaw.anchor.set(0.5); cpaw.x = cx; cpaw.y = cy;
-    L.ui.addChild(cb, cpaw);
-
-    const hint = T('Frecce direzionali o WASD', { size: 7, fill: C.textDim });
-    hint.anchor.set(0.5); hint.x = W / 2; hint.y = cy + sz + gap + 16;
-    L.ui.addChild(hint);
-
-    startTimer(15,
-        (rem) => drawTimerUI(rem, 15, 'SCEGLI DIREZIONE ATTACCO'),
-        () => { window.removeEventListener('keydown', kbH); onDirSelect(shuffled(['up','down','left','right'])[0]); }
-    );
-}
-
-function onDirSelect(dir) {
-    if (GS.phase !== 'dir_attack') return;
-    GS.playerDir = dir;
-    setPhase(GS.enemyAtkType === 'physical' ? 'def_physical' : 'def_magic');
-}
-
-// ---- MAGIC ATTACK ----
-function phaseMagicAtk() {
-    GS.playerSeq = [];
-
-    const tip = T('Lancia l\'incantesimo! Scegli l\'ordine dei 4 cristalli.', { size: 7, fill: C.textDim });
-    tip.anchor.set(0.5); tip.x = W / 2; tip.y = PY + 6;
-    L.ui.addChild(tip);
-
-    const tip2 = T('La tua sequenza diventerà l\'attacco che il nemico dovrà bloccare.', { size: 6, fill: C.textDim, wrap: true, wrapWidth: 500, align: 'center' });
-    tip2.anchor.set(0.5); tip2.x = W / 2; tip2.y = PY + 20;
-    L.ui.addChild(tip2);
-
-    let seqDisp = null;
-    const updateSD = () => {
-        if (seqDisp) L.ui.removeChild(seqDisp);
-        const s = GS.playerSeq;
-        const txt = s.length === 0 ? 'Clicca i cristalli...' : s.map(i => i + 1).join(' → ');
-        seqDisp = T(txt, { size: 9, fill: s.length === 4 ? C.success : C.gold });
-        seqDisp.anchor.set(0.5); seqDisp.x = W / 2; seqDisp.y = PY + 36;
-        L.ui.addChild(seqDisp);
-    };
-
-    const cx = W / 2, cy = PY + 118, orbR = 28, gap = 22;
-    const pos = [
-        { i:0, x: cx - orbR - gap/2, y: cy - orbR - gap/2 },
-        { i:1, x: cx + orbR + gap/2, y: cy - orbR - gap/2 },
-        { i:2, x: cx - orbR - gap/2, y: cy + orbR + gap/2 },
-        { i:3, x: cx + orbR + gap/2, y: cy + orbR + gap/2 },
-    ];
-
-    const orbGs = [];
-    const updateOrbs = () => {
-        orbGs.forEach((og, i) => {
-            og.clear();
-            if (GS.playerSeq.includes(i)) {
-                og.lineStyle(3, C.magic[i]); og.beginFill(C.magic[i], 0.45);
-            } else {
-                og.lineStyle(2, C.magic[i], 0.7); og.beginFill(C.panelLight);
-            }
-            og.drawCircle(0, 0, orbR); og.endFill();
-        });
-    };
-
-    const kbH = (e) => { const k = parseInt(e.key); if (k >= 1 && k <= 4) clickOrb(k - 1); };
-    window.addEventListener('keydown', kbH);
-
-    const clickOrb = (i) => {
-        if (GS.playerSeq.includes(i)) return;
-        GS.playerSeq.push(i);
-        updateOrbs(); updateSD();
-        if (GS.playerSeq.length === 4) {
-            stopTimer(); window.removeEventListener('keydown', kbH);
-            setTimeout(() => setPhase(GS.enemyAtkType === 'physical' ? 'def_physical' : 'def_magic'), 350);
-        }
-    };
-
-    pos.forEach(({ i, x, y }) => {
-        const og = G();
-        og.lineStyle(2, C.magic[i], 0.7); og.beginFill(C.panelLight);
-        og.drawCircle(0, 0, orbR); og.endFill();
-        og.x = x; og.y = y;
-        og.interactive = true; og.buttonMode = true;
-        const num = T(`${i + 1}`, { size: 14, fill: C.magic[i] }); num.anchor.set(0.5);
-        og.addChild(num);
-        orbGs.push(og); L.ui.addChild(og);
-        og.on('pointerdown', () => clickOrb(i));
-        og.on('pointerover', () => { if (!GS.playerSeq.includes(i)) og.scale.set(1.12); });
-        og.on('pointerout',  () => og.scale.set(1));
-    });
-
-    const hint = T('[1] [2] [3] [4] da tastiera', { size: 7, fill: C.textDim });
-    hint.anchor.set(0.5); hint.x = W / 2; hint.y = cy + orbR + gap + 18;
-    L.ui.addChild(hint);
-
-    updateSD();
-
-    startTimer(15,
-        (rem) => drawTimerUI(rem, 15, 'FASE 1 — INCANTESIMO  (15 secondi)'),
-        () => {
-            window.removeEventListener('keydown', kbH);
-            while (GS.playerSeq.length < 4) {
-                const av = [0,1,2,3].filter(x => !GS.playerSeq.includes(x));
-                GS.playerSeq.push(av[Math.floor(Math.random() * av.length)]);
-            }
-            setPhase(GS.enemyAtkType === 'physical' ? 'def_physical' : 'def_magic');
-        }
-    );
-}
-
-// ---- DEFENSE: PHYSICAL ----
-function phaseDefPhys() {
-    const tip = T('Il nemico attacca! Da che lato arriva il colpo?', { size: 7, fill: C.enemy });
-    tip.anchor.set(0.5); tip.x = W / 2; tip.y = PY + 6;
-    L.ui.addChild(tip);
-
-    const tip2 = T('Difesa fisica — 5 secondi!', { size: 7, fill: C.textDim });
-    tip2.anchor.set(0.5); tip2.x = W / 2; tip2.y = PY + 22;
-    L.ui.addChild(tip2);
-
-    const cx = W / 2, cy = PY + 105, sz = 50, gap = 5;
-
-    const kbH = (e) => {
-        const m = { ArrowUp:'up', ArrowDown:'down', ArrowLeft:'left', ArrowRight:'right',
-                    w:'up', s:'down', a:'left', d:'right' };
-        if (m[e.key]) { window.removeEventListener('keydown', kbH); stopTimer(); onDefDirSelect(m[e.key]); }
-    };
-    window.addEventListener('keydown', kbH);
-
-    [
-        { key: 'up',    ox: 0,       oy: -(sz+gap) },
-        { key: 'down',  ox: 0,       oy:  sz+gap   },
-        { key: 'left',  ox: -(sz+gap), oy: 0       },
-        { key: 'right', ox:  sz+gap,  oy: 0        },
-    ].forEach(({ key, ox, oy }) => {
-        const btn = new PIXI.Container();
-        btn.interactive = true; btn.buttonMode = true;
-        const bg = G();
-        const draw = (h) => {
-            bg.clear();
-            bg.lineStyle(2, h ? 0x94a3b8 : 0x475569);
-            bg.beginFill(h ? 0x1e3a5f : C.panelLight, 1);
-            bg.drawRoundedRect(0, 0, sz, sz, 10); bg.endFill();
-        };
-        draw(false); btn.addChild(bg);
-        const sym = new PIXI.Text(DIRS[key].sym, { fontSize: 22, fill: 0x94a3b8 });
-        sym.anchor.set(0.5); sym.x = sz / 2; sym.y = sz / 2 - 1; btn.addChild(sym);
-        btn.x = cx + ox - sz / 2; btn.y = cy + oy - sz / 2;
-        btn.on('pointerover', () => draw(true));
-        btn.on('pointerout',  () => draw(false));
-        btn.on('pointerdown', () => { window.removeEventListener('keydown', kbH); stopTimer(); onDefDirSelect(key); });
-        L.ui.addChild(btn);
-    });
-
-    const cb = G(); drawRect(cb, cx-20, cy-20, 40, 40, 8, 0x1e293b, 0x475569, 2);
-    const sh = new PIXI.Text('🛡', { fontSize: 18 }); sh.anchor.set(0.5); sh.x = cx; sh.y = cy;
-    L.ui.addChild(cb, sh);
-
-    startTimer(5,
-        (rem) => drawTimerUI(rem, 5, 'FASE 2 — DIFESA FISICA  (5 secondi)'),
-        () => { window.removeEventListener('keydown', kbH); onDefDirSelect(null); }
-    );
-}
-
-function onDefDirSelect(dir) {
-    if (GS.phase !== 'def_physical') return;
-    GS.playerDefDir = dir;
-    resolveRound();
-}
-
-// ---- DEFENSE: MAGIC ----
-function phaseDefMagic() {
-    GS.playerDefSeq = [];
-
-    const seqStr = GS.enemySeq.map(i => i + 1).join(' → ');
-    const tip = T(`Magia nemica in arrivo!  Replica:  ${seqStr}`, { size: 7, fill: C.enemy });
-    tip.anchor.set(0.5); tip.x = W / 2; tip.y = PY + 6;
-    L.ui.addChild(tip);
-
-    let seqDisp = null;
-    const updateSD = () => {
-        if (seqDisp) L.ui.removeChild(seqDisp);
-        const s = GS.playerDefSeq;
-        const correct = s.every((v, i) => v === GS.enemySeq[i]);
-        const txt = s.length === 0 ? 'Clicca nell\'ordine corretto...' : `Tua: ${s.map(i => i+1).join(' → ')}`;
-        seqDisp = T(txt, { size: 8, fill: s.length === 4 ? (correct ? C.success : C.failure) : C.gold });
-        seqDisp.anchor.set(0.5); seqDisp.x = W / 2; seqDisp.y = PY + 22;
-        L.ui.addChild(seqDisp);
-    };
-
-    const cx = W / 2, cy = PY + 105, orbR = 26, gap = 18;
-    const pos = [
-        { i:0, x: cx - orbR - gap/2, y: cy - orbR - gap/2 },
-        { i:1, x: cx + orbR + gap/2, y: cy - orbR - gap/2 },
-        { i:2, x: cx - orbR - gap/2, y: cy + orbR + gap/2 },
-        { i:3, x: cx + orbR + gap/2, y: cy + orbR + gap/2 },
-    ];
-
-    const orbGs = [];
-    const updateOrbs = () => {
-        orbGs.forEach((og, i) => {
-            og.clear();
-            const idx = GS.playerDefSeq.indexOf(i);
-            if (idx >= 0) {
-                const match = GS.playerDefSeq[idx] === GS.enemySeq[idx];
-                og.lineStyle(3, match ? C.success : C.failure);
-                og.beginFill(match ? C.success : C.failure, 0.3);
-            } else {
-                og.lineStyle(2, C.magic[i], 0.7); og.beginFill(C.panelLight);
-            }
-            og.drawCircle(0, 0, orbR); og.endFill();
-        });
-    };
-
-    const kbH = (e) => { const k = parseInt(e.key); if (k >= 1 && k <= 4) clickOrb(k - 1); };
-    window.addEventListener('keydown', kbH);
-
-    const clickOrb = (i) => {
-        if (GS.playerDefSeq.includes(i)) return;
-        GS.playerDefSeq.push(i);
-        updateOrbs(); updateSD();
-        if (GS.playerDefSeq.length === 4) {
-            stopTimer(); window.removeEventListener('keydown', kbH);
-            setTimeout(() => resolveRound(), 350);
-        }
-    };
-
-    pos.forEach(({ i, x, y }) => {
-        const og = G();
-        og.lineStyle(2, C.magic[i], 0.7); og.beginFill(C.panelLight);
-        og.drawCircle(0, 0, orbR); og.endFill();
-        og.x = x; og.y = y;
-        og.interactive = true; og.buttonMode = true;
-        const num = T(`${i + 1}`, { size: 13, fill: C.magic[i] }); num.anchor.set(0.5);
-        og.addChild(num);
-        orbGs.push(og); L.ui.addChild(og);
-        og.on('pointerdown', () => clickOrb(i));
-        og.on('pointerover', () => { if (!GS.playerDefSeq.includes(i)) og.scale.set(1.1); });
-        og.on('pointerout',  () => og.scale.set(1));
-    });
-
-    updateSD();
-
-    startTimer(5,
-        (rem) => drawTimerUI(rem, 5, 'FASE 2 — DIFESA MAGICA  (5 secondi)'),
-        () => {
-            window.removeEventListener('keydown', kbH);
-            while (GS.playerDefSeq.length < 4) {
-                const av = [0,1,2,3].filter(x => !GS.playerDefSeq.includes(x));
-                GS.playerDefSeq.push(av[Math.floor(Math.random() * av.length)]);
-            }
-            resolveRound();
-        }
-    );
-}
-
-// ================================================================
-// RESOLUTION
-// ================================================================
-function resolveRound() {
-    if (GS.turnResult !== null) return; // guard: already resolved this turn
-    stopTimer();
-    const p = GS.player, e = GS.enemy;
-    let pDmg = 0, eDmg = 0, pHeal = 0;
-    const msgs = [];
-
-    // Enemy → Player
-    if (GS.enemyAtkType === 'physical') {
-        const raw = e.atk + Math.floor(Math.random() * 9);
-        const base = Math.max(1, raw - Math.floor(p.def * 0.6));
-        if (GS.playerDefDir === GS.enemyDir) {
-            pDmg = Math.max(1, Math.round(base * 0.2));
-            msgs.push({ t: `🛡 Parata perfetta! Solo ${pDmg} danni`, c: C.success });
-        } else {
-            pDmg = base;
-            msgs.push({ t: `⚔ Colpo nemico: ${pDmg} danni ricevuti`, c: C.failure });
-        }
-    } else {
-        const raw = e.matk * 3 + Math.floor(Math.random() * 11);
-        const base = Math.max(1, raw - Math.floor(p.def * 0.25));
-        if (GS.playerDefSeq.join(',') === GS.enemySeq.join(',')) {
-            pDmg = Math.max(1, Math.round(base * 0.15));
-            msgs.push({ t: `✨ Contro-magia! Solo ${pDmg} danni`, c: C.success });
-        } else {
-            pDmg = base;
-            msgs.push({ t: `🔮 Magia nemica: ${pDmg} danni ricevuti`, c: C.primary });
-        }
-    }
-
-    // Player → Enemy
-    if (GS.playerAction === 'item') {
-        pHeal = 25 + Math.floor(Math.random() * 15);
-        p.hp = Math.min(p.maxHP, p.hp + pHeal);
-        p.res = Math.min(p.maxRes, p.res + 8);
-        msgs.push({ t: `🧪 Pozione: +${pHeal} HP recuperati`, c: C.hp });
-    } else if (GS.playerAtkType === 'physical') {
-        const raw = p.atk + Math.floor(Math.random() * 9);
-        const base = Math.max(1, raw - Math.floor(e.def * 0.6));
-        eDmg = GS.playerDir ? base : Math.round(base * 0.45);
-        p.res = Math.min(p.maxRes, p.res + 12);
-        const tag = GS.playerDir ? '' : ' (affrettato)';
-        msgs.push({ t: `⚔ Tuo attacco${tag}: ${eDmg} danni inflitti`, c: C.secondary });
-    } else if (GS.playerAtkType === 'magic') {
-        const seqStr = GS.playerSeq.map(i => i + 1).join('→');
-        const raw = p.matk * 3 + Math.floor(Math.random() * 13);
-        const base = Math.max(1, raw - Math.floor(e.def * 0.25));
-        eDmg = base;
-        p.res = Math.max(0, p.res - 25);
-        msgs.push({ t: `✨ Incantesimo [${seqStr}]: ${eDmg} danni magici`, c: C.primary });
-    }
-
-    p.hp = Math.max(0, p.hp - pDmg);
-    e.hp = Math.max(0, e.hp - eDmg);
-    GS.turnResult = { pDmg, eDmg, msgs };
-
-    const ASPD = 0.16; // one-shot animation speed
-
-    // Step 1 — player attacks (or uses item)
-    function doPlayerAttack(next) {
-        if (GS.playerAction === 'item') {
-            floatDmg(playerSprite.x, playerSprite.y - 70, `+${pHeal}`, C.hp);
-            next(); return;
-        }
-        playAnim(playerSprite, frames.player.attack, ASPD, () => {
-            returnToIdle(playerSprite, frames.player.left);
-            next();
-        });
-    }
-
-    // Step 2 — enemy takes the hit
-    function doEnemyHit(next) {
-        if (eDmg <= 0) { next(); return; }
-        floatDmg(enemySprite.x - 20, enemySprite.y - 60, `-${eDmg}`, C.secondary);
-        shake(enemySprite, 8, 300);
-        if (e.hp <= 0) {
-            playAnim(enemySprite, frames.enemy.death, ASPD, next);
-        } else {
-            playAnim(enemySprite, frames.enemy.hit, ASPD, () => {
-                returnToIdle(enemySprite, frames.enemy.idle);
-                next();
-            });
-        }
-    }
-
-    // Step 3 — enemy attacks (skip if dead)
-    function doEnemyAttack(next) {
-        if (e.hp <= 0) { next(); return; }
-        playAnim(enemySprite, frames.enemy.attackLeft, ASPD, () => {
-            returnToIdle(enemySprite, frames.enemy.idle);
-            next();
-        });
-    }
-
-    // Step 4 — player takes the hit
-    function doPlayerHit(next) {
-        if (pDmg <= 0) { next(); return; }
-        floatDmg(playerSprite.x + 20, playerSprite.y - 60, `-${pDmg}`, C.failure);
-        shake(playerSprite, 8, 300);
-        if (p.hp <= 0) {
-            playAnim(playerSprite, frames.player.deathLeft, ASPD, next);
-        } else {
-            playAnim(playerSprite, frames.player.hitLeft, ASPD, () => {
-                returnToIdle(playerSprite, frames.player.left);
-                next();
-            });
-        }
-    }
-
-    doPlayerAttack(() =>
-        doEnemyHit(() =>
-            doEnemyAttack(() =>
-                doPlayerHit(() =>
-                    setPhase('resolution')
-                )
-            )
-        )
-    );
-}
-
-function phaseResolution() {
-    const res = GS.turnResult;
-    const py  = PY;
-
-    const title = T('— RISOLUZIONE —', { size: 9, fill: C.secondary });
-    title.anchor.set(0.5); title.x = W / 2; title.y = py + 8;
-    L.ui.addChild(title);
-
-    res.msgs.forEach((m, i) => {
-        const t = T(m.t, { size: 8, fill: m.c });
-        t.anchor.set(0.5); t.x = W / 2; t.y = py + 32 + i * 24;
-        L.ui.addChild(t);
-    });
-
-    const isDead = GS.player.hp <= 0 || GS.enemy.hp <= 0;
-    const baseY  = py + 32 + res.msgs.length * 24 + 12;
-
-    if (isDead) {
-        const win = GS.enemy.hp <= 0;
-        const ot = T(win ? '🏆  VITTORIA!' : '💀  SCONFITTA!', { size: 15, fill: win ? C.gold : C.failure });
-        ot.anchor.set(0.5); ot.x = W / 2; ot.y = baseY;
-        L.ui.addChild(ot);
-        L.ui.addChild(makeBtn(W / 2 - 80, baseY + 30, 160, 36, 'RICOMINCIA', C.primary, resetGame));
-    } else {
-        L.ui.addChild(makeBtn(W / 2 - 95, baseY, 190, 36, '▶  PROSSIMO TURNO', C.primary, nextTurn));
-    }
-}
-
-function nextTurn() {
-    GS.turn++;
-    GS.playerAction = null; GS.playerAtkType = null;
-    GS.playerDir = null; GS.playerSeq = [];
-    GS.playerDefDir = null; GS.playerDefSeq = [];
-    GS.turnResult = null;
-    setPhase('action');
-}
-
-function resetGame() {
-    GS.player.hp = GS.player.maxHP; GS.player.res = 60;
-    GS.enemy.hp  = GS.enemy.maxHP;
-    GS.turn = 1; GS.turnResult = null;
-    returnToIdle(playerSprite, frames.player.left);
-    returnToIdle(enemySprite,  frames.enemy.idle);
-    setPhase('action');
-}
-
-// ================================================================
-// BOOT
-// ================================================================
-async function boot() {
-    await document.fonts.load('10px "Press Start 2P"');
-    document.getElementById('loading').textContent = 'Caricamento sprites...';
-    await loadAllAssets();
-    document.getElementById('loading').remove();
-
-    drawBackground();
-    setupCharacters();
-    setPhase('action');
-}
-
-boot().catch(err => {
-    const el = document.getElementById('loading');
-    el.textContent = '⚠ Errore caricamento. Avvia con: python3 -m http.server 8080';
-    el.style.color = '#ef4444';
-    console.error(err);
-});
+}, 170);
 </script>
 </body>
 </html>
