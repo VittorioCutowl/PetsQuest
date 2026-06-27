@@ -28,6 +28,12 @@ Ogni turno ha due fasi:
   - direzione favorevole: danno pieno.
 - `ABILITA`: danno garantito con consumo risorsa.
 - `OGGETTO`: pozione curativa con contatore reale.
+- Persistenza scelta razza/classe via `localStorage`, propagata tra selezione, campagna e combat.
+- Mappatura abilita' per classe: icone, nome abilita', arma, costo risorsa e danno cambiano in base alla classe selezionata.
+- Loot/progressione prototipale:
+  - oro, EXP, talent point e pozioni vengono aggiornati nello stato player;
+  - vittoria combat assegna ricompense reali del nodo selezionato;
+  - nodi non-combat base come Quadro/Riposo/Tesoro/Negozio applicano reward/recupero direttamente dalla campagna.
 - Difesa semi-telegrafata:
   - niente testo esplicito "difendi destra";
   - indizio leggibile nel pannello azione;
@@ -42,11 +48,11 @@ Ogni turno ha due fasi:
 ### Ancora Da Implementare
 
 - Sequenza magica a 4 punti per caster.
-- Cura con selezione bersaglio per Prete/Paladino.
+- Cura con selezione bersaglio per Prete/Paladino. Ora esiste solo una cura self semplificata su abilita' dedicate.
 - Inventario completo con piu' oggetti.
-- Loot reale post-combat e aggiornamento progressione.
-- Persistenza scelta razza/classe nelle schermate successive.
-- Progressione EXP/livelli/talenti.
+- Progressione EXP/livelli/talenti finale. Ora esiste una progressione prototipale salvata con level up e talent point.
+- Mappatura finale di tutte le abilita' disponibili in UI: ora ogni classe selezionabile ha una primaria, ma manca ancora un pannello abilita' completo.
+- Completamento definitivo loot/equip: ora alcune ricompense entrano nello stato, ma manca inventario ispezionabile/equipaggiabile.
 - Dialoghi e cutscene campagna.
 - Multiplayer, matchmaking e ranking endgame.
 

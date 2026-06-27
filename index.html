@@ -264,6 +264,10 @@
             text-shadow: 0 3px 0 #2c1710;
             font-size: 22px;
             text-transform: uppercase;
+            display: inline-grid;
+            place-items: center;
+            line-height: 1.18;
+            text-align: center;
         }
 
         .gold-btn:hover,
@@ -601,12 +605,14 @@
         .class-slot {
             width: 86px;
             height: 86px;
+            padding: 0;
             display: grid;
             place-items: center;
             background: rgba(10, 14, 18, 0.74);
             border: 3px solid #1b0f0a;
             box-shadow: inset 0 0 0 3px #b88132, inset 0 0 0 5px #efc66a;
             cursor: pointer;
+            overflow: hidden;
         }
 
         .class-slot.selected {
@@ -619,9 +625,11 @@
         }
 
         .class-slot img {
-            width: 72px;
-            height: 72px;
+            width: 70px;
+            height: 70px;
             object-fit: contain;
+            object-position: center;
+            display: block;
         }
 
         .resource-strip {
@@ -635,23 +643,43 @@
             grid-template-columns: repeat(4, 1fr);
             align-items: center;
             gap: 12px;
-            padding: 8px 24px;
+            padding: 8px 30px;
         }
 
         .resource {
             display: grid;
-            grid-template-columns: 52px 1fr;
+            grid-template-columns: 58px max-content;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
+            gap: 10px;
             font-size: 13px;
             color: #ffe1a2;
+            line-height: 1.12;
+            text-align: left;
+            min-width: 0;
+        }
+
+        .resource .small-icon {
+            display: block;
+            width: 54px;
+            height: 54px;
+            object-fit: contain;
+            object-position: center;
+            justify-self: center;
+        }
+
+        .resource span {
+            display: grid;
+            align-content: center;
+            min-height: 54px;
         }
 
         .resource strong {
             display: block;
-            margin-top: 7px;
+            margin-top: 5px;
             font-size: 20px;
             color: var(--gold-bright);
+            line-height: 1;
         }
 
         .confirm-race {
@@ -660,6 +688,10 @@
             bottom: 20px;
             z-index: 9;
             transform: translateX(-50%);
+            min-width: 448px;
+            height: 72px;
+            padding: 0 28px 2px;
+            white-space: nowrap;
         }
 
         /* Campaign */
@@ -958,29 +990,40 @@
 
         .bar {
             position: relative;
-            height: 29px;
-            margin-bottom: 8px;
+            height: 30px;
+            margin-bottom: 10px;
             overflow: hidden;
-            background: #1b1010;
+            background: #120a09;
             border: 3px solid #100806;
-            box-shadow: inset 0 0 0 2px #9b6425;
+            box-shadow:
+                inset 0 0 0 2px #9b6425,
+                inset 0 0 0 5px #2d160e;
         }
 
         .bar::after {
             content: "";
             position: absolute;
-            inset: -6px -5px;
+            inset: 4px 7px;
             z-index: 3;
             pointer-events: none;
-            background: url("art_input/assets/ui/hp_bar/hp_bar_frame.png") center / 100% 100% no-repeat;
+            border-top: 2px solid rgba(255, 221, 132, 0.62);
+            border-bottom: 2px solid rgba(70, 34, 19, 0.8);
+            box-shadow:
+                inset 0 1px rgba(255, 255, 255, 0.1),
+                inset 0 -1px rgba(0, 0, 0, 0.42);
         }
 
         .bar-fill {
-            position: relative;
+            position: absolute;
+            left: 7px;
+            top: 7px;
             z-index: 1;
-            height: 100%;
+            height: calc(100% - 14px);
+            max-width: calc(100% - 14px);
             background: linear-gradient(#ef6955, #9a261e);
-            box-shadow: inset 0 4px rgba(255,255,255,0.22);
+            box-shadow:
+                inset 0 4px rgba(255,255,255,0.22),
+                inset 0 -5px rgba(56, 12, 8, 0.34);
         }
 
         .bar.blue .bar-fill { background: linear-gradient(#39adff, #0d6197); }
@@ -991,24 +1034,81 @@
             z-index: 4;
             display: grid;
             place-items: center;
-            font-size: 17px;
-            text-shadow: 0 3px 0 #1a0c06;
+            padding-top: 1px;
+            color: #fff3c9;
+            font-size: 16px;
+            line-height: 1;
+            text-shadow:
+                0 3px 0 #1a0c06,
+                2px 0 0 #1a0c06,
+                -2px 0 0 #1a0c06;
         }
 
         .combat-sprite.player {
-            left: 332px;
-            top: 300px;
-            width: 292px;
-            height: 292px;
-            transform: translateY(66px);
+            left: 308px;
+            top: 272px;
+            width: 342px;
+            height: 342px;
+            transform: translateY(38px);
         }
 
         .combat-sprite.enemy {
-            right: 303px;
-            top: 294px;
-            width: 284px;
-            height: 296px;
-            transform: translateY(70px);
+            right: 280px;
+            top: 266px;
+            width: 334px;
+            height: 348px;
+            transform: translateY(42px);
+        }
+
+        .phase-callout {
+            position: absolute;
+            z-index: 9;
+            left: 50%;
+            top: 315px;
+            min-width: 310px;
+            height: 78px;
+            display: grid;
+            place-items: center;
+            transform: translate(-50%, -50%) scale(0.72);
+            opacity: 0;
+            color: #fff3bf;
+            font-size: 34px;
+            line-height: 1;
+            text-align: center;
+            text-shadow:
+                0 5px 0 #32190d,
+                0 0 18px rgba(255, 216, 112, 0.48);
+            background:
+                linear-gradient(180deg, rgba(34, 48, 66, 0.94), rgba(9, 14, 21, 0.94));
+            border: 4px solid #150c08;
+            box-shadow:
+                inset 0 0 0 3px #af782c,
+                inset 0 0 0 6px #f0c766,
+                0 10px 0 rgba(0, 0, 0, 0.42);
+            pointer-events: none;
+        }
+
+        .phase-callout.show {
+            animation: phaseCallout 980ms ease-out;
+        }
+
+        .phase-callout.attack {
+            color: #ffe287;
+        }
+
+        .phase-callout.defense {
+            color: #bfeeff;
+            box-shadow:
+                inset 0 0 0 3px #2c8caf,
+                inset 0 0 0 6px #bfeeff,
+                0 10px 0 rgba(0, 0, 0, 0.42);
+        }
+
+        @keyframes phaseCallout {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.72); }
+            18% { opacity: 1; transform: translate(-50%, -50%) scale(1.08); }
+            72% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.92); }
         }
 
         .combat-panel {
@@ -1101,7 +1201,7 @@
         .action-card {
             position: relative;
             display: grid;
-            grid-template-rows: 146px 1fr;
+            grid-template-rows: 142px 1fr;
             place-items: center;
             padding: 16px 10px 18px;
             cursor: pointer;
@@ -1112,14 +1212,27 @@
         }
 
         .action-card img {
-            width: 122px;
-            height: 122px;
+            width: 118px;
+            height: 118px;
             object-fit: contain;
+            object-position: center;
+            align-self: center;
+            justify-self: center;
         }
 
         .action-card strong {
-            font-size: 24px;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            display: grid;
+            place-items: center;
+            align-self: center;
             color: #fff2c4;
+            font-size: 19px;
+            line-height: 1.12;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
             text-shadow: 0 4px 0 #2b170d;
         }
 
@@ -1139,15 +1252,21 @@
         .action-card:hover { filter: brightness(1.12); }
 
         .action-card.selected {
-            filter: brightness(1.22) drop-shadow(0 0 12px rgba(255, 216, 112, 0.55));
+            filter: brightness(1.08) drop-shadow(0 0 10px rgba(255, 216, 112, 0.55));
+            box-shadow:
+                inset 0 0 0 3px #fff0a8,
+                inset 0 0 0 7px #d59433,
+                0 0 0 3px #4ab7ff,
+                0 0 18px rgba(255, 216, 112, 0.52),
+                0 6px 0 rgba(0, 0, 0, 0.55);
         }
 
         .action-card.selected::after {
             content: "";
             position: absolute;
-            inset: 4px;
-            background: url("assets/generated_ui/combat_fx/selected_action_glow.png") center / 100% 100% no-repeat;
-            opacity: 0.42;
+            inset: -5px;
+            border: 3px solid #56bfff;
+            box-shadow: 0 0 0 2px #fff2a8;
             pointer-events: none;
         }
 
@@ -1204,40 +1323,97 @@
 
         .dpad {
             position: relative;
-            width: 120px;
-            height: 120px;
+            width: 124px;
+            height: 124px;
             justify-self: center;
             align-self: center;
         }
 
-        .dpad::before {
-            content: "";
+        .dpad-center,
+        .dpad-btn {
             position: absolute;
+            border: 3px solid #17100d;
+            image-rendering: pixelated;
+        }
+
+        .dpad-center {
             left: 50%;
             top: 50%;
-            width: 30px;
-            height: 30px;
+            width: 34px;
+            height: 34px;
             transform: translate(-50%, -50%);
-            border: 3px solid #17100d;
-            background: radial-gradient(circle, #2b3642 0 38%, #0c1218 40% 100%);
-            box-shadow: inset 0 0 0 2px #8d642f, inset 0 0 0 4px rgba(245, 198, 106, 0.58);
+            border-radius: 50%;
+            background: radial-gradient(circle, #47586b 0 36%, #263140 39% 68%, #0a1017 70% 100%);
+            box-shadow:
+                inset 0 0 0 3px #8d642f,
+                0 0 10px rgba(255, 216, 112, 0.2);
+            pointer-events: none;
+        }
+
+        .dpad-btn {
+            width: 44px;
+            height: 44px;
+            padding: 0;
+            display: grid;
+            place-items: center;
+            appearance: none;
+            font: inherit;
+            background:
+                linear-gradient(180deg, #253344, #0d141d);
+            box-shadow:
+                inset 0 0 0 2px #8d642f,
+                inset 0 0 0 4px #f1c764,
+                0 0 8px rgba(255, 216, 112, 0.24);
+            cursor: pointer;
+            clip-path: polygon(25% 0, 75% 0, 100% 25%, 100% 75%, 75% 100%, 25% 100%, 0 75%, 0 25%);
+        }
+
+        .dpad-btn::before {
+            content: "";
+            display: block;
+            width: 0;
+            height: 0;
+            filter: drop-shadow(0 3px 0 #53310f);
+        }
+
+        .dpad-btn.up::before {
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-bottom: 16px solid #ffd870;
+        }
+
+        .dpad-btn.down::before {
+            border-left: 9px solid transparent;
+            border-right: 9px solid transparent;
+            border-top: 16px solid #ffd870;
+        }
+
+        .dpad-btn.left::before {
+            border-top: 9px solid transparent;
+            border-bottom: 9px solid transparent;
+            border-right: 16px solid #ffd870;
+        }
+
+        .dpad-btn.right::before {
+            border-top: 9px solid transparent;
+            border-bottom: 9px solid transparent;
+            border-left: 16px solid #ffd870;
         }
 
         .dpad img {
-            position: absolute;
-            width: 44px;
-            height: 44px;
-            object-fit: contain;
-            filter: drop-shadow(0 0 8px rgba(255,216,112,0.24));
-            cursor: pointer;
+            display: none;
         }
 
-        .dpad.locked img {
+        .dpad-btn {
+            position: absolute;
+        }
+
+        .dpad.locked .dpad-btn {
             cursor: default;
             filter: grayscale(0.55) brightness(0.7);
         }
 
-        .dpad.defense img {
+        .dpad.defense .dpad-btn {
             filter: hue-rotate(145deg) saturate(1.22) drop-shadow(0 0 8px rgba(88, 195, 255, 0.36));
         }
 
@@ -1248,14 +1424,14 @@
             animation: tellPulse 760ms ease-in-out infinite;
         }
 
-        .dpad:not(.locked) img:hover {
+        .dpad:not(.locked) .dpad-btn:hover {
             filter: brightness(1.35) drop-shadow(0 0 12px rgba(255, 216, 112, 0.8));
         }
 
-        .dpad .up { left: 38px; top: 0; }
-        .dpad .down { left: 38px; bottom: 0; }
-        .dpad .left { left: 0; top: 38px; }
-        .dpad .right { right: 0; top: 38px; }
+        .dpad .up { left: 40px; top: 0; }
+        .dpad .down { left: 40px; bottom: 0; }
+        .dpad .left { left: 0; top: 40px; }
+        .dpad .right { right: 0; top: 40px; }
         .dpad .center { display: none; }
 
         @keyframes tellPulse {
@@ -1711,11 +1887,11 @@
                 <div class="tag" style="height:58px;display:grid;place-items:center;padding:0 26px;font-size:18px">QUADRO 7</div>
             </div>
             <div class="hud-row">
-                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/endgame/role_tank.png" alt=""><span>Lv. 18</span></div>
-                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/rewards/emblem_level_up.png" alt=""><span>2.450 / 4.800</span></div>
-                <div class="hud-pill tag"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><span>78/100</span></div>
-                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/rewards/gold_coin_pile.png" alt=""><span>12.340</span></div>
-                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/endgame/season_badge.png" alt=""><span>850</span></div>
+                <div class="hud-pill tag"><img id="campaign-class-icon" class="small-icon" src="assets/generated_ui/endgame/role_tank.png" alt=""><span id="campaign-level">Lv. 1</span></div>
+                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/rewards/emblem_level_up.png" alt=""><span id="campaign-exp">0 / 120</span></div>
+                <div class="hud-pill tag"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><span id="campaign-energy">70/80</span></div>
+                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/rewards/gold_coin_pile.png" alt=""><span id="campaign-gold">0</span></div>
+                <div class="hud-pill tag"><img class="small-icon" src="assets/generated_ui/rewards/talent_point_token.png" alt=""><span id="campaign-talents">0</span></div>
             </div>
 
             <img class="stone-path" style="left:190px;top:300px;transform:rotate(-6deg)" src="art_input/assets/campaign/tiles/path_normal.png" alt="">
@@ -1741,9 +1917,9 @@
                 <p id="campaign-node-copy">Completa il nodo per proseguire nel cammino.</p>
                 <div class="panel-title" style="font-size:20px;margin-bottom:16px">RICOMPENSE</div>
                 <div class="reward-row">
-                    <div class="reward-card"><img src="assets/generated_ui/rewards/gold_coin_pile.png" alt="">500</div>
-                    <div class="reward-card"><img src="art_input/assets/inventory/potions/mp_potion.png" alt="">1</div>
-                    <div class="reward-card"><img src="assets/generated_ui/rewards/emblem_level_up.png" alt="">250</div>
+                    <div class="reward-card"><img id="reward-gold-icon" src="assets/generated_ui/rewards/gold_coin_pile.png" alt=""><span id="reward-gold">500</span></div>
+                    <div class="reward-card"><img id="reward-loot-icon" src="art_input/assets/inventory/potions/mp_potion.png" alt=""><span id="reward-loot">1</span></div>
+                    <div class="reward-card"><img id="reward-exp-icon" src="assets/generated_ui/rewards/emblem_level_up.png" alt=""><span id="reward-exp">250</span></div>
                 </div>
             </aside>
 
@@ -1764,9 +1940,9 @@
             <div class="shade"></div>
             <div class="combat-hud">
                 <div class="fighter-card player">
-                    <div class="portrait panel"><img src="art_input/assets/sprites/main_character/idle_left/main_character_idle_left_01.png" alt=""></div>
+                    <div class="portrait panel"><img id="player-portrait" src="art_input/assets/sprites/main_character/idle_left/main_character_idle_left_01.png" alt=""></div>
                     <div class="stat-block panel">
-                        <div class="fighter-name">GUERRIERO</div>
+                        <div class="fighter-name" id="player-fighter-name">GUERRIERO</div>
                         <div class="bar"><div id="player-hp-fill" class="bar-fill" style="width:82%"></div><span id="player-hp-text">124 / 150</span></div>
                         <div class="bar blue"><div class="bar-fill" style="width:67%"></div><span>40 / 60</span></div>
                     </div>
@@ -1783,6 +1959,7 @@
 
             <img class="sprite sprite-anim combat-sprite player" data-stem="art_input/assets/sprites/main_character/idle_left/main_character_idle_left" src="art_input/assets/sprites/main_character/idle_left/main_character_idle_left_01.png" alt="">
             <img class="sprite sprite-anim combat-sprite enemy" data-stem="art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle" src="art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png" alt="">
+            <div class="phase-callout" id="phase-callout" aria-hidden="true"></div>
 
             <div class="combat-panel panel">
                 <div class="resource-bars panel">
@@ -1791,17 +1968,17 @@
                     <div class="mini-resource energy"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><div><div class="label">ENERGIA <span id="energy-value">70 / 80</span></div><div id="energy-bar" class="segbar"><i></i><i></i><i></i><i></i><i></i><i></i><span></span><span></span></div></div></div>
                 </div>
                 <div class="action-cards">
-                    <button class="action-card panel" data-action="weapon"><small>-12 EN</small><img src="art_input/assets/inventory/weapons/weapon_sword.png" alt=""><strong>ARMA</strong></button>
-                    <button class="action-card panel" data-action="ability"><small>18 MA<br>24 RA</small><img src="art_input/assets/ui/abilities/ability_sword_slash.png" alt=""><strong>ABILITA</strong></button>
+                    <button class="action-card panel" data-action="weapon"><small>-12 EN</small><img id="weapon-action-icon" src="art_input/assets/inventory/weapons/weapon_sword.png" alt=""><strong>ARMA</strong></button>
+                    <button class="action-card panel" data-action="ability"><small id="ability-cost">18 MA<br>24 RA</small><img id="ability-action-icon" src="art_input/assets/ui/abilities/ability_sword_slash.png" alt=""><strong id="ability-action-label">ABILITA</strong></button>
                     <button class="action-card panel" data-action="item"><small id="potion-count">x1</small><img src="art_input/assets/inventory/potions/hp_potion.png" alt=""><strong>OGGETTO</strong></button>
                 </div>
                 <div class="direction-panel panel">
                     <div class="dpad locked">
-                        <img class="up" data-dir="up" src="assets/generated_ui/combat_fx/control_arrow_up.png" alt="">
-                        <img class="down" data-dir="down" src="assets/generated_ui/combat_fx/control_arrow_down.png" alt="">
-                        <img class="left" data-dir="left" src="assets/generated_ui/combat_fx/control_arrow_left.png" alt="">
-                        <img class="right" data-dir="right" src="assets/generated_ui/combat_fx/control_arrow_right.png" alt="">
-                        <img class="center" src="assets/generated_ui/combat_fx/control_dpad_frame.png" alt="">
+                        <button class="dpad-btn up" data-dir="up" aria-label="Alto"></button>
+                        <button class="dpad-btn down" data-dir="down" aria-label="Basso"></button>
+                        <button class="dpad-btn left" data-dir="left" aria-label="Sinistra"></button>
+                        <button class="dpad-btn right" data-dir="right" aria-label="Destra"></button>
+                        <span class="dpad-center" aria-hidden="true"></span>
                     </div>
                     <div class="direction-copy">
                         <img id="intent-left-icon" class="intent" src="art_input/assets/inventory/weapons/weapon_sword.png" alt="">
@@ -1902,37 +2079,294 @@
 <script>
 const screens = [...document.querySelectorAll(".screen")];
 const goButtons = [...document.querySelectorAll("[data-go]")];
+const saveKey = "petsquest.prototype.save.v1";
+const raceNames = { dogs: "Cani", mice: "Topi", cats: "Gatti" };
+const raceKeysByName = { Cani: "dogs", Topi: "mice", Gatti: "cats" };
+const classIcons = {
+    Guerriero: "assets/generated_ui/class_icons/class_warrior.png",
+    Paladino: "assets/generated_ui/class_icons/class_paladin.png",
+    Prete: "assets/generated_ui/class_icons/class_priest.png",
+    Cacciatore: "assets/generated_ui/class_icons/class_hunter.png",
+    Ladro: "assets/generated_ui/class_icons/class_thief.png",
+    Negromante: "assets/generated_ui/class_icons/class_necromancer.png",
+    Mago: "assets/generated_ui/class_icons/class_mage.png",
+};
+
+const classAbilitySets = {
+    Guerriero: [
+        "art_input/assets/ui/abilities/ability_sword_slash.png",
+        "art_input/assets/ui/abilities/ability_rage_roar.png",
+        "art_input/assets/ui/abilities/ability_shield_guard.png",
+    ],
+    Paladino: [
+        "art_input/assets/ui/abilities/ability_paladin_smite.png",
+        "art_input/assets/ui/abilities/ability_faith_blessing.png",
+    ],
+    Prete: [
+        "art_input/assets/ui/abilities/ability_holy_heal.png",
+        "art_input/assets/ui/abilities/ability_priest_barrier.png",
+        "art_input/assets/ui/abilities/ability_faith_blessing.png",
+    ],
+    Cacciatore: [
+        "art_input/assets/ui/abilities/ability_arrow_shot.png",
+        "art_input/assets/ui/abilities/ability_energy_dash.png",
+    ],
+    Ladro: [
+        "art_input/assets/ui/abilities/ability_backstab.png",
+        "art_input/assets/ui/abilities/ability_poison_dagger.png",
+        "art_input/assets/ui/abilities/ability_energy_dash.png",
+    ],
+    Negromante: [
+        "art_input/assets/ui/abilities/ability_necro_skull.png",
+        "art_input/assets/ui/abilities/ability_bone_summon.png",
+    ],
+    Mago: [
+        "art_input/assets/ui/abilities/ability_fireball.png",
+        "art_input/assets/ui/abilities/ability_ice_orb.png",
+        "art_input/assets/ui/abilities/ability_mana_burst.png",
+    ],
+};
+
+const classRules = {
+    Guerriero: { abilityName: "Fendente", damage: 20, cost: { rage: 18 }, weapon: "art_input/assets/inventory/weapons/weapon_warrior_axe.png" },
+    Paladino: { abilityName: "Giudizio", damage: 18, cost: { mana: 12, rage: 16 }, weapon: "art_input/assets/inventory/weapons/weapon_paladin_hammer.png", healsSelf: 8 },
+    Prete: { abilityName: "Luce Sacra", damage: 10, cost: { mana: 16 }, weapon: "art_input/assets/inventory/weapons/weapon_priest_staff.png", healsSelf: 18 },
+    Cacciatore: { abilityName: "Tiro Preciso", damage: 22, cost: { energy: 16 }, weapon: "art_input/assets/inventory/weapons/weapon_hunter_bow.png" },
+    Ladro: { abilityName: "Pugnalata", damage: 24, cost: { energy: 18 }, weapon: "art_input/assets/inventory/weapons/weapon_thief_dagger.png" },
+    Negromante: { abilityName: "Teschio Nero", damage: 21, cost: { mana: 18 }, weapon: "art_input/assets/inventory/weapons/weapon_necromancer_staff.png" },
+    Mago: { abilityName: "Palla di Fuoco", damage: 23, cost: { mana: 20 }, weapon: "art_input/assets/inventory/weapons/weapon_mage_wand.png" },
+};
+
+const battleBackgrounds = {
+    dogs: "art_input/assets/backgrounds/battle/dog_forest_night.png",
+    mice: "art_input/assets/backgrounds/battle/mouse_ruined_city.png",
+    cats: "art_input/assets/backgrounds/battle/cat_dark_dungeon.png",
+};
+
+const nodeRewards = {
+    Quadro: { gold: 120, exp: 60, lootText: "Base", lootIcon: "assets/generated_ui/rewards/quest_complete_stamp.png" },
+    Riposo: { gold: 0, exp: 25, heal: 999, mana: 20, energy: 20, lootText: "Recupero", lootIcon: "art_input/assets/inventory/potions/hp_potion.png" },
+    Tesoro: { gold: 420, exp: 90, potions: 1, lootText: "+1 Pozione", lootIcon: "art_input/assets/inventory/loot/loot_rare.png" },
+    Combattimento: { gold: 500, exp: 250, potions: 1, lootText: "+1 Pozione", lootIcon: "art_input/assets/inventory/potions/mp_potion.png" },
+    Negozio: { gold: -180, exp: 20, potions: 2, lootText: "+2 Pozioni", lootIcon: "art_input/assets/inventory/potions/hp_potion.png" },
+    Miniboss: { gold: 900, exp: 460, item: "Equip raro", lootText: "Equip raro", lootIcon: "art_input/assets/inventory/equipment/equip_magic_ring.png" },
+    "Boss finale": { gold: 1600, exp: 900, talentPoints: 1, item: "Sigillo boss", lootText: "+1 Talento", lootIcon: "assets/generated_ui/rewards/talent_point_token.png" },
+};
+
 const selection = {
     race: "Cani",
+    raceKey: "dogs",
     className: "Guerriero",
     node: "Quadro",
 };
 
+const playerState = {
+    level: 1,
+    exp: 0,
+    expToNext: 120,
+    talentPoints: 0,
+    gold: 0,
+    hp: 124,
+    maxHp: 150,
+    energy: 70,
+    energyMax: 80,
+    potions: 1,
+    inventory: [],
+};
+
+function loadGame() {
+    try {
+        const saved = JSON.parse(window.localStorage.getItem(saveKey) || "{}");
+        if (saved.selection) Object.assign(selection, saved.selection);
+        if (saved.playerState) Object.assign(playerState, saved.playerState);
+    } catch (error) {
+        window.localStorage.removeItem(saveKey);
+    }
+    selection.raceKey = selection.raceKey || raceKeysByName[selection.race] || "dogs";
+    selection.race = raceNames[selection.raceKey] || selection.race || "Cani";
+}
+
+function saveGame() {
+    window.localStorage.setItem(saveKey, JSON.stringify({ selection, playerState }));
+}
+
+function formatNumber(value) {
+    return new Intl.NumberFormat("it-IT").format(value);
+}
+
+function getAbilityIcon(className = selection.className) {
+    return (classAbilitySets[className] || classAbilitySets.Guerriero)[0];
+}
+
+function getClassRule() {
+    return classRules[selection.className] || classRules.Guerriero;
+}
+
+function getHeroProfile() {
+    const profileKey = `${selection.raceKey}:${selection.className}`;
+    const profiles = {
+        "dogs:Guerriero": { stem: "art_input/assets/sprites/main_character/idle_left/main_character_idle_left", attack: "art_input/assets/sprites/main_character/attack/main_character_attack", hit: "art_input/assets/sprites/main_character/hit/main_character_hit", death: "art_input/assets/sprites/main_character/death/main_character_death" },
+        "dogs:Paladino": { stem: "art_input/assets/sprites/dog_paladin/idle/dog_paladin_idle" },
+        "dogs:Prete": { stem: "art_input/assets/sprites/dog_priest/idle/dog_priest_idle" },
+        "dogs:Cacciatore": { stem: "art_input/assets/sprites/dog_hunter/idle/dog_hunter_idle" },
+        "mice:Guerriero": { stem: "art_input/assets/sprites/mouse_warrior/idle/mouse_warrior_idle" },
+        "mice:Ladro": { stem: "art_input/assets/sprites/mouse_thief/idle/mouse_thief_idle" },
+        "mice:Prete": { stem: "art_input/assets/sprites/mouse_priest/idle/mouse_priest_idle" },
+        "cats:Ladro": { stem: "art_input/assets/sprites/cat_thief/idle/cat_thief_idle" },
+        "cats:Negromante": { stem: "art_input/assets/sprites/cat_necromancer/idle/cat_necromancer_idle" },
+        "cats:Mago": { stem: "art_input/assets/sprites/cat_mage/idle/cat_mage_idle" },
+        "cats:Prete": { stem: "art_input/assets/sprites/cat_priest/idle/cat_priest_idle" },
+    };
+    return profiles[profileKey] || profiles["dogs:Guerriero"];
+}
+
+function costLabel(cost) {
+    const parts = [];
+    if (cost.mana) parts.push(`${cost.mana} MA`);
+    if (cost.rage) parts.push(`${cost.rage} RA`);
+    if (cost.energy) parts.push(`${cost.energy} EN`);
+    return parts.join("<br>");
+}
+
 function showScreen(id) {
+    applyGameStateToUI();
     screens.forEach(screen => screen.classList.toggle("active", screen.id === id));
     document.getElementById("game").classList.toggle("combat-active", id === "combat-screen");
     if (id === "combat-screen") startCombat();
 }
 
 goButtons.forEach(button => {
-    button.addEventListener("click", () => showScreen(button.dataset.go));
+    button.addEventListener("click", () => {
+        if (button.id === "campaign-next") {
+            resolveCampaignNode();
+            return;
+        }
+        showScreen(button.dataset.go);
+    });
 });
 
-function updateRaceSelection(card) {
-    const raceNames = { dogs: "Cani", mice: "Topi", cats: "Gatti" };
-    selection.race = raceNames[card.dataset.race] || "Cani";
+function updateRaceSelection(card, options = {}) {
+    if (!card) return;
+    selection.raceKey = card.dataset.race || "dogs";
+    selection.race = raceNames[selection.raceKey] || "Cani";
     document.querySelectorAll(".race-card").forEach(item => item.classList.toggle("selected", item === card));
-    const firstClass = card.querySelector(".class-slot:not(.locked)");
-    if (firstClass) updateClassSelection(firstClass);
+    const firstClass = options.keepClass
+        ? [...card.querySelectorAll(".class-slot:not(.locked)")].find(slot => slot.dataset.class === selection.className)
+        : null;
+    const fallbackClass = firstClass || card.querySelector(".class-slot:not(.locked)");
+    if (fallbackClass) updateClassSelection(fallbackClass, { skipSave: true });
+    applyGameStateToUI();
+    if (!options.skipSave) saveGame();
 }
 
-function updateClassSelection(slot) {
-    if (slot.classList.contains("locked")) return;
+function updateClassSelection(slot, options = {}) {
+    if (!slot || slot.classList.contains("locked")) return;
     selection.className = slot.dataset.class;
+    selection.raceKey = slot.closest(".race-card")?.dataset.race || selection.raceKey;
+    selection.race = raceNames[selection.raceKey] || selection.race;
     document.querySelectorAll(".class-slot").forEach(item => item.classList.remove("selected"));
     slot.classList.add("selected");
+    applyGameStateToUI();
+    if (!options.skipSave) saveGame();
+}
+
+function restoreSelectionUI() {
+    const card = document.querySelector(`.race-card[data-race="${selection.raceKey}"]`) || document.querySelector('.race-card[data-race="dogs"]');
+    updateRaceSelection(card, { keepClass: true, skipSave: true });
+    const slot = [...card.querySelectorAll(".class-slot:not(.locked)")].find(item => item.dataset.class === selection.className);
+    if (slot) updateClassSelection(slot, { skipSave: true });
+}
+
+function applyGameStateToUI() {
+    const rule = getClassRule();
+    const profile = getHeroProfile();
+    const reward = nodeRewards[selection.node] || nodeRewards.Combattimento;
     const confirm = document.querySelector(".confirm-race");
+    const campaignTitle = document.querySelector(".campaign-title");
+    const battleBg = document.querySelector(".battle-bg");
+    const playerPortrait = document.getElementById("player-portrait");
+    const playerName = document.getElementById("player-fighter-name");
+    const weaponIcon = document.getElementById("weapon-action-icon");
+    const abilityIcon = document.getElementById("ability-action-icon");
+    const abilityCost = document.getElementById("ability-cost");
+    const abilityLabel = document.getElementById("ability-action-label");
+    const campaignClassIcon = document.getElementById("campaign-class-icon");
+    const campaignLevel = document.getElementById("campaign-level");
+    const campaignExp = document.getElementById("campaign-exp");
+    const campaignEnergy = document.getElementById("campaign-energy");
+    const campaignGold = document.getElementById("campaign-gold");
+    const campaignTalents = document.getElementById("campaign-talents");
+    const rewardGold = document.getElementById("reward-gold");
+    const rewardLoot = document.getElementById("reward-loot");
+    const rewardLootIcon = document.getElementById("reward-loot-icon");
+    const rewardExp = document.getElementById("reward-exp");
+
     if (confirm) confirm.textContent = `${selection.race} / ${selection.className}`;
+    if (campaignTitle) campaignTitle.textContent = `CAMPAGNA ${selection.race.toUpperCase()}`;
+    document.querySelectorAll(".campaign-map").forEach(map => {
+        const isCat = map.classList.contains("cat");
+        const isMouse = map.classList.contains("mouse");
+        const key = isCat ? "cats" : isMouse ? "mice" : "dogs";
+        map.style.opacity = key === selection.raceKey ? "1" : "0";
+        map.style.pointerEvents = key === selection.raceKey ? "" : "none";
+    });
+    if (battleBg) battleBg.src = battleBackgrounds[selection.raceKey] || battleBackgrounds.dogs;
+    if (playerPortrait) playerPortrait.src = `${profile.stem}_01.png`;
+    const activePlayerSprite = document.querySelector(".combat-sprite.player");
+    if (activePlayerSprite && activePlayerSprite.dataset.locked !== "true") {
+        activePlayerSprite.dataset.stem = profile.stem;
+        activePlayerSprite.src = `${profile.stem}_01.png`;
+    }
+    if (playerName) playerName.textContent = selection.className.toUpperCase();
+    if (weaponIcon) weaponIcon.src = rule.weapon;
+    if (abilityIcon) abilityIcon.src = getAbilityIcon();
+    if (abilityCost) abilityCost.innerHTML = costLabel(rule.cost);
+    if (abilityLabel) abilityLabel.textContent = rule.abilityName.toUpperCase();
+    if (campaignClassIcon) campaignClassIcon.src = classIcons[selection.className] || classIcons.Guerriero;
+    if (campaignLevel) campaignLevel.textContent = `Lv. ${playerState.level}`;
+    if (campaignExp) campaignExp.textContent = `${formatNumber(playerState.exp)} / ${formatNumber(playerState.expToNext)}`;
+    if (campaignEnergy) campaignEnergy.textContent = `${playerState.energy}/${playerState.energyMax}`;
+    if (campaignGold) campaignGold.textContent = formatNumber(playerState.gold);
+    if (campaignTalents) campaignTalents.textContent = playerState.talentPoints;
+    if (rewardGold) rewardGold.textContent = reward.gold < 0 ? `${reward.gold}` : `${reward.gold}`;
+    if (rewardLoot) rewardLoot.textContent = reward.lootText || "-";
+    if (rewardLootIcon) rewardLootIcon.src = reward.lootIcon || "art_input/assets/inventory/loot/loot_common.png";
+    if (rewardExp) rewardExp.textContent = `${reward.exp || 0} EXP`;
+}
+
+function syncProgression() {
+    while (playerState.exp >= playerState.expToNext) {
+        playerState.exp -= playerState.expToNext;
+        playerState.level += 1;
+        playerState.talentPoints += 1;
+        playerState.expToNext = Math.round(playerState.expToNext * 1.42);
+        showFloatingText("LEVEL UP", 760, 260, "#fff06a");
+    }
+}
+
+function grantReward(reward, sourceLabel) {
+    if (!reward) return;
+    playerState.gold = Math.max(0, playerState.gold + (reward.gold || 0));
+    playerState.exp += reward.exp || 0;
+    playerState.talentPoints += reward.talentPoints || 0;
+    if (reward.potions) playerState.potions += reward.potions;
+    if (reward.heal) playerState.hp = Math.min(playerState.maxHp, playerState.hp + reward.heal);
+    if (reward.item) playerState.inventory.push(reward.item);
+    syncProgression();
+    saveGame();
+    applyGameStateToUI();
+    return `${sourceLabel}: +${reward.exp || 0} EXP, ${reward.gold || 0} oro${reward.potions ? `, +${reward.potions} pozioni` : ""}.`;
+}
+
+function resolveCampaignNode() {
+    const reward = nodeRewards[selection.node] || nodeRewards.Quadro;
+    if (selection.node === "Combattimento" || selection.node === "Miniboss" || selection.node === "Boss finale") {
+        showScreen("combat-screen");
+        return;
+    }
+    const summary = grantReward(reward, selection.node);
+    const copy = document.getElementById("campaign-node-copy");
+    if (copy) copy.textContent = summary;
 }
 
 document.querySelectorAll(".race-card").forEach(card => {
@@ -1951,7 +2385,8 @@ document.querySelectorAll(".class-slot").forEach(slot => {
     });
 });
 
-updateRaceSelection(document.querySelector('.race-card[data-race="dogs"]'));
+loadGame();
+restoreSelectionUI();
 
 function updateCampaignNode(node) {
     selection.node = node.dataset.node;
@@ -1972,11 +2407,15 @@ function updateCampaignNode(node) {
     if (next) {
         next.dataset.go = selection.node === "Combattimento" || selection.node === "Miniboss" || selection.node === "Boss finale" ? "combat-screen" : "campaign-screen";
     }
+    applyGameStateToUI();
+    saveGame();
 }
 
 document.querySelectorAll(".node").forEach(node => {
     node.addEventListener("click", () => updateCampaignNode(node));
 });
+
+updateCampaignNode(document.querySelector(".node.current"));
 
 function fitGame() {
     const game = document.getElementById("game");
@@ -2062,6 +2501,7 @@ const enemyHpFill = document.getElementById("enemy-hp-fill");
 const enemyHpText = document.getElementById("enemy-hp-text");
 const combatScreen = document.getElementById("combat-screen");
 const phaseBanner = document.getElementById("phase-banner");
+const phaseCallout = document.getElementById("phase-callout");
 const directionHint = document.getElementById("direction-hint");
 const timerFill = document.getElementById("combat-timer-fill");
 const intentLeftIcon = document.getElementById("intent-left-icon");
@@ -2119,6 +2559,14 @@ function setCombatStatus(text) {
     if (phaseBanner) phaseBanner.textContent = text;
 }
 
+function showPhaseCallout(word, tone) {
+    if (!phaseCallout) return;
+    phaseCallout.textContent = word;
+    phaseCallout.classList.remove("show", "attack", "defense");
+    void phaseCallout.offsetWidth;
+    phaseCallout.classList.add(tone, "show");
+}
+
 function updateEnemyHp() {
     if (!enemyHpFill || !enemyHpText) return;
     const ratio = Math.max(0, combat.enemyHp / combat.enemyMaxHp);
@@ -2142,10 +2590,23 @@ function updateResourceBar(bar, current, max) {
 }
 
 function canUseAction(action) {
+    const rule = getClassRule();
     if (action === "weapon") return combat.energy >= actionCosts.weapon.energy;
-    if (action === "ability") return combat.mana >= actionCosts.ability.mana || combat.rage >= actionCosts.ability.rage;
+    if (action === "ability") {
+        const cost = rule.cost;
+        return (!cost.mana || combat.mana >= cost.mana)
+            && (!cost.rage || combat.rage >= cost.rage)
+            && (!cost.energy || combat.energy >= cost.energy);
+    }
     if (action === "item") return combat.potions > 0 && combat.playerHp < combat.playerMaxHp;
     return true;
+}
+
+function payAbilityCost() {
+    const cost = getClassRule().cost;
+    if (cost.mana) combat.mana = Math.max(0, combat.mana - cost.mana);
+    if (cost.rage) combat.rage = Math.max(0, combat.rage - cost.rage);
+    if (cost.energy) combat.energy = Math.max(0, combat.energy - cost.energy);
 }
 
 function updateResources() {
@@ -2257,18 +2718,28 @@ function spawnFx(src, className, x, y, duration = 560) {
 }
 
 function startCombat() {
-    combat.playerHp = 124;
+    const profile = getHeroProfile();
+    const reward = nodeRewards[selection.node] || nodeRewards.Combattimento;
+    combat.playerMaxHp = playerState.maxHp;
+    combat.playerHp = Math.min(playerState.hp, combat.playerMaxHp);
     combat.enemyHp = 96;
-    combat.rage = 50;
-    combat.mana = 40;
-    combat.energy = 70;
-    combat.potions = 1;
+    combat.enemyMaxHp = selection.node === "Boss finale" ? 190 : selection.node === "Miniboss" ? 150 : 120;
+    combat.enemyHp = selection.node === "Boss finale" ? 154 : selection.node === "Miniboss" ? 122 : 96;
+    combat.rage = selection.className === "Guerriero" ? 64 : 42;
+    combat.mana = ["Mago", "Negromante", "Prete", "Paladino"].includes(selection.className) ? 52 : 28;
+    combat.energy = playerState.energy;
+    combat.potions = playerState.potions;
     combat.phase = "action";
     combat.turn = 1;
     combat.playerAction = null;
     combat.enemyIntent = null;
-    setSpriteIdle(playerSprite, spriteDefaults.player);
+    spriteDefaults.player = profile.stem;
+    spriteAnims.playerAttack = profile.attack;
+    spriteAnims.playerHit = profile.hit;
+    spriteAnims.playerDeath = profile.death;
+    setSpriteIdle(playerSprite, profile.stem);
     setSpriteIdle(enemySprite, spriteDefaults.enemy);
+    applyGameStateToUI();
     updatePlayerHp();
     updateEnemyHp();
     updateResources();
@@ -2276,9 +2747,9 @@ function startCombat() {
     setDpadActive(false);
     setTimer(100);
     setIntentVisual(
-        "art_input/assets/inventory/weapons/weapon_sword.png",
+        getClassRule().weapon,
         "assets/generated_ui/endgame/role_tank.png",
-        "SCEGLI UNA AZIONE<br>PER INIZIARE IL TURNO"
+        `${selection.node.toUpperCase()}<br>${reward.exp} EXP IN PALIO`
     );
     setCombatStatus("TURNO 1: scegli arma, abilita o oggetto.");
 }
@@ -2331,7 +2802,7 @@ function damagePlayer(amount, blocked) {
     if (blocked) {
         spawnFx("assets/generated_ui/combat_fx/fx_shield_guard.png", "guard", 386, 300);
     } else {
-        playSpriteAnimation(playerSprite, spriteAnims.playerHit, spriteDefaults.player);
+        if (spriteAnims.playerHit) playSpriteAnimation(playerSprite, spriteAnims.playerHit, spriteDefaults.player);
         spawnFx("assets/generated_ui/combat_fx/fx_broken_guard.png", "hit", 382, 294);
     }
     showFloatingText(blocked ? `-${amount}` : `-${amount}`, 420, 360, blocked ? "#9ed7ff" : "#ff9c6f");
@@ -2356,8 +2827,9 @@ function chooseWeapon() {
     updateActionButtons("weapon");
     setDpadActive(true, "attack");
     setTimer(74);
+    showPhaseCallout("ATTACCO", "attack");
     setIntentVisual(
-        "art_input/assets/inventory/weapons/weapon_sword.png",
+        getClassRule().weapon,
         "assets/generated_ui/endgame/role_tank.png",
         "SCEGLI LA DIREZIONE<br>DEL TUO ATTACCO"
     );
@@ -2367,30 +2839,35 @@ function chooseWeapon() {
 function castAbility() {
     if (combat.phase !== "action") return;
     if (!canUseAction("ability")) {
-        setCombatStatus("MANA E RABBIA INSUFFICIENTI: usa arma o oggetto.");
+        setCombatStatus("RISORSE INSUFFICIENTI: usa arma o oggetto.");
         updateActionButtons();
         return;
     }
-    const usedMana = combat.mana >= actionCosts.ability.mana;
-    if (usedMana) {
-        combat.mana = Math.max(0, combat.mana - actionCosts.ability.mana);
-    } else {
-        combat.rage = Math.max(0, combat.rage - actionCosts.ability.rage);
-    }
+    const rule = getClassRule();
+    payAbilityCost();
     updateResources();
     combat.phase = "resolve-player";
     combat.playerAction = "ability";
     updateActionButtons("ability");
     setDpadActive(false);
     setTimer(62);
+    showPhaseCallout("ATTACCO", "attack");
     setIntentVisual(
-        "art_input/assets/ui/abilities/ability_sword_slash.png",
+        getAbilityIcon(),
         "assets/generated_ui/endgame/role_tank.png",
-        "ABILITA RAPIDA<br>DANNO GARANTITO"
+        `${rule.abilityName.toUpperCase()}<br>DANNO GARANTITO`
     );
     spawnFx("assets/generated_ui/combat_fx/fx_magic_projectile.png", "magic", 900, 318, 620);
     spawnFx("assets/generated_ui/combat_fx/fx_necromancy_particles.png", "magic", 1084, 290, 700);
-    const won = damageEnemy(18, usedMana ? "ABILITA: mana consumato, energia oscura sul bersaglio." : "ABILITA: rabbia consumata, colpo brutale sul bersaglio.");
+    if (rule.healsSelf) {
+        const before = combat.playerHp;
+        combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + rule.healsSelf);
+        playerState.hp = combat.playerHp;
+        updatePlayerHp();
+        showFloatingText(`+${combat.playerHp - before}`, 420, 360, "#7cf58a");
+        spawnFx("assets/generated_ui/combat_fx/fx_heal_sparkle.png", "heal", 378, 292, 700);
+    }
+    const won = damageEnemy(rule.damage, `ABILITA: ${rule.abilityName} colpisce il bersaglio.`);
     if (!won) window.setTimeout(startEnemyIntent, 720);
 }
 
@@ -2402,6 +2879,8 @@ function useItem() {
         return;
     }
     combat.potions = Math.max(0, combat.potions - 1);
+    playerState.potions = combat.potions;
+    saveGame();
     updateResources();
     combat.phase = "resolve-player";
     combat.playerAction = "item";
@@ -2415,6 +2894,8 @@ function useItem() {
     );
     const before = combat.playerHp;
     combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + 22);
+    playerState.hp = combat.playerHp;
+    saveGame();
     updatePlayerHp();
     const healed = combat.playerHp - before;
     spawnFx("assets/generated_ui/combat_fx/fx_heal_sparkle.png", "heal", 378, 292, 700);
@@ -2428,6 +2909,7 @@ function resolvePlayerDirection(dir) {
     combat.phase = "resolve-player";
     setDpadActive(false);
     setTimer(62);
+    showPhaseCallout("ATTACCO", "attack");
     const enemyGuard = enemyPatterns[(combat.turn + 1) % enemyPatterns.length].dir;
     const baseDamage = { up: 18, right: 24, down: 16, left: 20 }[dir] || 16;
     const blocked = dir === enemyGuard;
@@ -2439,7 +2921,7 @@ function resolvePlayerDirection(dir) {
         : glancing
             ? "COLPO DI STRISCIO: traiettoria sfavorevole, danno ridotto."
             : "COLPO PIENO: hai trovato un'apertura.";
-    playSpriteAnimation(playerSprite, spriteAnims.playerAttack, spriteDefaults.player);
+    if (spriteAnims.playerAttack) playSpriteAnimation(playerSprite, spriteAnims.playerAttack, spriteDefaults.player);
     spawnFx(
         blocked ? "assets/generated_ui/combat_fx/fx_shield_guard.png" : "assets/generated_ui/combat_fx/fx_sword_slash.png",
         blocked ? "guard" : "slash",
@@ -2459,6 +2941,7 @@ function startEnemyIntent() {
     setDpadActive(true, "defense");
     setEnemyTell(combat.enemyIntent.dir);
     setTimer(38);
+    showPhaseCallout("DIFESA", "defense");
     setIntentVisual(
         "art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png",
         "art_input/assets/inventory/weapons/weapon_shield.png",
@@ -2506,7 +2989,7 @@ function nextTurn() {
     setDpadActive(false);
     setTimer(100);
     setIntentVisual(
-        "art_input/assets/inventory/weapons/weapon_sword.png",
+        getClassRule().weapon,
         "assets/generated_ui/endgame/role_tank.png",
         "SCEGLI UNA AZIONE<br>PER IL NUOVO TURNO"
     );
@@ -2521,14 +3004,18 @@ function endCombat(won) {
     if (won) {
         playSpriteAnimation(enemySprite, spriteAnims.enemyDeath, spriteAnims.enemyDeath, { holdLast: true, frameMs: 95 });
     } else {
-        playSpriteAnimation(playerSprite, spriteAnims.playerDeath, spriteAnims.playerDeath, { holdLast: true, frameMs: 95 });
+        if (spriteAnims.playerDeath) playSpriteAnimation(playerSprite, spriteAnims.playerDeath, spriteAnims.playerDeath, { holdLast: true, frameMs: 95 });
     }
+    playerState.hp = won ? Math.max(1, combat.playerHp) : Math.max(1, Math.floor(playerState.maxHp * 0.45));
+    playerState.energy = combat.energy;
+    playerState.potions = combat.potions;
+    const rewardSummary = won ? grantReward(nodeRewards[selection.node] || nodeRewards.Combattimento, selection.node) : null;
     setIntentVisual(
         won ? "art_input/assets/inventory/loot/loot_rare.png" : "art_input/assets/ui/abilities/ability_necro_skull.png",
         won ? "assets/generated_ui/rewards/gold_coin_pile.png" : "art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png",
-        won ? "VITTORIA<br>RICOMPENSA PRONTA" : "SCONFITTA<br>RIPROVA IL NODO"
+        won ? "VITTORIA<br>LOOT OTTENUTO" : "SCONFITTA<br>RIPROVA IL NODO"
     );
-    setCombatStatus(won ? "VITTORIA: Necro Scheletro sconfitto." : "SCONFITTA: il gruppo cade in combattimento.");
+    setCombatStatus(won ? rewardSummary : "SCONFITTA: il gruppo cade in combattimento.");
 }
 
 function handleDirection(dir) {
