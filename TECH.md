@@ -57,9 +57,20 @@
 - Scale in-game: **0.21** (≈ 76×152px a schermo)
 - Naming: `{character}_{animation}_{nn}.png` (es. `main_character_idle_left_03.png`)
 
-**Convenzione direzioni** ⚠️ controintuitiva:
-- `idle` → guarda a **sinistra**
-- `idle_left` → guarda a **destra**
+**Convenzione direzioni** ⚠️ controintuitiva e **NON uniforme tra i set**:
+
+| Set | no-suffix | `_left` |
+|-----|-----------|---------|
+| `idle` | guarda **sinistra** | guarda **destra** |
+| `attack` / `hit` / `death` | guarda **destra** | guarda **sinistra** |
+
+L'artista ha esportato `idle` con convenzione invertita (`_left` = destra) e i set
+d'azione con convenzione intuitiva (`_left` = sinistra). Conseguenza per il codice:
+- **Player** (sinistra schermo, guarda destra): idle→`idle_left`; attack/hit/death→**no-suffix**
+- **Enemy** (destra schermo, guarda sinistra): idle→`idle`; attack/hit/death→**`_left`**
+
+> Questa incoerenza ha causato un bug di orientamento risolto nel commit `c12a82f`.
+> In futuro chiedere all'artista una convenzione uniforme su tutti i set.
 
 ---
 
@@ -99,6 +110,25 @@ Quattro container PixiJS in ordine di draw:
 - I floating numbers devono stare sopra i personaggi ma sotto i bottoni del panel
 - Il layer effects si autogestisce (ticker rimuove ogni elemento quando alpha → 0)
 
+### Timing animazioni: `setTimeout`, non ticker
+
+`playAnim(sprite, frameList, speed, cb)` riproduce un'animazione one-shot e chiama
+`cb` dopo `ms = frameList.length / speed / 60 * 1000`, schedulato con **`setTimeout`**.
+
+**Perché non usare `onComplete` di AnimatedSprite o un contatore sul ticker**:
+- `requestAnimationFrame` (e quindi il ticker PixiJS) è **throttled da Chrome nei tab
+  in background** → le animazioni non avanzano e i callback basati su ticker non
+  scattano, bloccando la catena di combattimento.
+- `setTimeout` continua a scattare a prescindere dal focus del tab: la **logica di
+  gioco** (danni, transizioni di fase) si completa sempre; solo l'avanzamento
+  **visivo** dei frame si ferma quando il tab non è in focus (limite di Chrome,
+  non aggirabile lato JS).
+
+**Fix collaterale `sharedTicker: true`** in `new PIXI.Application({...})`: di default
+`app.ticker !== PIXI.Ticker.shared`, mentre `AnimatedSprite.play()` usa lo shared
+ticker. Senza questa opzione le bobbing/float animation e i frame degli sprite
+giravano su ticker diversi, con disallineamenti. Ora condividono lo stesso ticker.
+
 ---
 
 ## 6. Canvas e Layout
@@ -123,11 +153,13 @@ Decisioni aperte che impatteranno l'implementazione:
 - [ ] Definire riduzione danno su parata (attuale: 85% fisico, 90% magico — da bilanciare)
 - [ ] Definire scaling per livello (lineare? esponenziale?)
 
-### Animazioni attacco (prossimo step)
-- [ ] Quanti frame per animazione `attack`? (suggerito: 4-6 frame)
-- [ ] L'attacco è un'animazione one-shot o loopping?
-- [ ] Flash bianco sul personaggio colpito (1-2 frame)?
-- [ ] Il personaggio avanza verso il nemico durante l'attacco o rimane fermo?
+### Animazioni attacco ✅ (implementate, commit `915d7b9` / `c12a82f`)
+- [x] Frame per animazione `attack`: **6** (come idle), one-shot non-looping
+- [x] Catena a 4 step in `resolveRound()`: player attack → enemy hit → enemy attack → player hit → resolution
+- [x] Animazioni `death` dedicate quando HP ≤ 0 (lo sprite resta sull'ultimo frame)
+- [x] Timing callback via `setTimeout` (non ticker) → robusto a tab in background
+- [ ] Flash bianco sul colpito: **non ancora** (rimane nella roadmap effetti visivi)
+- [ ] Avanzamento fisico verso il nemico: **no**, lo sprite resta a x fisso (l'affondo è solo nell'arte del frame)
 
 ### Risorse (Rabbia, Energia, Mana)
 - [ ] Rabbia: si accumula solo colpendo o anche ricevendo danno?
@@ -144,14 +176,15 @@ Decisioni aperte che impatteranno l'implementazione:
 
 ```
 [✓] Fase 0 — Combat demo funzionante con sprite
-[ ] Fase 1 — Animazioni attacco (frame hit + flash)
+[✓] Fase 1 — Animazioni attacco/hit/death (catena a 4 step)
 [ ] Fase 2 — Character selection screen
-[ ] Fase 3 — Mappa campagna a quadri
-[ ] Fase 4 — Refactor a Vite + moduli quando file cresce
-[ ] Fase 5 — Multiplayer (WebSocket o Colyseus)
-[ ] Fase 6 — Mobile responsive
+[ ] Fase 3 — Effetti visivi (flash bianco, particelle magiche)
+[ ] Fase 4 — Mappa campagna a quadri
+[ ] Fase 5 — Refactor a Vite + moduli quando file cresce
+[ ] Fase 6 — Multiplayer (WebSocket o Colyseus)
+[ ] Fase 7 — Mobile responsive
 ```
 
 ---
 
-*Documento aggiornato alla build iniziale del combat demo.*
+*Documento aggiornato dopo l'implementazione delle animazioni attacco/hit/death (commit `c12a82f`).*
