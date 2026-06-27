@@ -1,192 +1,113 @@
-# PetsQuest — Decisioni Tecniche
+# PetsQuest - Note Tecniche
 
-## 1. Renderer: PixiJS v7
+## Architettura Corrente
 
-**Scelta**: PixiJS v7.4.2 via CDN  
-**Alternativa scartata**: HTML/CSS/JS puro, Phaser.js, Kaboom.js
+Il prototipo corrente e' un'app statica in un solo file:
 
-**Perché PixiJS**:
-- WebGL-accelerated, ideale per pixel art con molti sprite
-- AnimatedSprite nativo — gestisce spritesheet e frame sequences senza librerie aggiuntive
-- Leggero rispetto a Phaser (nessun physics engine, tilemap engine, ecc. di cui non abbiamo bisogno)
-- Controllo fine sul rendering layer-by-layer
+- `index.html`: HTML, CSS e JavaScript inline.
+- Nessun bundler.
+- Nessuna dipendenza npm.
+- Avvio locale: `python3 -m http.server 8080`.
+- URL locale: `http://localhost:8080/index.html`.
 
-**Perché non Phaser**:
-- Overengineered per una demo: include physics, camera, tilemap, input system complessi
-- Passeremo a Phaser se la campagna a quadri richiede tilemap complesse
+Il layout usa una canvas logica HTML/CSS da `1640x920` scalata via `transform: scale(...)` per restare centrata nel viewport.
 
-**Versione bloccata a v7** (non v8) perché v8 ha API breaking changes e documentazione ancora immatura.
+## Schermate
 
----
+Le schermate sono sezioni `.screen` mostrate/nascoste via classe `.active`:
 
-## 2. Struttura: Single HTML File (per ora)
+- `race-screen`;
+- `campaign-screen`;
+- `combat-screen`;
+- `endgame-screen`.
 
-**Scelta**: tutto in `index.html` — HTML + CSS + JS inline  
-**Alternativa futura**: bundler (Vite) con file JS separati
+La navigazione e' gestita con attributi `data-go`.
 
-**Perché single file adesso**:
-- Zero setup, zero dipendenze locali
-- Deploy immediato su qualsiasi static host
-- Il progetto è ancora in fase di prototipo rapido
-- Facile da condividere e testare
+## Combat State
 
-**Quando passare a Vite + moduli**:
-- Quando `index.html` supera ~1500 righe
-- Quando aggiungiamo più schermate (character selection, mappa campagna)
-- Quando servirà un bundler per ottimizzare assets
+Lo stato combat vive nell'oggetto `combat`:
 
----
-
-## 3. Assets: PNG RGBA — Frame Singoli
-
-**Scelta**: frame PNG singoli caricati via `new Image()` → `PIXI.Texture.from(img)`  
-**Alternativa**: spritesheet JSON (TexturePacker) + `PIXI.Assets.load()`
-
-**Perché frame singoli**:
-- Già forniti così dall'artista
-- Funzionano con `file://` senza server HTTP (CORS-safe)
-- Più semplici da aggiungere/modificare animazione per animazione
-
-**Quando passare a spritesheet**:
-- In produzione, per ridurre le HTTP request (24+ immagini → 2-4 sheet)
-- Quando l'artista esporterà in formato TexturePacker
-
-**Formato sprite**:
-- Dimensione frame: **362 × 724 px** RGBA
-- Frame per animazione: **6**
-- Scale in-game: **0.21** (≈ 76×152px a schermo)
-- Naming: `{character}_{animation}_{nn}.png` (es. `main_character_idle_left_03.png`)
-
-**Convenzione direzioni** ⚠️ controintuitiva e **NON uniforme tra i set**:
-
-| Set | no-suffix | `_left` |
-|-----|-----------|---------|
-| `idle` | guarda **sinistra** | guarda **destra** |
-| `attack` | guarda **destra** ← invertito! | guarda **sinistra** |
-| `hit` | guarda **sinistra** | guarda **destra** |
-| `death` | guarda **sinistra** | guarda **destra** |
-
-Solo `attack` ha la convenzione invertita rispetto a `idle`. `hit` e `death` seguono
-la stessa convenzione di `idle`. Conseguenza per il codice:
-- **Player** (sinistra schermo, guarda destra): idle→`idle_left`; attack→`attack`; hit→`hitLeft`; death→`deathLeft`
-- **Enemy** (destra schermo, guarda sinistra): idle→`idle`; attack→`attackLeft`; hit→`hit`; death→`death`
-
-> Due bug di orientamento consecutivi (commit `c12a82f`, `0806d79`).
-> In futuro chiedere all'artista una convenzione uniforme su tutti i set.
-
----
-
-## 4. State Machine del Combat
-
-**Scelta**: state machine esplicita con `GS.phase` (stringa) + funzione `setPhase()`
-
-```
-'action' → 'dir_attack' ─────────┐
-         → 'magic_attack' ───────┼→ 'def_physical' → 'resolution' → 'action'
-         → (item, skip attack) ──┘  'def_magic'
+```js
+{
+  playerHp,
+  enemyHp,
+  rage,
+  mana,
+  energy,
+  potions,
+  phase,
+  turn,
+  awaitingDirection,
+  playerAction,
+  enemyIntent
+}
 ```
 
-**Perché non un framework di state machine**:
-- Il combat ha ~6 stati ben definiti, non vale la dipendenza
-- La transizione è sempre lineare (nessuna transizione parallela per ora)
+Fasi principali:
 
-**Timer**:
-- `setInterval` a 100ms (0.1s granularità) per il countdown
-- `stopTimer()` chiamato esplicitamente ad ogni transizione
-- Keyboard listener pulito ad ogni cambio fase per evitare listener duplicati
+- `action`: scelta tra arma, abilita' e oggetto;
+- `aim`: scelta direzione attacco arma;
+- `resolve-player`: risoluzione azione player;
+- `defense`: lettura segnale nemico e scelta difesa;
+- `resolve-enemy`: risoluzione attacco nemico;
+- `won` / `lost`.
 
----
+## Regole Risorse
 
-## 5. Layer di Rendering
+- Arma: costa `12 Energia`.
+- Abilita': costa `18 Mana`, oppure `24 Rabbia` se il Mana non basta.
+- Oggetto: consuma `1` pozione e cura `22 HP`.
+- Nuovo turno:
+  - `+10 Energia`;
+  - `+4 Mana`;
+  - `+8 Rabbia`.
 
-Quattro container PixiJS in ordine di draw:
+I pulsanti azione vengono disabilitati quando la risorsa richiesta non e' disponibile.
 
-| Layer | Contenuto | Si svuota? |
-|-------|-----------|-----------|
-| `L.bg` | Sfondo statico (cielo, luna, stelle, montagne) | Mai (disegnato una volta) |
-| `L.chars` | Sprite animati player e nemico | Solo a reset/game over |
-| `L.effects` | Floating damage, particelle, flash | Auto (ogni elemento si rimuove da solo) |
-| `L.ui` | HP bars, timer, panel, bottoni | Ad ogni `setPhase()` |
+## Direzioni Combat
 
-**Perché separare effects da ui**:
-- I floating numbers devono stare sopra i personaggi ma sotto i bottoni del panel
-- Il layer effects si autogestisce (ticker rimuove ogni elemento quando alpha → 0)
+Attacco player:
 
-### Timing animazioni: `setTimeout`, non ticker
+- direzione bloccata dal nemico: danno `0`, feedback parata;
+- direzione opposta alla guardia: danno ridotto;
+- altra direzione: danno pieno.
 
-`playAnim(sprite, frameList, speed, cb)` riproduce un'animazione one-shot e chiama
-`cb` dopo `ms = frameList.length / speed / 60 * 1000`, schedulato con **`setTimeout`**.
+Difesa player:
 
-**Perché non usare `onComplete` di AnimatedSprite o un contatore sul ticker**:
-- `requestAnimationFrame` (e quindi il ticker PixiJS) è **throttled da Chrome nei tab
-  in background** → le animazioni non avanzano e i callback basati su ticker non
-  scattano, bloccando la catena di combattimento.
-- `setTimeout` continua a scattare a prescindere dal focus del tab: la **logica di
-  gioco** (danni, transizioni di fase) si completa sempre; solo l'avanzamento
-  **visivo** dei frame si ferma quando il tab non è in focus (limite di Chrome,
-  non aggirabile lato JS).
+- il nemico usa pattern fisici con direzione e segnale testuale;
+- la UI mostra un indizio semi-telegrafato e una freccia evidenziata;
+- difesa corretta: danno ridotto;
+- difesa errata: danno pieno.
 
-**Fix collaterale `sharedTicker: true`** in `new PIXI.Application({...})`: di default
-`app.ticker !== PIXI.Ticker.shared`, mentre `AnimatedSprite.play()` usa lo shared
-ticker. Senza questa opzione le bobbing/float animation e i frame degli sprite
-giravano su ticker diversi, con disallineamenti. Ora condividono lo stesso ticker.
+## Asset
 
----
+Il prototipo legge gli asset da:
 
-## 6. Canvas e Layout
+- `assets/generated_ui/`: frame UI, D-pad, FX, rewards, endgame, campaign;
+- `assets/sprites/`: animazioni personaggio e nemico;
+- `assets/backgrounds/`: sfondi;
+- `assets/ui/`: icone risorsa e abilita';
+- `assets/inventory/`: armi e pozioni.
 
-**Dimensioni**: `820 × 640 px`  
-**Battle area**: `400 px` di altezza (BATTLE_H)  
-**Panel azioni**: `240 px` di altezza (H - BATTLE_H)
+Nel repository GitHub gli asset sorgente sono disponibili sotto `art_input/assets/`; per questo, quando si sincronizza `index.html` dal progetto locale al repo GitHub, i path `assets/...` non generati devono puntare ad `art_input/assets/...`.
 
-**Scaling responsivo**: CSS `transform: scale()` sul wrapper, calcolato su `window.innerWidth`  
-→ il canvas non cambia risoluzione, scala solo visivamente (pixel art rimane nitido)
+## Verifica Manuale Corrente
 
-**Font**: Press Start 2P (Google Fonts) — caricato e atteso (`document.fonts.load()`) prima di inizializzare PixiJS per evitare FOUT sui testi
+Eseguita nel browser locale:
 
----
+- caricamento senza immagini mancanti;
+- nessun errore console;
+- `ARMA` consuma Energia;
+- `ABILITA` consuma Mana;
+- `OGGETTO` consuma la pozione e poi resta disabilitato;
+- hit pieno, danno ridotto e parata/miss funzionano;
+- difesa semi-telegrafata senza testo esplicito della direzione.
 
-## 7. Scelte di Gameplay da Tradurre in Codice
+## Roadmap Tecnica
 
-Decisioni aperte che impatteranno l'implementazione:
-
-### Danni e Stats
-- [ ] Definire formula danno base per classe (attacco fisico vs magico)
-- [ ] Definire riduzione danno su parata (attuale: 85% fisico, 90% magico — da bilanciare)
-- [ ] Definire scaling per livello (lineare? esponenziale?)
-
-### Animazioni attacco ✅ (implementate, commit `915d7b9` / `c12a82f`)
-- [x] Frame per animazione `attack`: **6** (come idle), one-shot non-looping
-- [x] Catena a 4 step in `resolveRound()`: player attack → enemy hit → enemy attack → player hit → resolution
-- [x] Animazioni `death` dedicate quando HP ≤ 0 (lo sprite resta sull'ultimo frame)
-- [x] Timing callback via `setTimeout` (non ticker) → robusto a tab in background
-- [ ] Flash bianco sul colpito: **non ancora** (rimane nella roadmap effetti visivi)
-- [ ] Avanzamento fisico verso il nemico: **no**, lo sprite resta a x fisso (l'affondo è solo nell'arte del frame)
-
-### Risorse (Rabbia, Energia, Mana)
-- [ ] Rabbia: si accumula solo colpendo o anche ricevendo danno?
-- [ ] Energia: quanto si rigenera per turno?
-- [ ] Mana: si recupera fuori combattimento o solo con oggetti?
-
-### Sequenza magica
-- [ ] La sequenza nemica è visibile durante la fase azione o solo nella difesa?
-- [ ] L'ordine scelto dal player cambia il tipo di effetto (es. 1→2→3→4 = fuoco, 4→3→2→1 = ghiaccio)?
-
----
-
-## 8. Roadmap Tecnica
-
-```
-[✓] Fase 0 — Combat demo funzionante con sprite
-[✓] Fase 1 — Animazioni attacco/hit/death (catena a 4 step)
-[ ] Fase 2 — Character selection screen
-[ ] Fase 3 — Effetti visivi (flash bianco, particelle magiche)
-[ ] Fase 4 — Mappa campagna a quadri
-[ ] Fase 5 — Refactor a Vite + moduli quando file cresce
-[ ] Fase 6 — Multiplayer (WebSocket o Colyseus)
-[ ] Fase 7 — Mobile responsive
-```
-
----
-
-*Documento aggiornato dopo l'implementazione delle animazioni attacco/hit/death (commit `c12a82f`).*
+- Separare JS/CSS da `index.html` quando il prototipo smette di essere mock/demo.
+- Introdurre un piccolo state manager per combat e campagna.
+- Estrarre dati bilanciamento in JSON.
+- Implementare sequenze magiche e target cura.
+- Persistenza scelta razza/classe.
+- Preparazione a Vite o altro bundler solo quando serve build reale.

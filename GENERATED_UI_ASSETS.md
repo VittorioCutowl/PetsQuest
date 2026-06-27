@@ -148,3 +148,15 @@ assets/generated_ui/
 - `combat_fx`: effetti visuali e controlli per combattimento fisico/magico/difensivo.
 - `rewards`: vittoria, level up, barre EXP, rarita' e slot ricompensa.
 - `endgame`: hub endgame, matchmaking, ruoli party, portali modalita' e badge stagione.
+
+## Integrazione Corrente Nel Prototipo
+
+Il prototipo `index.html` usa gia' il pacchetto `assets/generated_ui/` per:
+
+- frecce D-pad, timer, glow selezione azione ed effetti combat;
+- icone ruolo/difesa e asset vittoria/ricompensa;
+- nodi, banner e marker della campagna;
+- elementi visuali endgame come portali, ruoli, badge e trofeo;
+- frame, card e stati selezione per mantenere la UI coerente con le anteprime prodotte.
+
+Le animazioni personaggio e nemico usate dal combat arrivano invece da `assets/sprites/`, mentre sfondi, inventario e risorse arrivano dai rispettivi pacchetti `assets/backgrounds/`, `assets/inventory/` e `assets/ui/`.

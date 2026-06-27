@@ -748,6 +748,13 @@
             text-shadow: 0 3px 0 #27130a;
         }
 
+        .mini-resource .label span {
+            float: right;
+            color: #fff2c4;
+            font-size: 13px;
+            margin-top: 2px;
+        }
+
         .segbar {
             display: grid;
             grid-template-columns: repeat(8, 1fr);
@@ -758,10 +765,17 @@
             border: 3px solid #593a19;
         }
 
-        .segbar i {
+        .segbar i,
+        .segbar span {
             display: block;
             background: #a13a24;
             box-shadow: inset 0 3px rgba(255,255,255,0.2);
+        }
+
+        .segbar span,
+        .segbar .empty {
+            background: #151015;
+            box-shadow: inset 0 0 0 1px rgba(124, 76, 37, 0.72);
         }
 
         .mini-resource.mana .segbar i { background: #258ed0; }
@@ -796,6 +810,19 @@
             font-size: 24px;
             color: #fff2c4;
             text-shadow: 0 4px 0 #2b170d;
+        }
+
+        .action-card small {
+            position: absolute;
+            right: 12px;
+            top: 10px;
+            min-width: 58px;
+            padding: 5px 8px;
+            border: 2px solid #d69b42;
+            background: rgba(5, 9, 13, 0.82);
+            color: #ffd870;
+            font-size: 10px;
+            text-align: center;
         }
 
         .action-card:hover { filter: brightness(1.12); }
@@ -903,6 +930,13 @@
             filter: hue-rotate(145deg) saturate(1.22) drop-shadow(0 0 8px rgba(88, 195, 255, 0.36));
         }
 
+        .dpad.tell-up .up,
+        .dpad.tell-right .right,
+        .dpad.tell-down .down,
+        .dpad.tell-left .left {
+            animation: tellPulse 760ms ease-in-out infinite;
+        }
+
         .dpad:not(.locked) img:hover {
             filter: brightness(1.35) drop-shadow(0 0 12px rgba(255, 216, 112, 0.8));
         }
@@ -912,6 +946,11 @@
         .dpad .left { left: 0; top: 38px; }
         .dpad .right { right: 0; top: 38px; }
         .dpad .center { display: none; }
+
+        @keyframes tellPulse {
+            0%, 100% { transform: scale(1); filter: hue-rotate(145deg) saturate(1.1) brightness(0.95); }
+            50% { transform: scale(1.16); filter: hue-rotate(145deg) saturate(1.7) brightness(1.45) drop-shadow(0 0 12px rgba(111, 205, 255, 0.72)); }
+        }
 
         .direction-copy {
             display: grid;
@@ -1398,14 +1437,14 @@
 
             <div class="combat-panel panel">
                 <div class="resource-bars panel">
-                    <div class="mini-resource rage"><img class="small-icon" src="art_input/assets/ui/resources/resource_rage.png" alt=""><div><div class="label">RABBIA</div><div class="segbar"><i></i><i></i><i></i><i></i><i></i><span></span><span></span><span></span></div></div></div>
-                    <div class="mini-resource mana"><img class="small-icon" src="art_input/assets/ui/resources/resource_mana.png" alt=""><div><div class="label">MANA</div><div class="segbar"><i></i><i></i><i></i><i></i><i></i><span></span><span></span><span></span></div></div></div>
-                    <div class="mini-resource energy"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><div><div class="label">ENERGIA</div><div class="segbar"><i></i><i></i><i></i><i></i><i></i><i></i><span></span><span></span></div></div></div>
+                    <div class="mini-resource rage"><img class="small-icon" src="art_input/assets/ui/resources/resource_rage.png" alt=""><div><div class="label">RABBIA <span id="rage-value">50 / 80</span></div><div id="rage-bar" class="segbar"><i></i><i></i><i></i><i></i><i></i><span></span><span></span><span></span></div></div></div>
+                    <div class="mini-resource mana"><img class="small-icon" src="art_input/assets/ui/resources/resource_mana.png" alt=""><div><div class="label">MANA <span id="mana-value">40 / 60</span></div><div id="mana-bar" class="segbar"><i></i><i></i><i></i><i></i><i></i><span></span><span></span><span></span></div></div></div>
+                    <div class="mini-resource energy"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><div><div class="label">ENERGIA <span id="energy-value">70 / 80</span></div><div id="energy-bar" class="segbar"><i></i><i></i><i></i><i></i><i></i><i></i><span></span><span></span></div></div></div>
                 </div>
                 <div class="action-cards">
-                    <button class="action-card panel" data-action="weapon"><img src="art_input/assets/inventory/weapons/weapon_sword.png" alt=""><strong>ARMA</strong></button>
-                    <button class="action-card panel" data-action="ability"><img src="art_input/assets/ui/abilities/ability_necro_skull.png" alt=""><strong>ABILITA</strong></button>
-                    <button class="action-card panel" data-action="item"><img src="art_input/assets/inventory/potions/hp_potion.png" alt=""><strong>OGGETTO</strong></button>
+                    <button class="action-card panel" data-action="weapon"><small>-12 EN</small><img src="art_input/assets/inventory/weapons/weapon_sword.png" alt=""><strong>ARMA</strong></button>
+                    <button class="action-card panel" data-action="ability"><small>18 MA<br>24 RA</small><img src="art_input/assets/ui/abilities/ability_necro_skull.png" alt=""><strong>ABILITA</strong></button>
+                    <button class="action-card panel" data-action="item"><small id="potion-count">x1</small><img src="art_input/assets/inventory/potions/hp_potion.png" alt=""><strong>OGGETTO</strong></button>
                 </div>
                 <div class="direction-panel panel">
                     <div class="dpad locked">
@@ -1618,11 +1657,23 @@ const combat = {
     playerMaxHp: 150,
     enemyHp: 96,
     enemyMaxHp: 120,
+    rage: 50,
+    rageMax: 80,
+    mana: 40,
+    manaMax: 60,
+    energy: 70,
+    energyMax: 80,
+    potions: 1,
     phase: "action",
     turn: 1,
     awaitingDirection: false,
     playerAction: null,
     enemyIntent: null,
+};
+
+const actionCosts = {
+    weapon: { energy: 12 },
+    ability: { mana: 18, rage: 24 },
 };
 
 const combatStatus = document.getElementById("combat-status");
@@ -1640,6 +1691,13 @@ const intentRightIcon = document.getElementById("intent-right-icon");
 const actionButtons = [...document.querySelectorAll("[data-action]")];
 const playerSprite = document.querySelector(".combat-sprite.player");
 const enemySprite = document.querySelector(".combat-sprite.enemy");
+const rageBar = document.getElementById("rage-bar");
+const manaBar = document.getElementById("mana-bar");
+const energyBar = document.getElementById("energy-bar");
+const rageValue = document.getElementById("rage-value");
+const manaValue = document.getElementById("mana-value");
+const energyValue = document.getElementById("energy-value");
+const potionCount = document.getElementById("potion-count");
 
 const spriteDefaults = {
     player: "art_input/assets/sprites/main_character/idle_left/main_character_idle_left",
@@ -1664,11 +1722,18 @@ const dirNames = {
     left: "SINISTRA",
 };
 
+const oppositeDirs = {
+    up: "down",
+    right: "left",
+    down: "up",
+    left: "right",
+};
+
 const enemyPatterns = [
-    { dir: "right", label: "Affondo d'ossa", damage: 18 },
-    { dir: "up", label: "Colpo alto", damage: 16 },
-    { dir: "left", label: "Fendente laterale", damage: 20 },
-    { dir: "down", label: "Spazzata bassa", damage: 14 },
+    { dir: "right", label: "Affondo d'ossa", tell: "Spalla armata in avanti", damage: 18 },
+    { dir: "up", label: "Colpo alto", tell: "Lama sollevata", damage: 16 },
+    { dir: "left", label: "Fendente laterale", tell: "Passo di lato", damage: 20 },
+    { dir: "down", label: "Spazzata bassa", tell: "Peso sulle ginocchia", damage: 14 },
 ];
 
 function setCombatStatus(text) {
@@ -1690,6 +1755,31 @@ function updatePlayerHp() {
     playerHpText.textContent = `${combat.playerHp} / ${combat.playerMaxHp}`;
 }
 
+function updateResourceBar(bar, current, max) {
+    if (!bar) return;
+    const filled = Math.round((Math.max(0, current) / max) * 8);
+    [...bar.children].forEach((segment, index) => {
+        segment.classList.toggle("empty", index >= filled);
+    });
+}
+
+function canUseAction(action) {
+    if (action === "weapon") return combat.energy >= actionCosts.weapon.energy;
+    if (action === "ability") return combat.mana >= actionCosts.ability.mana || combat.rage >= actionCosts.ability.rage;
+    if (action === "item") return combat.potions > 0 && combat.playerHp < combat.playerMaxHp;
+    return true;
+}
+
+function updateResources() {
+    updateResourceBar(rageBar, combat.rage, combat.rageMax);
+    updateResourceBar(manaBar, combat.mana, combat.manaMax);
+    updateResourceBar(energyBar, combat.energy, combat.energyMax);
+    if (rageValue) rageValue.textContent = `${combat.rage} / ${combat.rageMax}`;
+    if (manaValue) manaValue.textContent = `${combat.mana} / ${combat.manaMax}`;
+    if (energyValue) energyValue.textContent = `${combat.energy} / ${combat.energyMax}`;
+    if (potionCount) potionCount.textContent = `x${combat.potions}`;
+}
+
 function setTimer(percent) {
     if (timerFill) timerFill.style.width = `${percent}%`;
 }
@@ -1698,14 +1788,16 @@ function setDpadActive(active, mode = "attack") {
     if (!dpad) return;
     dpad.classList.toggle("locked", !active);
     dpad.classList.toggle("defense", active && mode === "defense");
+    if (!active || mode !== "defense") clearEnemyTell();
     combat.awaitingDirection = active;
 }
 
 function updateActionButtons(selectedAction = null) {
     const locked = combat.phase !== "action";
     actionButtons.forEach(button => {
+        const unavailable = !locked && !canUseAction(button.dataset.action);
         button.classList.toggle("selected", button.dataset.action === selectedAction);
-        button.classList.toggle("disabled", locked && button.dataset.action !== selectedAction);
+        button.classList.toggle("disabled", (locked && button.dataset.action !== selectedAction) || unavailable);
     });
 }
 
@@ -1713,6 +1805,16 @@ function setIntentVisual(leftSrc, rightSrc, hint) {
     if (intentLeftIcon) intentLeftIcon.src = leftSrc;
     if (intentRightIcon) intentRightIcon.src = rightSrc;
     if (directionHint) directionHint.innerHTML = hint;
+}
+
+function clearEnemyTell() {
+    if (!dpad) return;
+    dpad.classList.remove("tell-up", "tell-right", "tell-down", "tell-left");
+}
+
+function setEnemyTell(dir) {
+    clearEnemyTell();
+    if (dpad && dir) dpad.classList.add(`tell-${dir}`);
 }
 
 function setSpriteIdle(sprite, stem) {
@@ -1779,6 +1881,10 @@ function spawnFx(src, className, x, y, duration = 560) {
 function startCombat() {
     combat.playerHp = 124;
     combat.enemyHp = 96;
+    combat.rage = 50;
+    combat.mana = 40;
+    combat.energy = 70;
+    combat.potions = 1;
     combat.phase = "action";
     combat.turn = 1;
     combat.playerAction = null;
@@ -1787,6 +1893,7 @@ function startCombat() {
     setSpriteIdle(enemySprite, spriteDefaults.enemy);
     updatePlayerHp();
     updateEnemyHp();
+    updateResources();
     updateActionButtons();
     setDpadActive(false);
     setTimer(100);
@@ -1819,17 +1926,17 @@ function showFloatingText(text, x, y, color = "#ffd86f") {
     window.setTimeout(() => pop.remove(), 760);
 }
 
-function damageEnemy(amount, label, x = 1180, y = 360) {
+function damageEnemy(amount, label, x = 1180, y = 360, resultText = null) {
     if (combat.enemyHp <= 0) return;
     combat.enemyHp = Math.max(0, combat.enemyHp - amount);
     updateEnemyHp();
     if (amount > 0) {
         playSpriteAnimation(enemySprite, spriteAnims.enemyHit, spriteDefaults.enemy);
         spawnFx("assets/generated_ui/combat_fx/fx_hit_flash.png", "hit", x - 38, y - 70);
-        showFloatingText(`-${amount}`, x, y, "#ffd86f");
+        showFloatingText(resultText || `-${amount}`, x, y, "#ffd86f");
     } else {
         spawnFx("assets/generated_ui/combat_fx/fx_shield_guard.png", "guard", x - 36, y - 62);
-        showFloatingText("PARATO", x - 24, y, "#9ed7ff");
+        showFloatingText(resultText || "PARATO", x - 24, y, "#9ed7ff");
     }
     if (combat.enemyHp <= 0) {
         endCombat(true);
@@ -1859,6 +1966,13 @@ function damagePlayer(amount, blocked) {
 
 function chooseWeapon() {
     if (combat.phase !== "action") return;
+    if (!canUseAction("weapon")) {
+        setCombatStatus("ENERGIA INSUFFICIENTE: scegli un'altra azione.");
+        updateActionButtons();
+        return;
+    }
+    combat.energy = Math.max(0, combat.energy - actionCosts.weapon.energy);
+    updateResources();
     combat.phase = "aim";
     combat.playerAction = "weapon";
     updateActionButtons("weapon");
@@ -1869,11 +1983,23 @@ function chooseWeapon() {
         "assets/generated_ui/endgame/role_tank.png",
         "SCEGLI LA DIREZIONE<br>DEL TUO ATTACCO"
     );
-    setCombatStatus(`TURNO ${combat.turn}: scegli la direzione del colpo.`);
+    setCombatStatus(`TURNO ${combat.turn}: energia consumata. Scegli la direzione del colpo.`);
 }
 
 function castAbility() {
     if (combat.phase !== "action") return;
+    if (!canUseAction("ability")) {
+        setCombatStatus("MANA E RABBIA INSUFFICIENTI: usa arma o oggetto.");
+        updateActionButtons();
+        return;
+    }
+    const usedMana = combat.mana >= actionCosts.ability.mana;
+    if (usedMana) {
+        combat.mana = Math.max(0, combat.mana - actionCosts.ability.mana);
+    } else {
+        combat.rage = Math.max(0, combat.rage - actionCosts.ability.rage);
+    }
+    updateResources();
     combat.phase = "resolve-player";
     combat.playerAction = "ability";
     updateActionButtons("ability");
@@ -1886,12 +2012,19 @@ function castAbility() {
     );
     spawnFx("assets/generated_ui/combat_fx/fx_magic_projectile.png", "magic", 900, 318, 620);
     spawnFx("assets/generated_ui/combat_fx/fx_necromancy_particles.png", "magic", 1084, 290, 700);
-    const won = damageEnemy(18, "ABILITA: energia oscura sul bersaglio.");
+    const won = damageEnemy(18, usedMana ? "ABILITA: mana consumato, energia oscura sul bersaglio." : "ABILITA: rabbia consumata, colpo brutale sul bersaglio.");
     if (!won) window.setTimeout(startEnemyIntent, 720);
 }
 
 function useItem() {
     if (combat.phase !== "action") return;
+    if (!canUseAction("item")) {
+        setCombatStatus(combat.potions <= 0 ? "NESSUNA POZIONE: scegli un'altra azione." : "HP GIA PIENI: la pozione non serve ora.");
+        updateActionButtons();
+        return;
+    }
+    combat.potions = Math.max(0, combat.potions - 1);
+    updateResources();
     combat.phase = "resolve-player";
     combat.playerAction = "item";
     updateActionButtons("item");
@@ -1908,7 +2041,7 @@ function useItem() {
     const healed = combat.playerHp - before;
     spawnFx("assets/generated_ui/combat_fx/fx_heal_sparkle.png", "heal", 378, 292, 700);
     showFloatingText(healed > 0 ? `+${healed}` : "MAX", 420, 360, "#7cf58a");
-    setCombatStatus(healed > 0 ? "POZIONE: HP recuperati. Preparati alla difesa." : "POZIONE: HP gia pieni. Preparati alla difesa.");
+    setCombatStatus(healed > 0 ? `POZIONE: +${healed} HP. Preparati alla difesa.` : "POZIONE: HP gia pieni. Preparati alla difesa.");
     window.setTimeout(startEnemyIntent, 720);
 }
 
@@ -1918,15 +2051,25 @@ function resolvePlayerDirection(dir) {
     setDpadActive(false);
     setTimer(62);
     const enemyGuard = enemyPatterns[(combat.turn + 1) % enemyPatterns.length].dir;
-    const blocked = dir === enemyGuard;
     const baseDamage = { up: 18, right: 24, down: 16, left: 20 }[dir] || 16;
-    const damage = blocked ? Math.ceil(baseDamage * 0.42) : baseDamage;
+    const blocked = dir === enemyGuard;
+    const glancing = oppositeDirs[dir] === enemyGuard;
+    const damage = blocked ? 0 : glancing ? Math.ceil(baseDamage * 0.48) : baseDamage;
+    const resultText = blocked ? "PARATO" : glancing ? `-${damage}` : `-${damage}`;
     const label = blocked
-        ? `COLPO ${dirNames[dir]}: il nemico para, danno ridotto.`
-        : `COLPO ${dirNames[dir]}: attacco riuscito.`;
+        ? "COLPO MANCATO: hai colpito la guardia del nemico."
+        : glancing
+            ? "COLPO DI STRISCIO: traiettoria sfavorevole, danno ridotto."
+            : "COLPO PIENO: hai trovato un'apertura.";
     playSpriteAnimation(playerSprite, spriteAnims.playerAttack, spriteDefaults.player);
-    spawnFx("assets/generated_ui/combat_fx/fx_sword_slash.png", "slash", 1048, 278, 620);
-    const won = damageEnemy(damage, label);
+    spawnFx(
+        blocked ? "assets/generated_ui/combat_fx/fx_shield_guard.png" : "assets/generated_ui/combat_fx/fx_sword_slash.png",
+        blocked ? "guard" : "slash",
+        1048,
+        278,
+        620
+    );
+    const won = damageEnemy(damage, label, 1180, 360, resultText);
     if (!won) window.setTimeout(startEnemyIntent, 820);
 }
 
@@ -1936,19 +2079,21 @@ function startEnemyIntent() {
     combat.enemyIntent = enemyPatterns[(combat.turn - 1) % enemyPatterns.length];
     updateActionButtons();
     setDpadActive(true, "defense");
+    setEnemyTell(combat.enemyIntent.dir);
     setTimer(38);
     setIntentVisual(
         "art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png",
         "art_input/assets/inventory/weapons/weapon_shield.png",
-        `DIFENDI ${dirNames[combat.enemyIntent.dir]}<br>DAL ${combat.enemyIntent.label.toUpperCase()}`
+        `${combat.enemyIntent.tell.toUpperCase()}<br>LEGGI IL SEGNALE`
     );
-    setCombatStatus(`DIFESA: il Necro Scheletro attacca verso ${dirNames[combat.enemyIntent.dir]}.`);
+    setCombatStatus(`DIFESA: il Necro Scheletro prepara ${combat.enemyIntent.label}.`);
 }
 
 function resolveDefense(dir) {
     if (combat.phase !== "defense" || !combat.enemyIntent) return;
     combat.phase = "resolve-enemy";
     setDpadActive(false);
+    clearEnemyTell();
     setTimer(18);
     const blocked = dir === combat.enemyIntent.dir;
     const damage = blocked ? Math.max(4, Math.floor(combat.enemyIntent.damage * 0.35)) : combat.enemyIntent.damage;
@@ -1964,7 +2109,7 @@ function resolveDefense(dir) {
         );
         const lost = damagePlayer(damage, blocked);
         if (lost) return;
-        setCombatStatus(blocked ? `DIFESA ${dirNames[dir]} riuscita: danno ridotto.` : `DIFESA sbagliata: subisci ${damage} danni.`);
+        setCombatStatus(blocked ? "DIFESA RIUSCITA: hai letto il segnale, danno ridotto." : `DIFESA SBAGLIATA: subisci ${damage} danni.`);
         window.setTimeout(nextTurn, 700);
     }, 560);
 }
@@ -1972,10 +2117,14 @@ function resolveDefense(dir) {
 function nextTurn() {
     if (combat.enemyHp <= 0 || combat.playerHp <= 0) return;
     combat.turn += 1;
+    combat.energy = Math.min(combat.energyMax, combat.energy + 10);
+    combat.mana = Math.min(combat.manaMax, combat.mana + 4);
+    combat.rage = Math.min(combat.rageMax, combat.rage + 8);
     combat.phase = "action";
     combat.playerAction = null;
     combat.enemyIntent = null;
     updateActionButtons();
+    updateResources();
     setDpadActive(false);
     setTimer(100);
     setIntentVisual(
