@@ -75,4 +75,4 @@ Prima di committare sul repo GitHub, trasformare i path non `assets/generated_ui
 - `SPECS.md`: specifiche MVP e stato gameplay.
 - `TECH.md`: architettura tecnica corrente.
 - `GENERATED_UI_ASSETS.md`: manifest asset UI generati.
-- `CLAUDE.md`: note operative per agenti.
+- `AGENTS.md`: note operative per agenti.
