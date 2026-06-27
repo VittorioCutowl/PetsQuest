@@ -598,16 +598,16 @@
         .fighter-card.enemy .portrait::after {
             content: "";
             position: absolute;
-            right: -6px;
-            bottom: -6px;
-            width: 50px;
-            height: 50px;
+            right: 2px;
+            bottom: 2px;
+            width: 36px;
+            height: 36px;
             background: url("art_input/assets/inventory/weapons/weapon_shield.png") center / contain no-repeat;
             filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.55));
         }
 
         .fighter-card.enemy .portrait::after {
-            left: -6px;
+            left: 2px;
             right: auto;
             background-image: url("art_input/assets/ui/abilities/ability_necro_skull.png");
         }
@@ -616,18 +616,18 @@
         .fighter-card.enemy .portrait { right: 0; }
 
         .portrait img {
-            width: 182px;
-            height: 182px;
+            width: 170px;
+            height: 170px;
             object-fit: contain;
-            object-position: center bottom;
+            object-position: center center;
             image-rendering: pixelated;
-            transform: scale(1.52) translateY(8px);
+            transform: scale(1.42) translate(-5px, -3px);
         }
 
         .fighter-card.enemy .portrait img {
-            width: 174px;
-            height: 174px;
-            transform: scale(1.68) translateY(10px);
+            width: 168px;
+            height: 168px;
+            transform: scale(1.46) translate(-7px, -3px);
         }
 
         .stat-block {
@@ -804,13 +804,29 @@
             filter: brightness(1.22) drop-shadow(0 0 12px rgba(255, 216, 112, 0.55));
         }
 
+        .action-card.selected::after {
+            content: "";
+            position: absolute;
+            inset: 4px;
+            background: url("assets/generated_ui/combat_fx/selected_action_glow.png") center / 100% 100% no-repeat;
+            opacity: 0.42;
+            pointer-events: none;
+        }
+
+        .action-card.disabled {
+            filter: grayscale(0.72) brightness(0.62);
+            cursor: default;
+        }
+
         .direction-panel {
             position: relative;
             display: grid;
-            grid-template-columns: 156px 1fr;
+            grid-template-columns: 146px 1fr;
+            grid-template-rows: 1fr auto;
             align-items: center;
-            gap: 26px;
-            padding: 46px 20px 22px;
+            row-gap: 10px;
+            column-gap: 18px;
+            padding: 58px 24px 12px;
             height: 250px;
         }
 
@@ -832,10 +848,26 @@
             box-shadow: inset 0 0 0 2px #a8722e, inset 0 0 0 4px #e9bd61;
         }
 
+        .phase-banner {
+            position: static;
+            grid-column: 1 / -1;
+            min-height: 30px;
+            display: grid;
+            place-items: center;
+            padding: 4px 12px;
+            color: #ffe5a6;
+            font-size: 9px;
+            line-height: 1.25;
+            text-align: center;
+            background: rgba(5, 9, 13, 0.72);
+            border: 2px solid #5c3a19;
+            text-shadow: 0 2px 0 #160b08;
+        }
+
         .dpad {
             position: relative;
-            width: 142px;
-            height: 142px;
+            width: 120px;
+            height: 120px;
             justify-self: center;
             align-self: center;
         }
@@ -845,8 +877,8 @@
             position: absolute;
             left: 50%;
             top: 50%;
-            width: 34px;
-            height: 34px;
+            width: 30px;
+            height: 30px;
             transform: translate(-50%, -50%);
             border: 3px solid #17100d;
             background: radial-gradient(circle, #2b3642 0 38%, #0c1218 40% 100%);
@@ -855,8 +887,8 @@
 
         .dpad img {
             position: absolute;
-            width: 52px;
-            height: 52px;
+            width: 44px;
+            height: 44px;
             object-fit: contain;
             filter: drop-shadow(0 0 8px rgba(255,216,112,0.24));
             cursor: pointer;
@@ -867,33 +899,45 @@
             filter: grayscale(0.55) brightness(0.7);
         }
 
+        .dpad.defense img {
+            filter: hue-rotate(145deg) saturate(1.22) drop-shadow(0 0 8px rgba(88, 195, 255, 0.36));
+        }
+
         .dpad:not(.locked) img:hover {
             filter: brightness(1.35) drop-shadow(0 0 12px rgba(255, 216, 112, 0.8));
         }
 
-        .dpad .up { left: 45px; top: 0; }
-        .dpad .down { left: 45px; bottom: 0; }
-        .dpad .left { left: 0; top: 45px; }
-        .dpad .right { right: 0; top: 45px; }
+        .dpad .up { left: 38px; top: 0; }
+        .dpad .down { left: 38px; bottom: 0; }
+        .dpad .left { left: 0; top: 38px; }
+        .dpad .right { right: 0; top: 38px; }
         .dpad .center { display: none; }
 
         .direction-copy {
             display: grid;
-            grid-template-columns: 88px 54px 88px;
+            grid-template-columns: 74px 38px 74px;
             align-items: center;
             justify-content: center;
-            gap: 18px;
+            column-gap: 12px;
+            row-gap: 4px;
+            align-self: center;
+            justify-self: center;
+            min-width: 286px;
         }
 
-        .direction-copy img { width: 88px; height: 88px; object-fit: contain; }
-        .direction-copy .arrow { color: #d89933; font-size: 40px; }
+        .direction-copy img { width: 74px; height: 74px; object-fit: contain; }
+        .direction-copy .arrow { color: #d89933; font-size: 30px; }
         .direction-copy p {
             grid-column: 1 / -1;
-            margin: 8px 0 0;
-            font-size: 14px;
-            line-height: 1.6;
+            margin: 2px 0 0;
+            font-size: 11px;
+            line-height: 1.32;
             color: #f7dfb0;
             text-align: center;
+        }
+
+        .direction-copy img.intent {
+            filter: drop-shadow(0 0 12px rgba(255, 216, 112, 0.34));
         }
 
         .timer-strip {
@@ -949,6 +993,46 @@
             font-size: 28px;
             text-shadow: 0 4px 0 #40120c;
             animation: popDamage 720ms ease-out forwards;
+        }
+
+        .combat-fx {
+            position: absolute;
+            z-index: 11;
+            width: 150px;
+            height: 150px;
+            object-fit: contain;
+            image-rendering: pixelated;
+            pointer-events: none;
+            animation: fxBurst 520ms ease-out forwards;
+        }
+
+        .combat-fx.slash { width: 190px; height: 190px; }
+        .combat-fx.magic { width: 126px; height: 126px; animation-name: fxTravel; }
+        .combat-fx.heal { width: 138px; height: 138px; animation-name: fxRise; }
+        .combat-fx.guard { width: 126px; height: 126px; animation-name: fxPulse; }
+
+        @keyframes fxBurst {
+            0% { transform: scale(0.65) rotate(-8deg); opacity: 0; }
+            20% { opacity: 1; }
+            100% { transform: scale(1.14) rotate(8deg); opacity: 0; }
+        }
+
+        @keyframes fxTravel {
+            0% { transform: translateX(-90px) scale(0.72); opacity: 0; }
+            24% { opacity: 1; }
+            100% { transform: translateX(88px) scale(1.04); opacity: 0; }
+        }
+
+        @keyframes fxRise {
+            0% { transform: translateY(28px) scale(0.72); opacity: 0; }
+            24% { opacity: 1; }
+            100% { transform: translateY(-34px) scale(1.08); opacity: 0; }
+        }
+
+        @keyframes fxPulse {
+            0% { transform: scale(0.68); opacity: 0; }
+            24% { transform: scale(1.04); opacity: 1; }
+            100% { transform: scale(1.18); opacity: 0; }
         }
 
         @keyframes popDamage {
@@ -1332,14 +1416,15 @@
                         <img class="center" src="assets/generated_ui/combat_fx/control_dpad_frame.png" alt="">
                     </div>
                     <div class="direction-copy">
-                        <img src="art_input/assets/inventory/weapons/weapon_sword.png" alt="">
-                        <div class="arrow">→</div>
-                        <img src="assets/generated_ui/endgame/role_tank.png" alt="">
-                        <p>SCEGLI LA DIREZIONE<br>DEL TUO ATTACCO</p>
+                        <img id="intent-left-icon" class="intent" src="art_input/assets/inventory/weapons/weapon_sword.png" alt="">
+                        <div class="arrow" id="intent-arrow">→</div>
+                        <img id="intent-right-icon" class="intent" src="assets/generated_ui/endgame/role_tank.png" alt="">
+                        <p id="direction-hint">SCEGLI UNA AZIONE<br>PER INIZIARE IL TURNO</p>
                     </div>
+                    <div class="phase-banner" id="phase-banner">TURNO 1: scegli arma, abilita o oggetto.</div>
                 </div>
                 <div class="timer-strip">
-                    <div class="timer-track"><div class="timer-fill"></div></div>
+                    <div class="timer-track"><div id="combat-timer-fill" class="timer-fill"></div></div>
                     <div class="time-box tag">12 SEC</div>
                 </div>
                 <div class="combat-status" id="combat-status" hidden aria-hidden="true" style="display:none!important">Scegli ARMA, poi una direzione.</div>
@@ -1438,6 +1523,7 @@ const selection = {
 function showScreen(id) {
     screens.forEach(screen => screen.classList.toggle("active", screen.id === id));
     document.getElementById("game").classList.toggle("combat-active", id === "combat-screen");
+    if (id === "combat-screen") startCombat();
 }
 
 goButtons.forEach(button => {
@@ -1522,6 +1608,7 @@ setInterval(() => {
     frame = frame % 6 + 1;
     const suffix = String(frame).padStart(2, "0");
     animatedSprites.forEach(sprite => {
+        if (sprite.dataset.locked === "true") return;
         sprite.src = `${sprite.dataset.stem}_${suffix}.png`;
     });
 }, 170);
@@ -1531,7 +1618,11 @@ const combat = {
     playerMaxHp: 150,
     enemyHp: 96,
     enemyMaxHp: 120,
+    phase: "action",
+    turn: 1,
     awaitingDirection: false,
+    playerAction: null,
+    enemyIntent: null,
 };
 
 const combatStatus = document.getElementById("combat-status");
@@ -1541,9 +1632,48 @@ const playerHpText = document.getElementById("player-hp-text");
 const enemyHpFill = document.getElementById("enemy-hp-fill");
 const enemyHpText = document.getElementById("enemy-hp-text");
 const combatScreen = document.getElementById("combat-screen");
+const phaseBanner = document.getElementById("phase-banner");
+const directionHint = document.getElementById("direction-hint");
+const timerFill = document.getElementById("combat-timer-fill");
+const intentLeftIcon = document.getElementById("intent-left-icon");
+const intentRightIcon = document.getElementById("intent-right-icon");
+const actionButtons = [...document.querySelectorAll("[data-action]")];
+const playerSprite = document.querySelector(".combat-sprite.player");
+const enemySprite = document.querySelector(".combat-sprite.enemy");
+
+const spriteDefaults = {
+    player: "art_input/assets/sprites/main_character/idle_left/main_character_idle_left",
+    enemy: "art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle",
+};
+
+const spriteAnims = {
+    playerAttack: "art_input/assets/sprites/main_character/attack_left/main_character_attack_left",
+    playerHit: "art_input/assets/sprites/main_character/hit_left/main_character_hit_left",
+    playerDeath: "art_input/assets/sprites/main_character/death_left/main_character_death_left",
+    enemyAttack: "art_input/assets/sprites/enemy_skeleton/attack/enemy_skeleton_attack",
+    enemyHit: "art_input/assets/sprites/enemy_skeleton/hit/enemy_skeleton_hit",
+    enemyDeath: "art_input/assets/sprites/enemy_skeleton/death/enemy_skeleton_death",
+};
+
+let spriteAnimToken = 0;
+
+const dirNames = {
+    up: "ALTO",
+    right: "DESTRA",
+    down: "BASSO",
+    left: "SINISTRA",
+};
+
+const enemyPatterns = [
+    { dir: "right", label: "Affondo d'ossa", damage: 18 },
+    { dir: "up", label: "Colpo alto", damage: 16 },
+    { dir: "left", label: "Fendente laterale", damage: 20 },
+    { dir: "down", label: "Spazzata bassa", damage: 14 },
+];
 
 function setCombatStatus(text) {
     if (combatStatus) combatStatus.textContent = text;
+    if (phaseBanner) phaseBanner.textContent = text;
 }
 
 function updateEnemyHp() {
@@ -1560,13 +1690,112 @@ function updatePlayerHp() {
     playerHpText.textContent = `${combat.playerHp} / ${combat.playerMaxHp}`;
 }
 
-function chooseWeapon() {
-    combat.awaitingDirection = true;
-    dpad?.classList.remove("locked");
-    document.querySelectorAll("[data-action]").forEach(button => {
-        button.classList.toggle("selected", button.dataset.action === "weapon");
+function setTimer(percent) {
+    if (timerFill) timerFill.style.width = `${percent}%`;
+}
+
+function setDpadActive(active, mode = "attack") {
+    if (!dpad) return;
+    dpad.classList.toggle("locked", !active);
+    dpad.classList.toggle("defense", active && mode === "defense");
+    combat.awaitingDirection = active;
+}
+
+function updateActionButtons(selectedAction = null) {
+    const locked = combat.phase !== "action";
+    actionButtons.forEach(button => {
+        button.classList.toggle("selected", button.dataset.action === selectedAction);
+        button.classList.toggle("disabled", locked && button.dataset.action !== selectedAction);
     });
-    setCombatStatus("Direzione pronta: scegli su, giu, sinistra o destra.");
+}
+
+function setIntentVisual(leftSrc, rightSrc, hint) {
+    if (intentLeftIcon) intentLeftIcon.src = leftSrc;
+    if (intentRightIcon) intentRightIcon.src = rightSrc;
+    if (directionHint) directionHint.innerHTML = hint;
+}
+
+function setSpriteIdle(sprite, stem) {
+    if (!sprite) return;
+    if (sprite._animTimer) {
+        window.clearInterval(sprite._animTimer);
+        sprite._animTimer = null;
+    }
+    sprite.dataset.animToken = String(++spriteAnimToken);
+    sprite.dataset.stem = stem;
+    sprite.src = `${stem}_01.png`;
+    sprite.dataset.locked = "";
+}
+
+function playSpriteAnimation(sprite, stem, fallbackStem, options = {}) {
+    if (!sprite) return;
+    if (sprite._animTimer) {
+        window.clearInterval(sprite._animTimer);
+        sprite._animTimer = null;
+    }
+    sprite.dataset.locked = "true";
+    let current = 1;
+    const frames = options.frames || 6;
+    const frameMs = options.frameMs || 85;
+    const token = String(++spriteAnimToken);
+    sprite.dataset.animToken = token;
+    sprite.dataset.stem = stem;
+    sprite.src = `${stem}_01.png`;
+    const timer = window.setInterval(() => {
+        if (sprite.dataset.animToken !== token) {
+            window.clearInterval(timer);
+            if (sprite._animTimer === timer) sprite._animTimer = null;
+            return;
+        }
+        current += 1;
+        if (current > frames) {
+            window.clearInterval(timer);
+            if (sprite._animTimer === timer) sprite._animTimer = null;
+            if (sprite.dataset.animToken !== token) return;
+            if (options.holdLast) {
+                sprite.src = `${stem}_${String(frames).padStart(2, "0")}.png`;
+                return;
+            }
+            setSpriteIdle(sprite, fallbackStem);
+            return;
+        }
+        sprite.src = `${stem}_${String(current).padStart(2, "0")}.png`;
+    }, frameMs);
+    sprite._animTimer = timer;
+}
+
+function spawnFx(src, className, x, y, duration = 560) {
+    if (!combatScreen) return;
+    const fx = document.createElement("img");
+    fx.className = `combat-fx ${className}`;
+    fx.src = src;
+    fx.alt = "";
+    fx.style.left = `${x}px`;
+    fx.style.top = `${y}px`;
+    combatScreen.appendChild(fx);
+    window.setTimeout(() => fx.remove(), duration);
+}
+
+function startCombat() {
+    combat.playerHp = 124;
+    combat.enemyHp = 96;
+    combat.phase = "action";
+    combat.turn = 1;
+    combat.playerAction = null;
+    combat.enemyIntent = null;
+    setSpriteIdle(playerSprite, spriteDefaults.player);
+    setSpriteIdle(enemySprite, spriteDefaults.enemy);
+    updatePlayerHp();
+    updateEnemyHp();
+    updateActionButtons();
+    setDpadActive(false);
+    setTimer(100);
+    setIntentVisual(
+        "art_input/assets/inventory/weapons/weapon_sword.png",
+        "assets/generated_ui/endgame/role_tank.png",
+        "SCEGLI UNA AZIONE<br>PER INIZIARE IL TURNO"
+    );
+    setCombatStatus("TURNO 1: scegli arma, abilita o oggetto.");
 }
 
 function showDamage(amount) {
@@ -1590,55 +1819,201 @@ function showFloatingText(text, x, y, color = "#ffd86f") {
     window.setTimeout(() => pop.remove(), 760);
 }
 
-function damageEnemy(amount, label) {
+function damageEnemy(amount, label, x = 1180, y = 360) {
     if (combat.enemyHp <= 0) return;
     combat.enemyHp = Math.max(0, combat.enemyHp - amount);
     updateEnemyHp();
-    showDamage(amount);
-    if (combat.enemyHp <= 0) {
-        setCombatStatus(`${label}: Necro Scheletro sconfitto.`);
+    if (amount > 0) {
+        playSpriteAnimation(enemySprite, spriteAnims.enemyHit, spriteDefaults.enemy);
+        spawnFx("assets/generated_ui/combat_fx/fx_hit_flash.png", "hit", x - 38, y - 70);
+        showFloatingText(`-${amount}`, x, y, "#ffd86f");
     } else {
-        setCombatStatus(`${label}: ${amount} danni. Continua il turno.`);
+        spawnFx("assets/generated_ui/combat_fx/fx_shield_guard.png", "guard", x - 36, y - 62);
+        showFloatingText("PARATO", x - 24, y, "#9ed7ff");
     }
+    if (combat.enemyHp <= 0) {
+        endCombat(true);
+        return true;
+    }
+    setCombatStatus(label);
+    return false;
 }
 
-function playAttack(dir) {
-    if (!combat.awaitingDirection || combat.enemyHp <= 0) return;
-    combat.awaitingDirection = false;
-    dpad?.classList.add("locked");
-    document.querySelectorAll("[data-action]").forEach(button => button.classList.remove("selected"));
+function damagePlayer(amount, blocked) {
+    if (combat.playerHp <= 0) return;
+    combat.playerHp = Math.max(0, combat.playerHp - amount);
+    updatePlayerHp();
+    if (blocked) {
+        spawnFx("assets/generated_ui/combat_fx/fx_shield_guard.png", "guard", 386, 300);
+    } else {
+        playSpriteAnimation(playerSprite, spriteAnims.playerHit, spriteDefaults.player);
+        spawnFx("assets/generated_ui/combat_fx/fx_broken_guard.png", "hit", 382, 294);
+    }
+    showFloatingText(blocked ? `-${amount}` : `-${amount}`, 420, 360, blocked ? "#9ed7ff" : "#ff9c6f");
+    if (combat.playerHp <= 0) {
+        endCombat(false);
+        return true;
+    }
+    return false;
+}
 
-    const damageByDir = { up: 18, right: 24, down: 16, left: 12 };
-    const damage = damageByDir[dir] || 14;
-    const label = { up: "alto", right: "destra", down: "basso", left: "sinistra" }[dir] || "scelta";
-    damageEnemy(damage, `Colpo verso ${label}`);
+function chooseWeapon() {
+    if (combat.phase !== "action") return;
+    combat.phase = "aim";
+    combat.playerAction = "weapon";
+    updateActionButtons("weapon");
+    setDpadActive(true, "attack");
+    setTimer(74);
+    setIntentVisual(
+        "art_input/assets/inventory/weapons/weapon_sword.png",
+        "assets/generated_ui/endgame/role_tank.png",
+        "SCEGLI LA DIREZIONE<br>DEL TUO ATTACCO"
+    );
+    setCombatStatus(`TURNO ${combat.turn}: scegli la direzione del colpo.`);
 }
 
 function castAbility() {
-    combat.awaitingDirection = false;
-    dpad?.classList.add("locked");
-    document.querySelectorAll("[data-action]").forEach(button => {
-        button.classList.toggle("selected", button.dataset.action === "ability");
-    });
-    damageEnemy(15, "Abilita");
-    window.setTimeout(() => document.querySelector('[data-action="ability"]')?.classList.remove("selected"), 360);
+    if (combat.phase !== "action") return;
+    combat.phase = "resolve-player";
+    combat.playerAction = "ability";
+    updateActionButtons("ability");
+    setDpadActive(false);
+    setTimer(62);
+    setIntentVisual(
+        "art_input/assets/ui/abilities/ability_necro_skull.png",
+        "assets/generated_ui/endgame/role_tank.png",
+        "ABILITA RAPIDA<br>DANNO GARANTITO"
+    );
+    spawnFx("assets/generated_ui/combat_fx/fx_magic_projectile.png", "magic", 900, 318, 620);
+    spawnFx("assets/generated_ui/combat_fx/fx_necromancy_particles.png", "magic", 1084, 290, 700);
+    const won = damageEnemy(18, "ABILITA: energia oscura sul bersaglio.");
+    if (!won) window.setTimeout(startEnemyIntent, 720);
 }
 
 function useItem() {
-    combat.awaitingDirection = false;
-    dpad?.classList.add("locked");
-    document.querySelectorAll("[data-action]").forEach(button => {
-        button.classList.toggle("selected", button.dataset.action === "item");
-    });
+    if (combat.phase !== "action") return;
+    combat.phase = "resolve-player";
+    combat.playerAction = "item";
+    updateActionButtons("item");
+    setDpadActive(false);
+    setTimer(62);
+    setIntentVisual(
+        "art_input/assets/inventory/potions/hp_potion.png",
+        "assets/generated_ui/endgame/role_tank.png",
+        "OGGETTO USATO<br>POI DIFENDITI"
+    );
     const before = combat.playerHp;
     combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + 22);
     updatePlayerHp();
-    showFloatingText(`+${combat.playerHp - before}`, 420, 360, "#7cf58a");
-    setCombatStatus("Pozione usata: HP recuperati.");
-    window.setTimeout(() => document.querySelector('[data-action="item"]')?.classList.remove("selected"), 360);
+    const healed = combat.playerHp - before;
+    spawnFx("assets/generated_ui/combat_fx/fx_heal_sparkle.png", "heal", 378, 292, 700);
+    showFloatingText(healed > 0 ? `+${healed}` : "MAX", 420, 360, "#7cf58a");
+    setCombatStatus(healed > 0 ? "POZIONE: HP recuperati. Preparati alla difesa." : "POZIONE: HP gia pieni. Preparati alla difesa.");
+    window.setTimeout(startEnemyIntent, 720);
 }
 
-document.querySelectorAll("[data-action]").forEach(button => {
+function resolvePlayerDirection(dir) {
+    if (combat.phase !== "aim" || combat.enemyHp <= 0) return;
+    combat.phase = "resolve-player";
+    setDpadActive(false);
+    setTimer(62);
+    const enemyGuard = enemyPatterns[(combat.turn + 1) % enemyPatterns.length].dir;
+    const blocked = dir === enemyGuard;
+    const baseDamage = { up: 18, right: 24, down: 16, left: 20 }[dir] || 16;
+    const damage = blocked ? Math.ceil(baseDamage * 0.42) : baseDamage;
+    const label = blocked
+        ? `COLPO ${dirNames[dir]}: il nemico para, danno ridotto.`
+        : `COLPO ${dirNames[dir]}: attacco riuscito.`;
+    playSpriteAnimation(playerSprite, spriteAnims.playerAttack, spriteDefaults.player);
+    spawnFx("assets/generated_ui/combat_fx/fx_sword_slash.png", "slash", 1048, 278, 620);
+    const won = damageEnemy(damage, label);
+    if (!won) window.setTimeout(startEnemyIntent, 820);
+}
+
+function startEnemyIntent() {
+    if (combat.enemyHp <= 0 || combat.playerHp <= 0) return;
+    combat.phase = "defense";
+    combat.enemyIntent = enemyPatterns[(combat.turn - 1) % enemyPatterns.length];
+    updateActionButtons();
+    setDpadActive(true, "defense");
+    setTimer(38);
+    setIntentVisual(
+        "art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png",
+        "art_input/assets/inventory/weapons/weapon_shield.png",
+        `DIFENDI ${dirNames[combat.enemyIntent.dir]}<br>DAL ${combat.enemyIntent.label.toUpperCase()}`
+    );
+    setCombatStatus(`DIFESA: il Necro Scheletro attacca verso ${dirNames[combat.enemyIntent.dir]}.`);
+}
+
+function resolveDefense(dir) {
+    if (combat.phase !== "defense" || !combat.enemyIntent) return;
+    combat.phase = "resolve-enemy";
+    setDpadActive(false);
+    setTimer(18);
+    const blocked = dir === combat.enemyIntent.dir;
+    const damage = blocked ? Math.max(4, Math.floor(combat.enemyIntent.damage * 0.35)) : combat.enemyIntent.damage;
+    playSpriteAnimation(enemySprite, spriteAnims.enemyAttack, spriteDefaults.enemy, { frameMs: 130 });
+    window.setTimeout(() => {
+        if (combat.phase !== "resolve-enemy") return;
+        spawnFx(
+            blocked ? "assets/generated_ui/combat_fx/fx_shield_guard.png" : "assets/generated_ui/combat_fx/fx_impact_starburst.png",
+            blocked ? "guard" : "hit",
+            378,
+            292,
+            620
+        );
+        const lost = damagePlayer(damage, blocked);
+        if (lost) return;
+        setCombatStatus(blocked ? `DIFESA ${dirNames[dir]} riuscita: danno ridotto.` : `DIFESA sbagliata: subisci ${damage} danni.`);
+        window.setTimeout(nextTurn, 700);
+    }, 560);
+}
+
+function nextTurn() {
+    if (combat.enemyHp <= 0 || combat.playerHp <= 0) return;
+    combat.turn += 1;
+    combat.phase = "action";
+    combat.playerAction = null;
+    combat.enemyIntent = null;
+    updateActionButtons();
+    setDpadActive(false);
+    setTimer(100);
+    setIntentVisual(
+        "art_input/assets/inventory/weapons/weapon_sword.png",
+        "assets/generated_ui/endgame/role_tank.png",
+        "SCEGLI UNA AZIONE<br>PER IL NUOVO TURNO"
+    );
+    setCombatStatus(`TURNO ${combat.turn}: scegli la prossima azione.`);
+}
+
+function endCombat(won) {
+    combat.phase = won ? "won" : "lost";
+    setDpadActive(false);
+    updateActionButtons();
+    setTimer(won ? 100 : 0);
+    if (won) {
+        playSpriteAnimation(enemySprite, spriteAnims.enemyDeath, spriteAnims.enemyDeath, { holdLast: true, frameMs: 95 });
+    } else {
+        playSpriteAnimation(playerSprite, spriteAnims.playerDeath, spriteAnims.playerDeath, { holdLast: true, frameMs: 95 });
+    }
+    setIntentVisual(
+        won ? "assets/generated_ui/rewards/loot_chest_rare.png" : "art_input/assets/ui/abilities/ability_necro_skull.png",
+        won ? "assets/generated_ui/rewards/gold_coin_pile.png" : "art_input/assets/sprites/enemy_skeleton/idle/enemy_skeleton_idle_01.png",
+        won ? "VITTORIA<br>RICOMPENSA PRONTA" : "SCONFITTA<br>RIPROVA IL NODO"
+    );
+    setCombatStatus(won ? "VITTORIA: Necro Scheletro sconfitto." : "SCONFITTA: il gruppo cade in combattimento.");
+}
+
+function handleDirection(dir) {
+    if (!combat.awaitingDirection || !document.getElementById("combat-screen").classList.contains("active")) return;
+    if (combat.phase === "aim") {
+        resolvePlayerDirection(dir);
+    } else if (combat.phase === "defense") {
+        resolveDefense(dir);
+    }
+}
+
+actionButtons.forEach(button => {
     button.addEventListener("click", () => {
         if (button.dataset.action === "weapon") {
             chooseWeapon();
@@ -1651,11 +2026,10 @@ document.querySelectorAll("[data-action]").forEach(button => {
 });
 
 document.querySelectorAll("[data-dir]").forEach(button => {
-    button.addEventListener("click", () => playAttack(button.dataset.dir));
+    button.addEventListener("click", () => handleDirection(button.dataset.dir));
 });
 
 window.addEventListener("keydown", event => {
-    if (!combat.awaitingDirection || !document.getElementById("combat-screen").classList.contains("active")) return;
     const dirs = {
         ArrowUp: "up",
         ArrowDown: "down",
@@ -1667,7 +2041,7 @@ window.addEventListener("keydown", event => {
         d: "right",
     };
     const dir = dirs[event.key];
-    if (dir) playAttack(dir);
+    if (dir) handleDirection(dir);
 });
 </script>
 </body>
