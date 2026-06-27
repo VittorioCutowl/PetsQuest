@@ -63,16 +63,20 @@ assets/sprites/
 **Naming controintuitivo per `idle`**: `idle` = guarda sinistra, `idle_left` = guarda destra.  
 Regola: il personaggio a SINISTRA usa `idle_left`, quello a DESTRA usa `idle`.
 
-**⚠️ ATTENZIONE — `attack`/`hit`/`death` hanno la convenzione INVERTITA rispetto a `idle`:**
+**⚠️ ATTENZIONE — la convenzione è NON UNIFORME tra i set:**
 
 | Set | no-suffix | `_left` |
 |-----|-----------|---------|
 | `idle` | guarda **SINISTRA** | guarda **DESTRA** |
-| `attack` / `hit` / `death` | guarda **DESTRA** | guarda **SINISTRA** |
+| `attack` | guarda **DESTRA** ← invertito! | guarda **SINISTRA** |
+| `hit` | guarda **SINISTRA** | guarda **DESTRA** |
+| `death` | guarda **SINISTRA** | guarda **DESTRA** |
+
+Solo `attack` ha la convenzione invertita rispetto a `idle`. `hit` e `death` seguono la stessa di `idle`.
 
 Quindi, per direzione coerente:
-- **Player** (sinistra schermo, guarda destra): `idle`→`frames.player.left`; attack/hit/death→varianti **no-suffix** (`frames.player.attack/hit/death`)
-- **Enemy** (destra schermo, guarda sinistra): `idle`→`frames.enemy.idle`; attack/hit/death→varianti **`*Left`** (`frames.enemy.attackLeft/hitLeft/deathLeft`)
+- **Player** (sinistra schermo, guarda destra): `idle`→`left`; `attack`→`attack` (no-suffix); `hit`→`hitLeft`; `death`→`deathLeft`
+- **Enemy** (destra schermo, guarda sinistra): `idle`→`idle` (no-suffix); `attack`→`attackLeft`; `hit`→`hit` (no-suffix); `death`→`death` (no-suffix)
 
 **Dimensioni**: 362×724 px RGBA, 6 frame per animazione, scala in-game: 0.21
 

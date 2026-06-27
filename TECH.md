@@ -62,14 +62,16 @@
 | Set | no-suffix | `_left` |
 |-----|-----------|---------|
 | `idle` | guarda **sinistra** | guarda **destra** |
-| `attack` / `hit` / `death` | guarda **destra** | guarda **sinistra** |
+| `attack` | guarda **destra** ← invertito! | guarda **sinistra** |
+| `hit` | guarda **sinistra** | guarda **destra** |
+| `death` | guarda **sinistra** | guarda **destra** |
 
-L'artista ha esportato `idle` con convenzione invertita (`_left` = destra) e i set
-d'azione con convenzione intuitiva (`_left` = sinistra). Conseguenza per il codice:
-- **Player** (sinistra schermo, guarda destra): idle→`idle_left`; attack/hit/death→**no-suffix**
-- **Enemy** (destra schermo, guarda sinistra): idle→`idle`; attack/hit/death→**`_left`**
+Solo `attack` ha la convenzione invertita rispetto a `idle`. `hit` e `death` seguono
+la stessa convenzione di `idle`. Conseguenza per il codice:
+- **Player** (sinistra schermo, guarda destra): idle→`idle_left`; attack→`attack`; hit→`hitLeft`; death→`deathLeft`
+- **Enemy** (destra schermo, guarda sinistra): idle→`idle`; attack→`attackLeft`; hit→`hit`; death→`death`
 
-> Questa incoerenza ha causato un bug di orientamento risolto nel commit `c12a82f`.
+> Due bug di orientamento consecutivi (commit `c12a82f`, `0806d79`).
 > In futuro chiedere all'artista una convenzione uniforme su tutti i set.
 
 ---
