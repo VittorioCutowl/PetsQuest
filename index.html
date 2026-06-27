@@ -41,6 +41,7 @@
             position: relative;
             width: 100vw;
             height: 100vh;
+            overflow: hidden;
         }
 
         #game {
@@ -688,6 +689,7 @@
             top: 300px;
             width: 292px;
             height: 292px;
+            transform: translateY(66px);
         }
 
         .combat-sprite.enemy {
@@ -695,6 +697,7 @@
             top: 294px;
             width: 284px;
             height: 296px;
+            transform: translateY(70px);
         }
 
         .combat-panel {
@@ -804,9 +807,9 @@
         .direction-panel {
             position: relative;
             display: grid;
-            grid-template-columns: 174px 1fr;
+            grid-template-columns: 156px 1fr;
             align-items: center;
-            gap: 20px;
+            gap: 26px;
             padding: 46px 20px 22px;
             height: 250px;
         }
@@ -831,14 +834,29 @@
 
         .dpad {
             position: relative;
-            width: 166px;
-            height: 166px;
+            width: 142px;
+            height: 142px;
+            justify-self: center;
+            align-self: center;
+        }
+
+        .dpad::before {
+            content: "";
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            width: 34px;
+            height: 34px;
+            transform: translate(-50%, -50%);
+            border: 3px solid #17100d;
+            background: radial-gradient(circle, #2b3642 0 38%, #0c1218 40% 100%);
+            box-shadow: inset 0 0 0 2px #8d642f, inset 0 0 0 4px rgba(245, 198, 106, 0.58);
         }
 
         .dpad img {
             position: absolute;
-            width: 58px;
-            height: 58px;
+            width: 52px;
+            height: 52px;
             object-fit: contain;
             filter: drop-shadow(0 0 8px rgba(255,216,112,0.24));
             cursor: pointer;
@@ -853,11 +871,11 @@
             filter: brightness(1.35) drop-shadow(0 0 12px rgba(255, 216, 112, 0.8));
         }
 
-        .dpad .up { left: 56px; top: 0; }
-        .dpad .down { left: 56px; bottom: 0; }
-        .dpad .left { left: 0; top: 56px; }
-        .dpad .right { right: 0; top: 56px; }
-        .dpad .center { left: 56px; top: 56px; opacity: 0.82; }
+        .dpad .up { left: 45px; top: 0; }
+        .dpad .down { left: 45px; bottom: 0; }
+        .dpad .left { left: 0; top: 45px; }
+        .dpad .right { right: 0; top: 45px; }
+        .dpad .center { display: none; }
 
         .direction-copy {
             display: grid;
@@ -885,7 +903,7 @@
             bottom: 18px;
             height: 50px;
             display: grid;
-            grid-template-columns: 246px 1fr 146px;
+            grid-template-columns: 1fr 146px;
             gap: 18px;
             align-items: center;
         }
@@ -1321,7 +1339,6 @@
                     </div>
                 </div>
                 <div class="timer-strip">
-                    <img class="small-icon" src="assets/generated_ui/combat_fx/timer_frame.png" alt="">
                     <div class="timer-track"><div class="timer-fill"></div></div>
                     <div class="time-box tag">12 SEC</div>
                 </div>
@@ -1490,7 +1507,7 @@ document.querySelectorAll(".node").forEach(node => {
 function fitGame() {
     const game = document.getElementById("game");
     const scale = Math.min(window.innerWidth / 1640, window.innerHeight / 920);
-    game.style.left = "0px";
+    game.style.left = `${Math.round((window.innerWidth - 1640 * scale) / 2)}px`;
     game.style.top = `${Math.round((window.innerHeight - 920 * scale) / 2)}px`;
     game.style.transform = `scale(${scale})`;
 }
