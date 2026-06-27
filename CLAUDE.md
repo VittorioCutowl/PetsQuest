@@ -29,6 +29,7 @@ PetsQuest è un gioco RPG pixel art con combattimento a turni in tempo reale. Il
 - Risoluzione danni con floating numbers animati e shake on hit
 - Sprite animati (idle, 6 frame) per player (cane) e nemico (scheletro)
 - **Animazioni attacco/hit/death** — catena a 4 step in `resolveRound()`: player attack → enemy hit → enemy attack → player hit → resolution
+- **Bilanciamento combat** — formule danno usano ATK/DEF/MATK reali; guard anti-doppio-click su tutti i handler; UI magia spiega la meccanica; sequenza incantesimo mostrata nel log
 - HP bars, Rabbia bar, panel UI, background con luna/stelle/montagne
 - Scaling responsivo del canvas via CSS transform
 
@@ -123,6 +124,8 @@ L.ui      // HP bars, timer, bottoni — svuotato e ridisegnato ad ogni setPhase
 | `floatDmg(x, y, txt, color)` | Numero danno che sale e svanisce via ticker |
 | `shake(sprite, intensity, ms)` | Vibrazione orizzontale su hit |
 | `makeAnimSprite(frameList)` | Crea PIXI.AnimatedSprite con scala e anchor già impostati |
+| `playAnim(sprite, frames, speed, cb)` | Animazione one-shot + callback via setTimeout (background-tab safe) |
+| `returnToIdle(sprite, idleFrames)` | Ripristina sprite a looping idle dopo animazione one-shot |
 
 ### Game state (GS)
 ```javascript
