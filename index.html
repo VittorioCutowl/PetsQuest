@@ -988,9 +988,9 @@ function resolveRound() {
         floatDmg(enemySprite.x - 20, enemySprite.y - 60, `-${eDmg}`, C.secondary);
         shake(enemySprite, 8, 300);
         if (e.hp <= 0) {
-            playAnim(enemySprite, frames.enemy.deathLeft, ASPD, next);
+            playAnim(enemySprite, frames.enemy.death, ASPD, next);
         } else {
-            playAnim(enemySprite, frames.enemy.hitLeft, ASPD, () => {
+            playAnim(enemySprite, frames.enemy.hit, ASPD, () => {
                 returnToIdle(enemySprite, frames.enemy.idle);
                 next();
             });
@@ -1012,9 +1012,9 @@ function resolveRound() {
         floatDmg(playerSprite.x + 20, playerSprite.y - 60, `-${pDmg}`, C.failure);
         shake(playerSprite, 8, 300);
         if (p.hp <= 0) {
-            playAnim(playerSprite, frames.player.death, ASPD, next);
+            playAnim(playerSprite, frames.player.deathLeft, ASPD, next);
         } else {
-            playAnim(playerSprite, frames.player.hit, ASPD, () => {
+            playAnim(playerSprite, frames.player.hitLeft, ASPD, () => {
                 returnToIdle(playerSprite, frames.player.left);
                 next();
             });
