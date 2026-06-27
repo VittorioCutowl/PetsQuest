@@ -63,15 +63,18 @@ Le fasi interattive `action`, `aim` e `defense` usano un countdown live basato s
 
 ## Regole Risorse
 
-- Arma: costa `12 Energia`.
-- Abilita': costa `18 Mana`, oppure `24 Rabbia` se il Mana non basta.
+- Arma: costa Energia in base alla classe.
+- Abilita': costa la risorsa definita dal profilo classe.
 - Oggetto: consuma `1` pozione e cura `22 HP`.
-- Nuovo turno:
-  - `+10 Energia`;
-  - `+4 Mana`;
-  - `+8 Rabbia`.
+Il prototipo usa profili classe in `classRules[*].stats`:
 
-I pulsanti azione vengono disabilitati quando la risorsa richiesta non e' disponibile.
+- `maxHp`, `energyMax`, `manaMax`, `rageMax`;
+- risorse iniziali `startHp`, `startEnergy`, `startMana`, `startRage`;
+- `weaponCost` e tabella direzionale `weaponDamage`;
+- rigenerazione `regen.energy`, `regen.mana`, `regen.rage`;
+- riduzione danno in difesa `guardRate`.
+
+I pulsanti azione vengono disabilitati quando la risorsa richiesta non e' disponibile. Le risorse correnti vengono salvate in `playerState` e riallineate quando cambia la classe selezionata.
 
 ## Direzioni Combat
 

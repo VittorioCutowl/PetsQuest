@@ -30,6 +30,11 @@ Ogni turno ha due fasi:
 - `OGGETTO`: pozione curativa con contatore reale.
 - Persistenza scelta razza/classe via `localStorage`, propagata tra selezione, campagna e combat.
 - Mappatura abilita' per classe: icone, nome abilita', arma, costo risorsa e danno cambiano in base alla classe selezionata.
+- Profili classe prototipali:
+  - HP massimi, Energia, Mana e Rabbia massimi cambiano per classe;
+  - costo e danno arma cambiano per classe;
+  - rigenerazione turno e riduzione difesa cambiano per classe;
+  - risorse correnti vengono salvate e ricalcolate al cambio classe.
 - Loot/progressione prototipale:
   - oro, EXP, talent point e pozioni vengono aggiornati nello stato player;
   - vittoria combat assegna ricompense reali del nodo selezionato;
@@ -56,7 +61,7 @@ Ogni turno ha due fasi:
 - Cura con selezione bersaglio per Prete/Paladino. Ora esiste solo una cura self semplificata su abilita' dedicate.
 - Inventario completo con piu' oggetti.
 - Progressione EXP/livelli/talenti finale. Ora esiste una progressione prototipale salvata con level up e talent point.
-- Mappatura finale di tutte le abilita' disponibili in UI: ora ogni classe selezionabile ha una primaria, ma manca ancora un pannello abilita' completo.
+- Mappatura finale di tutte le abilita' disponibili in UI: ora ogni classe selezionabile ha una primaria e profilo stat base, ma manca ancora un pannello abilita' completo.
 - Completamento definitivo loot/equip: ora alcune ricompense entrano nello stato, ma manca inventario ispezionabile/equipaggiabile.
 - Dialoghi e cutscene campagna.
 - Multiplayer, matchmaking e ranking endgame.

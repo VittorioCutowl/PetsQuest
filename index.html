@@ -1944,7 +1944,7 @@
                     <div class="stat-block panel">
                         <div class="fighter-name" id="player-fighter-name">GUERRIERO</div>
                         <div class="bar"><div id="player-hp-fill" class="bar-fill" style="width:82%"></div><span id="player-hp-text">124 / 150</span></div>
-                        <div class="bar blue"><div class="bar-fill" style="width:67%"></div><span>40 / 60</span></div>
+                        <div class="bar blue"><div id="player-secondary-fill" class="bar-fill" style="width:71%"></div><span id="player-secondary-text">RA 68 / 96</span></div>
                     </div>
                 </div>
                 <div class="fighter-card enemy">
@@ -1968,7 +1968,7 @@
                     <div class="mini-resource energy"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><div><div class="label">ENERGIA <span id="energy-value">70 / 80</span></div><div id="energy-bar" class="segbar"><i></i><i></i><i></i><i></i><i></i><i></i><span></span><span></span></div></div></div>
                 </div>
                 <div class="action-cards">
-                    <button class="action-card panel" data-action="weapon"><small>-12 EN</small><img id="weapon-action-icon" src="art_input/assets/inventory/weapons/weapon_sword.png" alt=""><strong>ARMA</strong></button>
+                    <button class="action-card panel" data-action="weapon"><small id="weapon-cost">-11 EN</small><img id="weapon-action-icon" src="art_input/assets/inventory/weapons/weapon_sword.png" alt=""><strong>ARMA</strong></button>
                     <button class="action-card panel" data-action="ability"><small id="ability-cost">18 MA<br>24 RA</small><img id="ability-action-icon" src="art_input/assets/ui/abilities/ability_sword_slash.png" alt=""><strong id="ability-action-label">ABILITA</strong></button>
                     <button class="action-card panel" data-action="item"><small id="potion-count">x1</small><img src="art_input/assets/inventory/potions/hp_potion.png" alt=""><strong>OGGETTO</strong></button>
                 </div>
@@ -2128,13 +2128,57 @@ const classAbilitySets = {
 };
 
 const classRules = {
-    Guerriero: { abilityName: "Fendente", damage: 20, cost: { rage: 18 }, weapon: "art_input/assets/inventory/weapons/weapon_warrior_axe.png" },
-    Paladino: { abilityName: "Giudizio", damage: 18, cost: { mana: 12, rage: 16 }, weapon: "art_input/assets/inventory/weapons/weapon_paladin_hammer.png", healsSelf: 8 },
-    Prete: { abilityName: "Luce Sacra", damage: 10, cost: { mana: 16 }, weapon: "art_input/assets/inventory/weapons/weapon_priest_staff.png", healsSelf: 18 },
-    Cacciatore: { abilityName: "Tiro Preciso", damage: 22, cost: { energy: 16 }, weapon: "art_input/assets/inventory/weapons/weapon_hunter_bow.png" },
-    Ladro: { abilityName: "Pugnalata", damage: 24, cost: { energy: 18 }, weapon: "art_input/assets/inventory/weapons/weapon_thief_dagger.png" },
-    Negromante: { abilityName: "Teschio Nero", damage: 21, cost: { mana: 18 }, weapon: "art_input/assets/inventory/weapons/weapon_necromancer_staff.png" },
-    Mago: { abilityName: "Palla di Fuoco", damage: 23, cost: { mana: 20 }, weapon: "art_input/assets/inventory/weapons/weapon_mage_wand.png" },
+    Guerriero: {
+        abilityName: "Fendente",
+        damage: 22,
+        cost: { rage: 18 },
+        weapon: "art_input/assets/inventory/weapons/weapon_warrior_axe.png",
+        stats: { maxHp: 170, energyMax: 76, manaMax: 30, rageMax: 96, startHp: 150, startEnergy: 62, startMana: 14, startRage: 68, weaponCost: 11, weaponDamage: { up: 20, right: 27, down: 18, left: 22 }, regen: { energy: 9, mana: 2, rage: 12 }, guardRate: 0.3 },
+    },
+    Paladino: {
+        abilityName: "Giudizio",
+        damage: 18,
+        cost: { mana: 12, rage: 16 },
+        weapon: "art_input/assets/inventory/weapons/weapon_paladin_hammer.png",
+        healsSelf: 8,
+        stats: { maxHp: 165, energyMax: 70, manaMax: 58, rageMax: 72, startHp: 146, startEnergy: 56, startMana: 42, startRage: 48, weaponCost: 12, weaponDamage: { up: 18, right: 23, down: 17, left: 21 }, regen: { energy: 7, mana: 5, rage: 7 }, guardRate: 0.25 },
+    },
+    Prete: {
+        abilityName: "Luce Sacra",
+        damage: 10,
+        cost: { mana: 16 },
+        weapon: "art_input/assets/inventory/weapons/weapon_priest_staff.png",
+        healsSelf: 18,
+        stats: { maxHp: 130, energyMax: 62, manaMax: 88, rageMax: 34, startHp: 116, startEnergy: 46, startMana: 66, startRage: 18, weaponCost: 10, weaponDamage: { up: 12, right: 16, down: 11, left: 14 }, regen: { energy: 6, mana: 8, rage: 3 }, guardRate: 0.45 },
+    },
+    Cacciatore: {
+        abilityName: "Tiro Preciso",
+        damage: 23,
+        cost: { energy: 16 },
+        weapon: "art_input/assets/inventory/weapons/weapon_hunter_bow.png",
+        stats: { maxHp: 140, energyMax: 96, manaMax: 32, rageMax: 46, startHp: 124, startEnergy: 78, startMana: 18, startRage: 26, weaponCost: 14, weaponDamage: { up: 22, right: 30, down: 20, left: 25 }, regen: { energy: 14, mana: 2, rage: 5 }, guardRate: 0.42 },
+    },
+    Ladro: {
+        abilityName: "Pugnalata",
+        damage: 25,
+        cost: { energy: 18 },
+        weapon: "art_input/assets/inventory/weapons/weapon_thief_dagger.png",
+        stats: { maxHp: 125, energyMax: 102, manaMax: 28, rageMax: 54, startHp: 112, startEnergy: 84, startMana: 14, startRage: 34, weaponCost: 16, weaponDamage: { up: 24, right: 31, down: 21, left: 29 }, regen: { energy: 16, mana: 2, rage: 8 }, guardRate: 0.5 },
+    },
+    Negromante: {
+        abilityName: "Teschio Nero",
+        damage: 22,
+        cost: { mana: 18 },
+        weapon: "art_input/assets/inventory/weapons/weapon_necromancer_staff.png",
+        stats: { maxHp: 132, energyMax: 64, manaMax: 92, rageMax: 42, startHp: 116, startEnergy: 48, startMana: 70, startRage: 26, weaponCost: 11, weaponDamage: { up: 14, right: 18, down: 13, left: 16 }, regen: { energy: 6, mana: 9, rage: 5 }, guardRate: 0.48 },
+    },
+    Mago: {
+        abilityName: "Palla di Fuoco",
+        damage: 24,
+        cost: { mana: 20 },
+        weapon: "art_input/assets/inventory/weapons/weapon_mage_wand.png",
+        stats: { maxHp: 120, energyMax: 58, manaMax: 104, rageMax: 32, startHp: 106, startEnergy: 42, startMana: 82, startRage: 16, weaponCost: 10, weaponDamage: { up: 13, right: 17, down: 12, left: 15 }, regen: { energy: 5, mana: 10, rage: 3 }, guardRate: 0.52 },
+    },
 };
 
 const battleBackgrounds = {
@@ -2170,6 +2214,11 @@ const playerState = {
     maxHp: 150,
     energy: 70,
     energyMax: 80,
+    mana: 40,
+    manaMax: 60,
+    rage: 50,
+    rageMax: 80,
+    className: "Guerriero",
     potions: 1,
     inventory: [],
 };
@@ -2184,6 +2233,7 @@ function loadGame() {
     }
     selection.raceKey = selection.raceKey || raceKeysByName[selection.race] || "dogs";
     selection.race = raceNames[selection.raceKey] || selection.race || "Cani";
+    syncPlayerClassStats();
 }
 
 function saveGame() {
@@ -2198,8 +2248,45 @@ function getAbilityIcon(className = selection.className) {
     return (classAbilitySets[className] || classAbilitySets.Guerriero)[0];
 }
 
-function getClassRule() {
-    return classRules[selection.className] || classRules.Guerriero;
+function getClassRule(className = selection.className) {
+    return classRules[className] || classRules.Guerriero;
+}
+
+function getClassStats(className = selection.className) {
+    return getClassRule(className).stats || classRules.Guerriero.stats;
+}
+
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+}
+
+function syncPlayerClassStats(options = {}) {
+    const stats = getClassStats();
+    const previousClass = playerState.className || selection.className;
+    const classChanged = previousClass !== selection.className;
+    const hpRatio = playerState.maxHp ? clamp(playerState.hp / playerState.maxHp, 0, 1) : 1;
+    const energyRatio = playerState.energyMax ? clamp(playerState.energy / playerState.energyMax, 0, 1) : 1;
+    const manaRatio = playerState.manaMax ? clamp((playerState.mana ?? stats.startMana) / playerState.manaMax, 0, 1) : 1;
+    const rageRatio = playerState.rageMax ? clamp((playerState.rage ?? stats.startRage) / playerState.rageMax, 0, 1) : 1;
+
+    playerState.className = selection.className;
+    playerState.maxHp = stats.maxHp;
+    playerState.energyMax = stats.energyMax;
+    playerState.manaMax = stats.manaMax;
+    playerState.rageMax = stats.rageMax;
+
+    if (options.reset || classChanged) {
+        playerState.hp = stats.startHp;
+        playerState.energy = stats.startEnergy;
+        playerState.mana = stats.startMana;
+        playerState.rage = stats.startRage;
+        return;
+    }
+
+    playerState.hp = clamp(Math.round(playerState.maxHp * hpRatio), 1, playerState.maxHp);
+    playerState.energy = clamp(Math.round(playerState.energyMax * energyRatio), 0, playerState.energyMax);
+    playerState.mana = clamp(Math.round(playerState.manaMax * manaRatio), 0, playerState.manaMax);
+    playerState.rage = clamp(Math.round(playerState.rageMax * rageRatio), 0, playerState.rageMax);
 }
 
 function getHeroProfile() {
@@ -2262,9 +2349,11 @@ function updateRaceSelection(card, options = {}) {
 
 function updateClassSelection(slot, options = {}) {
     if (!slot || slot.classList.contains("locked")) return;
+    const changedClass = selection.className !== slot.dataset.class;
     selection.className = slot.dataset.class;
     selection.raceKey = slot.closest(".race-card")?.dataset.race || selection.raceKey;
     selection.race = raceNames[selection.raceKey] || selection.race;
+    if (changedClass) syncPlayerClassStats({ reset: true });
     document.querySelectorAll(".class-slot").forEach(item => item.classList.remove("selected"));
     slot.classList.add("selected");
     applyGameStateToUI();
@@ -2280,6 +2369,7 @@ function restoreSelectionUI() {
 
 function applyGameStateToUI() {
     const rule = getClassRule();
+    const stats = getClassStats();
     const profile = getHeroProfile();
     const reward = nodeRewards[selection.node] || nodeRewards.Combattimento;
     const confirm = document.querySelector(".confirm-race");
@@ -2288,6 +2378,7 @@ function applyGameStateToUI() {
     const playerPortrait = document.getElementById("player-portrait");
     const playerName = document.getElementById("player-fighter-name");
     const weaponIcon = document.getElementById("weapon-action-icon");
+    const weaponCost = document.getElementById("weapon-cost");
     const abilityIcon = document.getElementById("ability-action-icon");
     const abilityCost = document.getElementById("ability-cost");
     const abilityLabel = document.getElementById("ability-action-label");
@@ -2320,6 +2411,7 @@ function applyGameStateToUI() {
     }
     if (playerName) playerName.textContent = selection.className.toUpperCase();
     if (weaponIcon) weaponIcon.src = rule.weapon;
+    if (weaponCost) weaponCost.textContent = `-${stats.weaponCost} EN`;
     if (abilityIcon) abilityIcon.src = getAbilityIcon();
     if (abilityCost) abilityCost.innerHTML = costLabel(rule.cost);
     if (abilityLabel) abilityLabel.textContent = rule.abilityName.toUpperCase();
@@ -2352,6 +2444,9 @@ function grantReward(reward, sourceLabel) {
     playerState.talentPoints += reward.talentPoints || 0;
     if (reward.potions) playerState.potions += reward.potions;
     if (reward.heal) playerState.hp = Math.min(playerState.maxHp, playerState.hp + reward.heal);
+    if (reward.energy) playerState.energy = Math.min(playerState.energyMax, playerState.energy + reward.energy);
+    if (reward.mana) playerState.mana = Math.min(playerState.manaMax, playerState.mana + reward.mana);
+    if (reward.rage) playerState.rage = Math.min(playerState.rageMax, playerState.rage + reward.rage);
     if (reward.item) playerState.inventory.push(reward.item);
     syncProgression();
     saveGame();
@@ -2492,15 +2587,12 @@ const combat = {
     timerPhase: null,
 };
 
-const actionCosts = {
-    weapon: { energy: 12 },
-    ability: { mana: 18, rage: 24 },
-};
-
 const combatStatus = document.getElementById("combat-status");
 const dpad = document.querySelector("#combat-screen .dpad");
 const playerHpFill = document.getElementById("player-hp-fill");
 const playerHpText = document.getElementById("player-hp-text");
+const playerSecondaryFill = document.getElementById("player-secondary-fill");
+const playerSecondaryText = document.getElementById("player-secondary-text");
 const enemyHpFill = document.getElementById("enemy-hp-fill");
 const enemyHpText = document.getElementById("enemy-hp-text");
 const combatScreen = document.getElementById("combat-screen");
@@ -2592,6 +2684,17 @@ function updatePlayerHp() {
     playerHpText.textContent = `${combat.playerHp} / ${combat.playerMaxHp}`;
 }
 
+function updatePlayerSecondary() {
+    if (!playerSecondaryFill || !playerSecondaryText) return;
+    const usesMana = combat.manaMax >= combat.rageMax;
+    const current = usesMana ? combat.mana : combat.rage;
+    const max = usesMana ? combat.manaMax : combat.rageMax;
+    const label = usesMana ? "MA" : "RA";
+    const ratio = max > 0 ? Math.max(0, current / max) : 0;
+    playerSecondaryFill.style.width = `${Math.round(ratio * 100)}%`;
+    playerSecondaryText.textContent = `${label} ${current} / ${max}`;
+}
+
 function updateResourceBar(bar, current, max) {
     if (!bar) return;
     const filled = Math.round((Math.max(0, current) / max) * 8);
@@ -2602,7 +2705,8 @@ function updateResourceBar(bar, current, max) {
 
 function canUseAction(action) {
     const rule = getClassRule();
-    if (action === "weapon") return combat.energy >= actionCosts.weapon.energy;
+    const stats = getClassStats();
+    if (action === "weapon") return combat.energy >= stats.weaponCost;
     if (action === "ability") {
         const cost = rule.cost;
         return (!cost.mana || combat.mana >= cost.mana)
@@ -2628,6 +2732,7 @@ function updateResources() {
     if (manaValue) manaValue.textContent = `${combat.mana} / ${combat.manaMax}`;
     if (energyValue) energyValue.textContent = `${combat.energy} / ${combat.energyMax}`;
     if (potionCount) potionCount.textContent = `x${combat.potions}`;
+    updatePlayerSecondary();
 }
 
 function formatTimer(seconds) {
@@ -2774,15 +2879,20 @@ function spawnFx(src, className, x, y, duration = 560) {
 
 function startCombat() {
     const profile = getHeroProfile();
+    const stats = getClassStats();
     const reward = nodeRewards[selection.node] || nodeRewards.Combattimento;
+    syncPlayerClassStats();
     combat.playerMaxHp = playerState.maxHp;
     combat.playerHp = Math.min(playerState.hp, combat.playerMaxHp);
     combat.enemyHp = 96;
     combat.enemyMaxHp = selection.node === "Boss finale" ? 190 : selection.node === "Miniboss" ? 150 : 120;
     combat.enemyHp = selection.node === "Boss finale" ? 154 : selection.node === "Miniboss" ? 122 : 96;
-    combat.rage = selection.className === "Guerriero" ? 64 : 42;
-    combat.mana = ["Mago", "Negromante", "Prete", "Paladino"].includes(selection.className) ? 52 : 28;
-    combat.energy = playerState.energy;
+    combat.rageMax = stats.rageMax;
+    combat.manaMax = stats.manaMax;
+    combat.energyMax = stats.energyMax;
+    combat.rage = Math.min(playerState.rage, combat.rageMax);
+    combat.mana = Math.min(playerState.mana, combat.manaMax);
+    combat.energy = Math.min(playerState.energy, combat.energyMax);
     combat.potions = playerState.potions;
     combat.phase = "action";
     combat.turn = 1;
@@ -2871,13 +2981,14 @@ function damagePlayer(amount, blocked) {
 
 function chooseWeapon() {
     if (combat.phase !== "action") return;
+    const stats = getClassStats();
     if (!canUseAction("weapon")) {
         setCombatStatus("ENERGIA INSUFFICIENTE: scegli un'altra azione.");
         updateActionButtons();
         return;
     }
     stopCombatTimer();
-    combat.energy = Math.max(0, combat.energy - actionCosts.weapon.energy);
+    combat.energy = Math.max(0, combat.energy - stats.weaponCost);
     updateResources();
     combat.phase = "aim";
     combat.playerAction = "weapon";
@@ -2970,8 +3081,9 @@ function resolvePlayerDirection(dir) {
     setDpadActive(false);
     setTimer(62, 0);
     showPhaseCallout("ATTACCO", "attack");
+    const stats = getClassStats();
     const enemyGuard = enemyPatterns[(combat.turn + 1) % enemyPatterns.length].dir;
-    const baseDamage = { up: 18, right: 24, down: 16, left: 20 }[dir] || 16;
+    const baseDamage = stats.weaponDamage[dir] || stats.weaponDamage.right || 16;
     const blocked = dir === enemyGuard;
     const glancing = oppositeDirs[dir] === enemyGuard;
     const damage = blocked ? 0 : glancing ? Math.ceil(baseDamage * 0.48) : baseDamage;
@@ -3018,8 +3130,9 @@ function resolveDefense(dir, timedOut = false) {
     setDpadActive(false);
     clearEnemyTell();
     setTimer(18, 0);
+    const stats = getClassStats();
     const blocked = !timedOut && dir === combat.enemyIntent.dir;
-    const damage = blocked ? Math.max(4, Math.floor(combat.enemyIntent.damage * 0.35)) : combat.enemyIntent.damage;
+    const damage = blocked ? Math.max(4, Math.floor(combat.enemyIntent.damage * stats.guardRate)) : combat.enemyIntent.damage;
     playSpriteAnimation(enemySprite, spriteAnims.enemyAttack, spriteDefaults.enemy, { frameMs: 130 });
     window.setTimeout(() => {
         if (combat.phase !== "resolve-enemy") return;
@@ -3044,10 +3157,11 @@ function resolveDefense(dir, timedOut = false) {
 function nextTurn() {
     if (combat.enemyHp <= 0 || combat.playerHp <= 0) return;
     stopCombatTimer();
+    const stats = getClassStats();
     combat.turn += 1;
-    combat.energy = Math.min(combat.energyMax, combat.energy + 10);
-    combat.mana = Math.min(combat.manaMax, combat.mana + 4);
-    combat.rage = Math.min(combat.rageMax, combat.rage + 8);
+    combat.energy = Math.min(combat.energyMax, combat.energy + stats.regen.energy);
+    combat.mana = Math.min(combat.manaMax, combat.mana + stats.regen.mana);
+    combat.rage = Math.min(combat.rageMax, combat.rage + stats.regen.rage);
     combat.phase = "action";
     combat.playerAction = null;
     combat.enemyIntent = null;
@@ -3076,6 +3190,8 @@ function endCombat(won) {
     }
     playerState.hp = won ? Math.max(1, combat.playerHp) : Math.max(1, Math.floor(playerState.maxHp * 0.45));
     playerState.energy = combat.energy;
+    playerState.mana = combat.mana;
+    playerState.rage = combat.rage;
     playerState.potions = combat.potions;
     const rewardSummary = won ? grantReward(nodeRewards[selection.node] || nodeRewards.Combattimento, selection.node) : null;
     setIntentVisual(
