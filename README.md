@@ -150,4 +150,20 @@ Gli altri asset PNG generati restano nella workspace locale e sono esclusi da gi
 4. Ricentrare ogni frame su canvas identico.
 5. Verificare dimensioni, canale alpha, angoli trasparenti e centro del bounding box.
 
-Per lavori futuri usare la skill personale `petsquest-character-sprites`.
+## Skill Codex Del Progetto
+
+Skill principale per asset grafici PetsQuest:
+
+```text
+/Users/vittoriocutolo/.codex/skills/petsquest-character-sprites
+```
+
+Usarla per generare, editare, dividere, centrare, validare o preparare:
+
+- sprite personaggi e nemici;
+- animazioni combat;
+- mappe campagna;
+- battle background;
+- icone UI, inventario, loot, rank ed endgame.
+
+La skill contiene le regole di stile PetsQuest, dimensioni standard, convenzioni direzione, naming, checklist validazione e regole git per non committare asset massivi salvo richiesta esplicita.

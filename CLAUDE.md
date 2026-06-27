@@ -4,6 +4,16 @@
 
 Usare gli asset gia' presenti nel progetto. Non introdurre placeholder geometrici se esiste un asset coerente nello stile PetsQuest.
 
+## Skill Codex Di Riferimento
+
+Per qualunque lavoro su asset raster PetsQuest usare:
+
+```text
+/Users/vittoriocutolo/.codex/skills/petsquest-character-sprites
+```
+
+La skill copre sprite personaggi/nemici, animazioni combat, mappe campagna, sfondi battaglia, icone UI/inventario/endgame, badge rank, naming, dimensioni, direzioni, validazione PNG e regole git sugli asset generati.
+
 ## Repo e Avvio
 
 - Entry point: `index.html`.
