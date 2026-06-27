@@ -25,6 +25,7 @@
         body {
             margin: 0;
             min-height: 100vh;
+            min-height: 100dvh;
             overflow: hidden;
             background: radial-gradient(circle at 50% 20%, #132b3d 0, #061016 48%, #020407 100%);
             color: var(--text);
@@ -41,6 +42,7 @@
             position: relative;
             width: 100vw;
             height: 100vh;
+            height: 100dvh;
             overflow: hidden;
         }
 
@@ -55,6 +57,108 @@
             box-shadow: 0 24px 80px rgba(0, 0, 0, 0.65);
             transform-origin: top left;
             image-rendering: pixelated;
+        }
+
+        #orientation-lock {
+            position: fixed;
+            inset: 0;
+            z-index: 999;
+            display: none;
+            place-items: center;
+            padding: 28px;
+            text-align: center;
+            background:
+                radial-gradient(circle at 50% 28%, rgba(34, 74, 105, 0.92), transparent 34%),
+                linear-gradient(180deg, #071018, #03070b);
+        }
+
+        .rotate-panel {
+            display: grid;
+            place-items: center;
+            gap: 22px;
+            width: min(330px, 88vw);
+            padding: 34px 24px 30px;
+            color: #fff2c4;
+        }
+
+        .rotate-icon {
+            position: relative;
+            width: 118px;
+            height: 118px;
+        }
+
+        .rotate-phone {
+            position: absolute;
+            left: 34px;
+            top: 13px;
+            width: 50px;
+            height: 92px;
+            border: 6px solid #ffd870;
+            border-radius: 12px;
+            background:
+                linear-gradient(180deg, rgba(26, 38, 56, 0.96), rgba(8, 13, 18, 0.98));
+            box-shadow:
+                inset 0 0 0 3px #8d642f,
+                0 0 24px rgba(255, 216, 112, 0.32);
+            animation: phoneTurn 1500ms ease-in-out infinite;
+        }
+
+        .rotate-phone::after {
+            content: "";
+            position: absolute;
+            left: 50%;
+            bottom: 6px;
+            width: 11px;
+            height: 5px;
+            transform: translateX(-50%);
+            border-radius: 5px;
+            background: #ffd870;
+        }
+
+        .rotate-arrow {
+            position: absolute;
+            inset: 0;
+            border: 6px solid transparent;
+            border-top-color: #45aef0;
+            border-right-color: #45aef0;
+            border-radius: 50%;
+            animation: arrowSpin 1500ms ease-in-out infinite;
+            filter: drop-shadow(0 0 14px rgba(69, 174, 240, 0.45));
+        }
+
+        .rotate-arrow::after {
+            content: "";
+            position: absolute;
+            right: 4px;
+            top: 10px;
+            width: 0;
+            height: 0;
+            border-left: 16px solid #45aef0;
+            border-top: 10px solid transparent;
+            border-bottom: 10px solid transparent;
+            transform: rotate(28deg);
+        }
+
+        .rotate-title {
+            font-size: 17px;
+            line-height: 1.55;
+            text-shadow: 0 4px 0 #201109;
+        }
+
+        .rotate-copy {
+            color: #c8b98c;
+            font-size: 10px;
+            line-height: 1.7;
+        }
+
+        @keyframes phoneTurn {
+            0%, 100% { transform: rotate(0deg) scale(0.96); }
+            42%, 68% { transform: rotate(90deg) scale(1.04); }
+        }
+
+        @keyframes arrowSpin {
+            0%, 18% { transform: rotate(-18deg); opacity: 0.65; }
+            58%, 100% { transform: rotate(72deg); opacity: 1; }
         }
 
         .screen {
@@ -217,6 +321,166 @@
             height: 58px;
             object-fit: contain;
             image-rendering: pixelated;
+        }
+
+        /* Intro screen */
+        #intro-screen {
+            background: #03070b;
+        }
+
+        .intro-bg {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            image-rendering: pixelated;
+            filter: saturate(1.22) contrast(1.1);
+        }
+
+        .intro-bg.cat {
+            opacity: 0.34;
+            mix-blend-mode: screen;
+            clip-path: polygon(62% 0, 100% 0, 100% 100%, 54% 100%);
+        }
+
+        .intro-bg.mouse {
+            opacity: 0.26;
+            mix-blend-mode: soft-light;
+            clip-path: polygon(0 0, 44% 0, 36% 100%, 0 100%);
+        }
+
+        .intro-vignette {
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 50% 45%, rgba(255, 216, 112, 0.14), transparent 24%),
+                linear-gradient(180deg, rgba(0, 0, 0, 0.06), rgba(0, 0, 0, 0.54) 72%, rgba(0, 0, 0, 0.82)),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.46), transparent 28%, transparent 72%, rgba(0, 0, 0, 0.5));
+            pointer-events: none;
+        }
+
+        .intro-logo {
+            position: absolute;
+            z-index: 8;
+            left: 50%;
+            top: 70px;
+            transform: translateX(-50%);
+            font-size: 86px;
+            line-height: 1;
+            color: #ffe083;
+            text-shadow:
+                0 7px 0 #3a1c10,
+                0 13px 0 rgba(0, 0, 0, 0.62),
+                0 0 30px rgba(255, 216, 112, 0.42);
+            letter-spacing: 0;
+            white-space: nowrap;
+        }
+
+        .intro-logo::before,
+        .intro-logo::after {
+            content: "";
+            position: absolute;
+            top: 52%;
+            width: 168px;
+            height: 58px;
+            transform: translateY(-50%);
+            background: url("assets/generated_ui/campaign/banner_dogs.png") center / contain no-repeat;
+            filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.45));
+        }
+
+        .intro-logo::before { right: calc(100% + 22px); }
+        .intro-logo::after {
+            left: calc(100% + 22px);
+            transform: translateY(-50%) scaleX(-1);
+        }
+
+        .intro-party {
+            position: absolute;
+            z-index: 7;
+            left: 50%;
+            bottom: 160px;
+            width: 840px;
+            height: 430px;
+            transform: translateX(-50%);
+            pointer-events: none;
+        }
+
+        .intro-party .sprite {
+            bottom: 0;
+            filter:
+                drop-shadow(0 14px 4px rgba(0, 0, 0, 0.55))
+                drop-shadow(0 0 24px rgba(255, 216, 112, 0.18));
+        }
+
+        .intro-hero {
+            left: 282px;
+            width: 300px;
+            height: 430px;
+            z-index: 4;
+            animation: introFloat 2200ms ease-in-out infinite;
+        }
+
+        .intro-mage {
+            left: 520px;
+            width: 245px;
+            height: 365px;
+            z-index: 3;
+            animation: introFloat 2500ms ease-in-out infinite 140ms;
+        }
+
+        .intro-mouse {
+            left: 92px;
+            width: 245px;
+            height: 355px;
+            z-index: 2;
+            animation: introFloat 2450ms ease-in-out infinite 260ms;
+        }
+
+        .intro-loot {
+            position: absolute;
+            z-index: 6;
+            left: 50%;
+            bottom: 136px;
+            display: flex;
+            gap: 18px;
+            transform: translateX(-50%);
+        }
+
+        .intro-loot img {
+            width: 74px;
+            height: 74px;
+            object-fit: contain;
+            filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.46));
+            animation: lootPulse 1800ms ease-in-out infinite;
+        }
+
+        .intro-loot img:nth-child(2) { animation-delay: 160ms; }
+        .intro-loot img:nth-child(3) { animation-delay: 320ms; }
+
+        .intro-start {
+            position: absolute;
+            z-index: 9;
+            left: 50%;
+            bottom: 76px;
+            transform: translateX(-50%);
+            width: 330px;
+            animation: startPulse 1300ms ease-in-out infinite;
+        }
+
+        @keyframes introFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-12px); }
+        }
+
+        @keyframes lootPulse {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-6px) scale(1.08); }
+        }
+
+        @keyframes startPulse {
+            0%, 100% { filter: brightness(1); }
+            50% { filter: brightness(1.22) drop-shadow(0 0 16px rgba(255, 216, 112, 0.45)); }
         }
 
         /* Race screen */
@@ -1311,19 +1575,60 @@
         @media (max-width: 900px) {
             #game { transform-origin: top center; }
         }
+
+        @media (orientation: portrait) and (max-width: 900px) {
+            #game {
+                opacity: 0;
+                pointer-events: none;
+            }
+
+            #orientation-lock {
+                display: grid;
+            }
+        }
     </style>
 </head>
 <body>
 <div id="viewport">
+    <div id="orientation-lock" role="status" aria-live="polite">
+        <div class="rotate-panel panel">
+            <div class="rotate-icon" aria-hidden="true">
+                <div class="rotate-arrow"></div>
+                <div class="rotate-phone"></div>
+            </div>
+            <div class="rotate-title">RUOTA IL TELEFONO</div>
+            <div class="rotate-copy">PetsQuest si gioca in landscape</div>
+        </div>
+    </div>
     <main id="game">
         <nav class="top-nav" aria-label="Schermate">
+            <button class="icon-btn" data-go="intro-screen">I</button>
             <button class="icon-btn" data-go="race-screen">R</button>
             <button class="icon-btn" data-go="campaign-screen">C</button>
             <button class="icon-btn" data-go="combat-screen">B</button>
             <button class="icon-btn" data-go="endgame-screen">E</button>
         </nav>
 
-        <section id="race-screen" class="screen active">
+        <section id="intro-screen" class="screen active">
+            <img class="intro-bg" src="art_input/assets/backgrounds/battle/dog_forest_night.png" alt="">
+            <img class="intro-bg mouse" src="art_input/assets/backgrounds/battle/mouse_ruined_city.png" alt="">
+            <img class="intro-bg cat" src="art_input/assets/backgrounds/battle/cat_dark_dungeon.png" alt="">
+            <div class="intro-vignette"></div>
+            <div class="intro-logo">PETSQUEST</div>
+            <div class="intro-party">
+                <img class="sprite sprite-anim intro-mouse" data-stem="art_input/assets/sprites/mouse_warrior/idle/mouse_warrior_idle" src="art_input/assets/sprites/mouse_warrior/idle/mouse_warrior_idle_01.png" alt="">
+                <img class="sprite sprite-anim intro-hero" data-stem="art_input/assets/sprites/main_character/idle_left/main_character_idle_left" src="art_input/assets/sprites/main_character/idle_left/main_character_idle_left_01.png" alt="">
+                <img class="sprite sprite-anim intro-mage" data-stem="art_input/assets/sprites/cat_mage/idle/cat_mage_idle" src="art_input/assets/sprites/cat_mage/idle/cat_mage_idle_01.png" alt="">
+            </div>
+            <div class="intro-loot">
+                <img src="art_input/assets/inventory/loot/loot_common.png" alt="">
+                <img src="art_input/assets/inventory/loot/loot_rare.png" alt="">
+                <img src="art_input/assets/inventory/loot/loot_epic.png" alt="">
+            </div>
+            <button class="gold-btn intro-start" data-go="race-screen">GIOCA</button>
+        </section>
+
+        <section id="race-screen" class="screen">
             <img class="race-bg dog" src="art_input/assets/backgrounds/battle/dog_forest_night.png" alt="">
             <img class="race-bg mouse" src="art_input/assets/backgrounds/battle/mouse_ruined_city.png" alt="">
             <img class="race-bg cat" src="art_input/assets/backgrounds/battle/cat_dark_dungeon.png" alt="">
@@ -1677,6 +1982,25 @@ function fitGame() {
 
 window.addEventListener("resize", fitGame);
 fitGame();
+
+const orientationLock = document.getElementById("orientation-lock");
+
+async function requestLandscapeLock() {
+    if (!orientationLock || window.innerWidth > window.innerHeight) return;
+    try {
+        if (document.documentElement.requestFullscreen && !document.fullscreenElement) {
+            await document.documentElement.requestFullscreen();
+        }
+        if (screen.orientation?.lock) {
+            await screen.orientation.lock("landscape");
+        }
+    } catch (error) {
+        // Mobile browsers often allow orientation lock only for installed apps or fullscreen.
+    }
+}
+
+orientationLock?.addEventListener("click", requestLandscapeLock);
+orientationLock?.addEventListener("touchend", requestLandscapeLock, { passive: true });
 
 const animatedSprites = [...document.querySelectorAll(".sprite-anim")];
 let frame = 1;
