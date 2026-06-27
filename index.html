@@ -1531,6 +1531,59 @@
             filter: grayscale(0.55) brightness(0.78) drop-shadow(0 0 10px rgba(255, 114, 88, 0.42));
         }
 
+        .target-panel {
+            grid-column: 1 / -1;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            min-height: 68px;
+            margin-top: -4px;
+        }
+
+        .target-panel[hidden] {
+            display: none;
+        }
+
+        .target-card {
+            height: 68px;
+            padding: 8px 12px;
+            display: grid;
+            grid-template-columns: 48px 1fr;
+            align-items: center;
+            gap: 10px;
+            appearance: none;
+            color: #ffe6aa;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .target-card:hover {
+            filter: brightness(1.12) drop-shadow(0 0 10px rgba(124, 245, 138, 0.32));
+        }
+
+        .target-card img {
+            width: 48px;
+            height: 48px;
+            object-fit: contain;
+            image-rendering: pixelated;
+        }
+
+        .target-card strong {
+            display: block;
+            color: #ffd870;
+            font-size: 13px;
+            line-height: 1.15;
+        }
+
+        .target-card small {
+            display: block;
+            margin-top: 4px;
+            color: #9ee8ff;
+            font-size: 10px;
+            line-height: 1.15;
+        }
+
         @keyframes magicPulse {
             0%, 100% { transform: translateY(0) scale(1); }
             50% { transform: translateY(-3px) scale(1.08); }
@@ -2059,6 +2112,16 @@
                     <div class="magic-sequence" id="magic-sequence" hidden aria-hidden="true">
                         <div class="magic-slots" id="magic-slots"></div>
                     </div>
+                    <div class="target-panel" id="target-panel" hidden aria-hidden="true">
+                        <button class="target-card panel" data-target="hero">
+                            <img id="target-hero-icon" src="assets/generated_ui/endgame/role_healer.png" alt="">
+                            <span><strong>EROE</strong><small id="target-hero-hp">124 / 150 HP</small></span>
+                        </button>
+                        <button class="target-card panel" data-target="ally">
+                            <img src="assets/generated_ui/endgame/party_slot_ready.png" alt="">
+                            <span><strong>ALLEATO</strong><small id="target-ally-hp">68 / 112 HP</small></span>
+                        </button>
+                    </div>
                     <div class="phase-banner" id="phase-banner">TURNO 1: scegli arma, abilita o oggetto.</div>
                 </div>
                 <div class="timer-strip">
@@ -2295,6 +2358,8 @@ const playerState = {
     manaMax: 60,
     rage: 50,
     rageMax: 80,
+    allyHp: 68,
+    allyMaxHp: 112,
     className: "Guerriero",
     potions: 1,
     inventory: [],
@@ -2647,6 +2712,8 @@ const combat = {
     playerMaxHp: 150,
     enemyHp: 96,
     enemyMaxHp: 120,
+    allyHp: 68,
+    allyMaxHp: 112,
     rage: 50,
     rageMax: 80,
     mana: 40,
@@ -2663,6 +2730,7 @@ const combat = {
     magicResults: [],
     magicIndex: 0,
     magicHits: 0,
+    pendingAbility: null,
     timerFrame: null,
     timerToken: 0,
     timerPhase: null,
@@ -2682,6 +2750,10 @@ const phaseCallout = document.getElementById("phase-callout");
 const directionHint = document.getElementById("direction-hint");
 const magicSequencePanel = document.getElementById("magic-sequence");
 const magicSlots = document.getElementById("magic-slots");
+const targetPanel = document.getElementById("target-panel");
+const targetHeroIcon = document.getElementById("target-hero-icon");
+const targetHeroHp = document.getElementById("target-hero-hp");
+const targetAllyHp = document.getElementById("target-ally-hp");
 const timerFill = document.getElementById("combat-timer-fill");
 const timerBox = document.getElementById("combat-time-box");
 const intentLeftIcon = document.getElementById("intent-left-icon");
@@ -2745,6 +2817,7 @@ const phaseDurations = {
     action: 12,
     aim: 6,
     magic: 8,
+    target: 6,
     defense: 5,
 };
 
@@ -2773,6 +2846,7 @@ function updatePlayerHp() {
     const ratio = Math.max(0, combat.playerHp / combat.playerMaxHp);
     playerHpFill.style.width = `${Math.round(ratio * 100)}%`;
     playerHpText.textContent = `${combat.playerHp} / ${combat.playerMaxHp}`;
+    updateTargetPanel();
 }
 
 function updatePlayerSecondary() {
@@ -2944,6 +3018,81 @@ function resetMagicSequence() {
     if (magicSlots) magicSlots.innerHTML = "";
 }
 
+function setTargetPanelVisible(visible) {
+    if (!targetPanel) return;
+    targetPanel.hidden = !visible;
+    targetPanel.setAttribute("aria-hidden", visible ? "false" : "true");
+}
+
+function updateTargetPanel() {
+    if (targetHeroIcon) targetHeroIcon.src = getAbilityIcon();
+    if (targetHeroHp) targetHeroHp.textContent = `${combat.playerHp} / ${combat.playerMaxHp} HP`;
+    if (targetAllyHp) targetAllyHp.textContent = `${combat.allyHp} / ${combat.allyMaxHp} HP`;
+}
+
+function resetTargeting() {
+    combat.pendingAbility = null;
+    setTargetPanelVisible(false);
+}
+
+function applyTargetHeal(target, heal) {
+    if (target === "ally") {
+        const before = combat.allyHp;
+        combat.allyHp = Math.min(combat.allyMaxHp, combat.allyHp + heal);
+        playerState.allyHp = combat.allyHp;
+        playerState.allyMaxHp = combat.allyMaxHp;
+        updateTargetPanel();
+        const healed = combat.allyHp - before;
+        showFloatingText(healed > 0 ? `+${healed}` : "MAX", 650, 542, "#7cf58a");
+        spawnFx("assets/generated_ui/combat_fx/fx_heal_sparkle.png", "heal", 610, 474, 700);
+        return healed;
+    }
+
+    const before = combat.playerHp;
+    combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + heal);
+    playerState.hp = combat.playerHp;
+    updatePlayerHp();
+    updateTargetPanel();
+    const healed = combat.playerHp - before;
+    showFloatingText(healed > 0 ? `+${healed}` : "MAX", 420, 360, "#7cf58a");
+    spawnFx("assets/generated_ui/combat_fx/fx_heal_sparkle.png", "heal", 378, 292, 700);
+    return healed;
+}
+
+function beginHealTargeting(payload) {
+    combat.phase = "target";
+    combat.pendingAbility = payload;
+    setDpadActive(false);
+    resetMagicSequence();
+    updateActionButtons("ability");
+    updateTargetPanel();
+    setTargetPanelVisible(true);
+    setIntentVisual(
+        getAbilityIcon(),
+        "assets/generated_ui/endgame/role_healer.png",
+        `${payload.rule.abilityName.toUpperCase()}<br>SCEGLI CHI CURARE`
+    );
+    setCombatStatus(`CURA: scegli il bersaglio di ${payload.rule.abilityName}.`);
+    startCombatTimer("target", phaseDurations.target, () => resolveHealTarget("hero", true));
+}
+
+function resolveHealTarget(target = "hero", timedOut = false) {
+    if (combat.phase !== "target" || !combat.pendingAbility) return;
+    stopCombatTimer();
+    const pending = combat.pendingAbility;
+    combat.phase = "resolve-player";
+    combat.pendingAbility = null;
+    setTargetPanelVisible(false);
+    setTimer(62, 0);
+    showPhaseCallout("ATTACCO", "attack");
+    const healed = applyTargetHeal(target, pending.heal);
+    spawnFx("assets/generated_ui/combat_fx/fx_magic_projectile.png", "magic", 900, 318, 620);
+    spawnFx("assets/generated_ui/combat_fx/fx_necromancy_particles.png", "magic", 1084, 290, 700);
+    const resultLabel = `${pending.resultLabel} ${timedOut ? "Target automatico:" : "Cura:"} ${target === "ally" ? "alleato" : "eroe"} ${healed > 0 ? `+${healed}` : "al massimo"} HP.`;
+    const won = damageEnemy(pending.damage, resultLabel);
+    if (!won) window.setTimeout(startEnemyIntent, 760);
+}
+
 function setSpriteIdle(sprite, stem) {
     if (!sprite) return;
     if (sprite._animTimer) {
@@ -3015,6 +3164,8 @@ function startCombat() {
     combat.enemyHp = 96;
     combat.enemyMaxHp = selection.node === "Boss finale" ? 190 : selection.node === "Miniboss" ? 150 : 120;
     combat.enemyHp = selection.node === "Boss finale" ? 154 : selection.node === "Miniboss" ? 122 : 96;
+    combat.allyMaxHp = playerState.allyMaxHp || 112;
+    combat.allyHp = clamp(playerState.allyHp ?? 68, 1, combat.allyMaxHp);
     combat.rageMax = stats.rageMax;
     combat.manaMax = stats.manaMax;
     combat.energyMax = stats.energyMax;
@@ -3027,6 +3178,7 @@ function startCombat() {
     combat.playerAction = null;
     combat.enemyIntent = null;
     stopCombatTimer();
+    resetTargeting();
     spriteDefaults.player = profile.stem;
     spriteAnims.playerAttack = profile.attack;
     spriteAnims.playerHit = profile.hit;
@@ -3037,6 +3189,7 @@ function startCombat() {
     updatePlayerHp();
     updateEnemyHp();
     updateResources();
+    updateTargetPanel();
     updateActionButtons();
     setDpadActive(false);
     setIntentVisual(
@@ -3178,12 +3331,13 @@ function castAbility() {
     spawnFx("assets/generated_ui/combat_fx/fx_magic_projectile.png", "magic", 900, 318, 620);
     spawnFx("assets/generated_ui/combat_fx/fx_necromancy_particles.png", "magic", 1084, 290, 700);
     if (rule.healsSelf) {
-        const before = combat.playerHp;
-        combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + rule.healsSelf);
-        playerState.hp = combat.playerHp;
-        updatePlayerHp();
-        showFloatingText(`+${combat.playerHp - before}`, 420, 360, "#7cf58a");
-        spawnFx("assets/generated_ui/combat_fx/fx_heal_sparkle.png", "heal", 378, 292, 700);
+        beginHealTargeting({
+            rule,
+            heal: rule.healsSelf,
+            damage: rule.damage,
+            resultLabel: `ABILITA: ${rule.abilityName} colpisce il bersaglio.`,
+        });
+        return;
     }
     const won = damageEnemy(rule.damage, `ABILITA: ${rule.abilityName} colpisce il bersaglio.`);
     if (!won) window.setTimeout(startEnemyIntent, 720);
@@ -3262,24 +3416,24 @@ function finishMagicSequence(timedOut) {
         "assets/generated_ui/endgame/matchmaking_crystal.png",
         `${hits}/4 CRISTALLI<br>${timedOut ? "MAGIA INTERROTTA" : "MAGIA RISOLTA"}`
     );
-    spawnFx("assets/generated_ui/combat_fx/fx_magic_projectile.png", "magic", 900, 318, 620);
-    spawnFx("assets/generated_ui/combat_fx/fx_necromancy_particles.png", "magic", 1084, 290, 700);
-
-    if (rule.healsSelf) {
-        const before = combat.playerHp;
-        const heal = Math.max(1, Math.round(rule.healsSelf * multiplier));
-        combat.playerHp = Math.min(combat.playerMaxHp, combat.playerHp + heal);
-        playerState.hp = combat.playerHp;
-        updatePlayerHp();
-        showFloatingText(`+${combat.playerHp - before}`, 420, 360, "#7cf58a");
-        spawnFx("assets/generated_ui/combat_fx/fx_heal_sparkle.png", "heal", 378, 292, 700);
-    }
-
     const resultLabel = hits === 4
         ? `MAGIA PERFETTA: ${rule.abilityName} esplode sul bersaglio.`
         : hits >= 2
             ? `MAGIA PARZIALE: ${rule.abilityName} colpisce con potenza ridotta.`
             : `MAGIA DEBOLE: ${rule.abilityName} si manifesta appena.`;
+
+    if (rule.healsSelf) {
+        beginHealTargeting({
+            rule,
+            heal: Math.max(1, Math.round(rule.healsSelf * multiplier)),
+            damage,
+            resultLabel,
+        });
+        return;
+    }
+
+    spawnFx("assets/generated_ui/combat_fx/fx_magic_projectile.png", "magic", 900, 318, 620);
+    spawnFx("assets/generated_ui/combat_fx/fx_necromancy_particles.png", "magic", 1084, 290, 700);
     const won = damageEnemy(damage, resultLabel);
     if (!won) window.setTimeout(startEnemyIntent, 760);
 }
@@ -3319,6 +3473,7 @@ function startEnemyIntent() {
     if (combat.enemyHp <= 0 || combat.playerHp <= 0) return;
     stopCombatTimer();
     resetMagicSequence();
+    resetTargeting();
     combat.phase = "defense";
     combat.enemyIntent = enemyPatterns[(combat.turn - 1) % enemyPatterns.length];
     updateActionButtons();
@@ -3377,6 +3532,7 @@ function nextTurn() {
     combat.playerAction = null;
     combat.enemyIntent = null;
     resetMagicSequence();
+    resetTargeting();
     updateActionButtons();
     updateResources();
     setDpadActive(false);
@@ -3392,6 +3548,7 @@ function nextTurn() {
 function endCombat(won) {
     stopCombatTimer();
     resetMagicSequence();
+    resetTargeting();
     combat.phase = won ? "won" : "lost";
     setDpadActive(false);
     updateActionButtons();
@@ -3405,6 +3562,8 @@ function endCombat(won) {
     playerState.energy = combat.energy;
     playerState.mana = combat.mana;
     playerState.rage = combat.rage;
+    playerState.allyHp = combat.allyHp;
+    playerState.allyMaxHp = combat.allyMaxHp;
     playerState.potions = combat.potions;
     const rewardSummary = won ? grantReward(nodeRewards[selection.node] || nodeRewards.Combattimento, selection.node) : null;
     setIntentVisual(
@@ -3483,6 +3642,10 @@ actionButtons.forEach(button => {
 
 document.querySelectorAll("[data-dir]").forEach(button => {
     button.addEventListener("click", () => handleDirection(button.dataset.dir));
+});
+
+document.querySelectorAll("[data-target]").forEach(button => {
+    button.addEventListener("click", () => resolveHealTarget(button.dataset.target));
 });
 
 window.addEventListener("keydown", event => {

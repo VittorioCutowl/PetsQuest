@@ -58,11 +58,15 @@ Ogni turno ha due fasi:
   - Paladino, Prete, Negromante e Mago risolvono `ABILITA` con 4 cristalli direzionali;
   - input corretti aumentano danno e cura;
   - timeout o errori producono una magia piu' debole.
+- Cura con target prototipale:
+  - Paladino e Prete scelgono il bersaglio dopo la sequenza magica;
+  - `EROE` cura il player, `ALLEATO` cura un compagno prototipale con HP propri;
+  - timeout sulla scelta target applica fallback sull'eroe.
 
 ### Ancora Da Implementare
 
 - Sequenza magica finale per caster: ora esiste una versione prototipale a 4 cristalli, manca bilanciamento finale e varianti per abilita' multiple.
-- Cura con selezione bersaglio per Prete/Paladino. Ora esiste solo una cura self semplificata su abilita' dedicate.
+- Cura con selezione bersaglio finale: ora esiste un target prototipale eroe/alleato, manca integrazione con party reale e abilita' multiple.
 - Inventario completo con piu' oggetti.
 - Progressione EXP/livelli/talenti finale. Ora esiste una progressione prototipale salvata con level up e talent point.
 - Mappatura finale di tutte le abilita' disponibili in UI: ora ogni classe selezionabile ha una primaria e profilo stat base, ma manca ancora un pannello abilita' completo.

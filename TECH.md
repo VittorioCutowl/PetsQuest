@@ -30,16 +30,28 @@ Lo stato combat vive nell'oggetto `combat`:
 ```js
 {
   playerHp,
+  playerMaxHp,
   enemyHp,
+  enemyMaxHp,
+  allyHp,
+  allyMaxHp,
   rage,
+  rageMax,
   mana,
+  manaMax,
   energy,
+  energyMax,
   potions,
   phase,
   turn,
   awaitingDirection,
   playerAction,
   enemyIntent,
+  magicSequence,
+  magicResults,
+  magicIndex,
+  magicHits,
+  pendingAbility,
   timerFrame,
   timerToken,
   timerPhase
@@ -51,6 +63,7 @@ Fasi principali:
 - `action`: scelta tra arma, abilita' e oggetto;
 - `aim`: scelta direzione attacco arma;
 - `magic`: sequenza a 4 cristalli direzionali per abilita' caster;
+- `target`: scelta bersaglio per cure prototipali;
 - `resolve-player`: risoluzione azione player;
 - `defense`: lettura segnale nemico e scelta difesa;
 - `resolve-enemy`: risoluzione attacco nemico;
@@ -62,6 +75,7 @@ Le fasi interattive `action`, `aim` e `defense` usano un countdown live basato s
 - `aim`: 6 secondi; se scade, l'attacco arma manca il bersaglio;
 - `defense`: 5 secondi; se scade, il nemico infligge danno pieno.
 - `magic`: 8 secondi; se scade, la magia viene risolta con potenza ridotta.
+- `target`: 6 secondi; se scade, la cura usa l'eroe come fallback.
 
 ## Regole Risorse
 
@@ -108,6 +122,12 @@ Sequenza magia:
 - la sequenza usa `assets/generated_ui/endgame/matchmaking_crystal.png` e le frecce `assets/generated_ui/combat_fx/control_arrow_*`;
 - ogni input corretto aumenta il moltiplicatore di danno/cura;
 - timeout o input errati risolvono comunque la magia, ma con efficacia ridotta.
+
+Cura e target:
+
+- Paladino e Prete usano la fase `target` quando l'abilita' ha cura associata;
+- la cura puo' andare su `EROE` o su un `ALLEATO` prototipale con HP separati;
+- l'alleato usa asset endgame esistenti e i suoi HP sono salvati in `playerState`.
 
 ## Asset
 
