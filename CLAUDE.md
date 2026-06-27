@@ -199,6 +199,10 @@ Cartella sorgente degli asset prodotti dall'artista. Tutto il necessario per il 
 - `endgame/` — sfondi raid/dungeon, icone rank (bronze→diamond)
 - `tools/` — script Python per processare sprite dall'artista
 
+### Generated UI pack
+- `assets/generated_ui/` — 88 PNG trasparenti per schermate selezione, campagna, combat, ricompense ed endgame
+- `GENERATED_UI_ASSETS.md` — manifest con lista esatta dei file generati, sheet sorgente/alpha e uso previsto per categoria
+
 ### Convenzione direzioni (da `art_input/README.md`)
 > Personaggi giocabili (cani/gatti/topi): la direzione principale **senza suffisso** va da sinistra → destra.  
 > Nemici (scheletro): la direzione principale **senza suffisso** va da destra → sinistra.  
