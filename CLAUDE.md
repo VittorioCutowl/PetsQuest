@@ -34,7 +34,7 @@ PetsQuest è un gioco RPG pixel art con combattimento a turni in tempo reale. Il
 - Scaling responsivo del canvas via CSS transform
 
 ### ❌ Non ancora fatto (in ordine di priorità)
-1. **Character selection** — schermata scelta razza + classe prima del combat
+1. **Character selection** — schermata scelta razza + classe prima del combat ← **PROSSIMO STEP, GRAFICA DISPONIBILE**
 2. **Effetti visivi** — flash bianco sul colpito, particelle magiche
 3. **Mappa campagna** — board a quadri (Quadro → Combat → Miniboss → Rewards)
 4. **Multiplayer** — WebSocket / Colyseus (fase avanzata)
@@ -174,9 +174,44 @@ enemySprite.x  = 620   // scheletro — destra
 
 ---
 
+## Grafica disponibile in `art_input/`
+
+Cartella sorgente degli asset prodotti dall'artista. Tutto il necessario per il prossimo step è già presente.
+
+### Sprite personaggi giocabili (solo `idle` per ora, 6 frame × 2 direzioni)
+| Personaggio | Razza | Classe |
+|-------------|-------|--------|
+| `main_character` | Cane | Guerriero |
+| `dog_paladin` | Cane | Paladino |
+| `cat_mage` | Gatto | Mago |
+| `cat_necromancer` | Gatto | Negromante |
+| `mouse_warrior` | Topo | Guerriero |
+| `mouse_thief` | Topo | Ladro |
+| `mouse_priest` | Topo | Prete |
+
+### Altri asset presenti
+- `backgrounds/battle/` — sfondi battaglia per razza (dog_forest_night, cat_dark_dungeon, mouse_ruined_city, pvp_arena)
+- `campaign/` — mappe campagna, tiles percorso, icone eventi (combat/rest/shop/treasure)
+- `ui/abilities/` — icone abilità per tutte le classi
+- `ui/resources/` — icone Rabbia/Mana/Fede/Energia
+- `ui/buttons/` — bottoni con stati normal/hover/pressed
+- `inventory/` — armi, armature, pozioni, loot
+- `endgame/` — sfondi raid/dungeon, icone rank (bronze→diamond)
+- `tools/` — script Python per processare sprite dall'artista
+
+### Convenzione direzioni (da `art_input/README.md`)
+> Personaggi giocabili (cani/gatti/topi): la direzione principale **senza suffisso** va da sinistra → destra.  
+> Nemici (scheletro): la direzione principale **senza suffisso** va da destra → sinistra.  
+> Le varianti `_left` sono le versioni specchiate.
+
+Nota: per `idle` questa regola è **invertita per errore storico** (idle no-suffix guarda sinistra). La convenzione corretta vale solo per `attack`, `hit`, `death`. Vedi tabella in "Assets: struttura e convenzione CRITICA".
+
+---
+
 ## Documenti del progetto
 | File | Contenuto |
 |------|-----------|
 | `SPECS.md` | Regole di gameplay complete (razze, classi, combat, campagna, endgame) |
 | `TECH.md` | Decisioni tecniche, scelte architetturali, domande aperte |
+| `art_input/README.md` | Regole grafiche, workflow artista, convenzione naming sprite |
 | `CLAUDE.md` | Questo file — punto di partenza per agenti |
