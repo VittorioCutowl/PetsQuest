@@ -600,6 +600,7 @@ function phaseAction() {
 }
 
 function onActionSelect(key) {
+    if (GS.phase !== 'action') return;
     if (L.ui._cleanup) { L.ui._cleanup(); L.ui._cleanup = null; }
     stopTimer();
     GS.playerAction = key;
@@ -681,6 +682,7 @@ function phaseDirAttack() {
 }
 
 function onDirSelect(dir) {
+    if (GS.phase !== 'dir_attack') return;
     GS.playerDir = dir;
     setPhase(GS.enemyAtkType === 'physical' ? 'def_physical' : 'def_magic');
 }
@@ -689,9 +691,13 @@ function onDirSelect(dir) {
 function phaseMagicAtk() {
     GS.playerSeq = [];
 
-    const tip = T('Collega i 4 cristalli nell\'ordine che preferisci!', { size: 7, fill: C.textDim });
+    const tip = T('Lancia l\'incantesimo! Scegli l\'ordine dei 4 cristalli.', { size: 7, fill: C.textDim });
     tip.anchor.set(0.5); tip.x = W / 2; tip.y = PY + 6;
     L.ui.addChild(tip);
+
+    const tip2 = T('La tua sequenza diventerà l\'attacco che il nemico dovrà bloccare.', { size: 6, fill: C.textDim, wrap: true, wrapWidth: 500, align: 'center' });
+    tip2.anchor.set(0.5); tip2.x = W / 2; tip2.y = PY + 20;
+    L.ui.addChild(tip2);
 
     let seqDisp = null;
     const updateSD = () => {
@@ -699,11 +705,11 @@ function phaseMagicAtk() {
         const s = GS.playerSeq;
         const txt = s.length === 0 ? 'Clicca i cristalli...' : s.map(i => i + 1).join(' → ');
         seqDisp = T(txt, { size: 9, fill: s.length === 4 ? C.success : C.gold });
-        seqDisp.anchor.set(0.5); seqDisp.x = W / 2; seqDisp.y = PY + 22;
+        seqDisp.anchor.set(0.5); seqDisp.x = W / 2; seqDisp.y = PY + 36;
         L.ui.addChild(seqDisp);
     };
 
-    const cx = W / 2, cy = PY + 105, orbR = 28, gap = 22;
+    const cx = W / 2, cy = PY + 118, orbR = 28, gap = 22;
     const pos = [
         { i:0, x: cx - orbR - gap/2, y: cy - orbR - gap/2 },
         { i:1, x: cx + orbR + gap/2, y: cy - orbR - gap/2 },
@@ -758,7 +764,7 @@ function phaseMagicAtk() {
     updateSD();
 
     startTimer(15,
-        (rem) => drawTimerUI(rem, 15, 'SEQUENZA MAGIA'),
+        (rem) => drawTimerUI(rem, 15, 'FASE 1 — INCANTESIMO  (15 secondi)'),
         () => {
             window.removeEventListener('keydown', kbH);
             while (GS.playerSeq.length < 4) {
@@ -825,6 +831,7 @@ function phaseDefPhys() {
 }
 
 function onDefDirSelect(dir) {
+    if (GS.phase !== 'def_physical') return;
     GS.playerDefDir = dir;
     resolveRound();
 }
@@ -919,6 +926,7 @@ function phaseDefMagic() {
 // RESOLUTION
 // ================================================================
 function resolveRound() {
+    if (GS.turnResult !== null) return; // guard: already resolved this turn
     stopTimer();
     const p = GS.player, e = GS.enemy;
     let pDmg = 0, eDmg = 0, pHeal = 0;
@@ -926,18 +934,20 @@ function resolveRound() {
 
     // Enemy → Player
     if (GS.enemyAtkType === 'physical') {
-        const base = Math.round(e.atk + Math.random() * 8);
+        const raw = e.atk + Math.floor(Math.random() * 9);
+        const base = Math.max(1, raw - Math.floor(p.def * 0.6));
         if (GS.playerDefDir === GS.enemyDir) {
-            pDmg = Math.max(1, Math.round(base * 0.12));
-            msgs.push({ t: `🛡 Parata! Solo ${pDmg} danni ricevuti`, c: C.success });
+            pDmg = Math.max(1, Math.round(base * 0.2));
+            msgs.push({ t: `🛡 Parata perfetta! Solo ${pDmg} danni`, c: C.success });
         } else {
             pDmg = base;
             msgs.push({ t: `⚔ Colpo nemico: ${pDmg} danni ricevuti`, c: C.failure });
         }
     } else {
-        const base = Math.round(e.matk + Math.random() * 10);
+        const raw = e.matk * 3 + Math.floor(Math.random() * 11);
+        const base = Math.max(1, raw - Math.floor(p.def * 0.25));
         if (GS.playerDefSeq.join(',') === GS.enemySeq.join(',')) {
-            pDmg = Math.max(1, Math.round(base * 0.1));
+            pDmg = Math.max(1, Math.round(base * 0.15));
             msgs.push({ t: `✨ Contro-magia! Solo ${pDmg} danni`, c: C.success });
         } else {
             pDmg = base;
@@ -952,16 +962,19 @@ function resolveRound() {
         p.res = Math.min(p.maxRes, p.res + 8);
         msgs.push({ t: `🧪 Pozione: +${pHeal} HP recuperati`, c: C.hp });
     } else if (GS.playerAtkType === 'physical') {
-        const base = Math.round(p.atk + Math.random() * 8);
+        const raw = p.atk + Math.floor(Math.random() * 9);
+        const base = Math.max(1, raw - Math.floor(e.def * 0.6));
         eDmg = GS.playerDir ? base : Math.round(base * 0.45);
-        p.res = Math.min(p.maxRes, p.res + 15);
+        p.res = Math.min(p.maxRes, p.res + 12);
         const tag = GS.playerDir ? '' : ' (affrettato)';
         msgs.push({ t: `⚔ Tuo attacco${tag}: ${eDmg} danni inflitti`, c: C.secondary });
     } else if (GS.playerAtkType === 'magic') {
-        const base = Math.round(28 + Math.random() * 12);
+        const seqStr = GS.playerSeq.map(i => i + 1).join('→');
+        const raw = p.matk * 3 + Math.floor(Math.random() * 13);
+        const base = Math.max(1, raw - Math.floor(e.def * 0.25));
         eDmg = base;
         p.res = Math.max(0, p.res - 25);
-        msgs.push({ t: `✨ Incantesimo: ${eDmg} danni magici inflitti`, c: C.primary });
+        msgs.push({ t: `✨ Incantesimo [${seqStr}]: ${eDmg} danni magici`, c: C.primary });
     }
 
     p.hp = Math.max(0, p.hp - pDmg);
@@ -1062,7 +1075,8 @@ function phaseResolution() {
 
 function nextTurn() {
     GS.turn++;
-    GS.playerDir = null; GS.playerSeq  = [];
+    GS.playerAction = null; GS.playerAtkType = null;
+    GS.playerDir = null; GS.playerSeq = [];
     GS.playerDefDir = null; GS.playerDefSeq = [];
     GS.turnResult = null;
     setPhase('action');
