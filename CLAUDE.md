@@ -44,13 +44,19 @@ Implementato nel prototipo:
 - risorse reali Energia/Mana/Rabbia e pozione consumabile;
 - hit/miss reale su attacco direzionale;
 - segnale nemico semi-telegrafato in difesa.
+- persistenza razza/classe e risorse tra selezione, campagna e combat;
+- profili classe prototipali con stat, arma, abilita', costi e danni;
+- sequenza magica a 4 cristalli per classi caster;
+- cura con target prototipale per Prete/Paladino;
+- loot/progressione prototipale con EXP, oro, pozioni e talent point;
+- selezione classe con preview singola e punti risorsa aggiornati per classe/livello.
 
 Non ancora implementato:
 
-- sequenza magica a 4 punti;
-- cura con target;
-- loot/progressione reale;
-- persistenza scelta razza/classe;
+- Fede come risorsa combat autonoma;
+- party reale e inventario/equip ispezionabile;
+- abilita' multiple finali e alberi talenti;
+- bilanciamento finale progressione/loot/equip;
 - multiplayer/endgame gameplay.
 
 ## Attenzione Path Asset

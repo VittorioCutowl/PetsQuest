@@ -148,16 +148,19 @@ Eseguita nel browser locale:
 - caricamento senza immagini mancanti;
 - nessun errore console;
 - `ARMA` consuma Energia;
-- `ABILITA` consuma Mana;
+- `ABILITA` consuma la risorsa definita dal profilo classe;
 - `OGGETTO` consuma la pozione e poi resta disabilitato;
 - hit pieno, danno ridotto e parata/miss funzionano;
 - difesa semi-telegrafata senza testo esplicito della direzione.
+- sequenza magica, target cura e fallback timeout sono presenti come prototipo;
+- selezione razza/classe aggiorna preview sprite singola e punti risorsa classe/livello.
 
 ## Roadmap Tecnica
 
 - Separare JS/CSS da `index.html` quando il prototipo smette di essere mock/demo.
 - Introdurre un piccolo state manager per combat e campagna.
 - Estrarre dati bilanciamento in JSON.
-- Implementare sequenze magiche e target cura.
-- Persistenza scelta razza/classe.
+- Rendere `Fede` una risorsa combat autonoma oppure definirla come label di Mana sacra.
+- Collegare target cura a un party reale.
+- Implementare inventario/equip ispezionabile.
 - Preparazione a Vite o altro bundler solo quando serve build reale.

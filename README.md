@@ -15,13 +15,17 @@ Schermate principali implementate:
 
 Gameplay combat implementato:
 
-- Loop a turni: scelta azione -> eventuale direzione attacco -> difesa -> turno successivo.
-- `ARMA`: consuma `12 Energia`, richiede direzione e puo' fare colpo pieno, danno ridotto o miss/parata.
-- `ABILITA`: consuma `18 Mana`, oppure `24 Rabbia` se il Mana non basta, e infligge danno garantito.
+- Loop a turni: scelta azione -> eventuale direzione attacco o sequenza magica -> eventuale target cura -> difesa -> turno successivo.
+- `ARMA`: consuma Energia in base alla classe, richiede direzione e puo' fare colpo pieno, danno ridotto o miss/parata.
+- `ABILITA`: usa costi, danni, icone e nome della classe selezionata.
+- Classi caster: Paladino, Prete, Negromante e Mago usano sequenza magica a 4 cristalli.
+- Prete e Paladino: dopo la sequenza possono scegliere target cura tra eroe e alleato prototipale.
 - `OGGETTO`: consuma una pozione reale (`x1 -> x0`) e cura il personaggio.
 - Risorse reali: Rabbia, Mana ed Energia hanno valori numerici, segmenti visivi e rigenerazione a ogni nuovo turno.
 - Difesa semi-telegrafata: il nemico non mostra piu' un testo esplicito tipo "difendi destra", ma un segnale leggibile e una direzione evidenziata sul D-pad.
 - Stati vittoria/sconfitta con animazioni death e feedback ricompensa.
+- Persistenza scelta razza/classe, risorse, EXP, oro, pozioni e talent point.
+- Selezione classe con preview singola dello sprite e punti risorsa aggiornati per classe/livello.
 
 Verifica locale eseguita:
 
@@ -32,10 +36,10 @@ Verifica locale eseguita:
 
 Prossimi punti gameplay:
 
-- Sequenza magica a 4 punti per caster.
-- Selezione bersaglio cura per Prete/Paladino.
-- Ricompense reali e progressione dopo la vittoria.
-- Persistenza scelta razza/classe tra selezione, campagna e combat.
+- Risolvere ambiguita' `Fede` vs `Mana`.
+- Collegare la cura a un party reale.
+- Inventario/equip ispezionabile.
+- Alberi talenti e abilita' multiple finali.
 - Bilanciamento numerico finale per classi, nemici e progressione.
 
 ## Direzione Sprite
