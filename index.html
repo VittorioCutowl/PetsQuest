@@ -413,7 +413,7 @@
             position: absolute;
             z-index: 7;
             left: 50%;
-            bottom: 160px;
+            bottom: 230px;
             width: 840px;
             height: 430px;
             transform: translateX(-50%);
@@ -455,7 +455,7 @@
             position: absolute;
             z-index: 6;
             left: 50%;
-            bottom: 136px;
+            bottom: 166px;
             display: flex;
             gap: 18px;
             transform: translateX(-50%);
@@ -580,17 +580,27 @@
 
         .party-line {
             position: absolute;
-            left: 28px;
-            right: 28px;
-            top: 170px;
-            height: 250px;
+            left: 42px;
+            right: 42px;
+            top: 140px;
+            height: 318px;
         }
 
-        .party-line .sprite { bottom: 0; width: 138px; height: 250px; }
-        .party-line .sprite:nth-child(1) { left: 8px; }
-        .party-line .sprite:nth-child(2) { left: 124px; }
-        .party-line .sprite:nth-child(3) { left: 240px; }
-        .party-line .sprite:nth-child(4) { left: 356px; }
+        .party-line .sprite {
+            left: 50%;
+            bottom: 0;
+            width: 260px;
+            height: 318px;
+            opacity: 0;
+            transform: translateX(-50%) scale(0.92);
+            transition: opacity 140ms ease, transform 140ms ease;
+            pointer-events: none;
+        }
+
+        .party-line .sprite.active-preview {
+            opacity: 1;
+            transform: translateX(-50%) scale(1);
+        }
 
         .class-row {
             position: absolute;
@@ -1977,7 +1987,7 @@
                     <div class="race-banner"><img src="assets/generated_ui/campaign/banner_cats.png" alt="">GATTI</div>
                     <div class="party-line">
                         <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_thief/idle/cat_thief_idle" src="art_input/assets/sprites/cat_thief/idle/cat_thief_idle_01.png" alt="">
-                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_necromancer/idle/cat_necromancer_idle" src="art_input/assets/sprites/cat_necromancer/idle/cat_necromancer_idle_01.png" alt="">
+                        <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_necromancer/idle_left/cat_necromancer_idle_left" src="art_input/assets/sprites/cat_necromancer/idle_left/cat_necromancer_idle_left_01.png" alt="">
                         <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_mage/idle/cat_mage_idle" src="art_input/assets/sprites/cat_mage/idle/cat_mage_idle_01.png" alt="">
                         <img class="sprite sprite-anim" data-stem="art_input/assets/sprites/cat_priest/idle/cat_priest_idle" src="art_input/assets/sprites/cat_priest/idle/cat_priest_idle_01.png" alt="">
                     </div>
@@ -1991,10 +2001,10 @@
             </div>
 
             <div class="resource-strip panel">
-                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_rage.png" alt=""><span>Rabbia<strong>120</strong></span></div>
-                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><span>Energia<strong>200</strong></span></div>
-                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_mana.png" alt=""><span>Mana<strong>150</strong></span></div>
-                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_faith.png" alt=""><span>Fede<strong>180</strong></span></div>
+                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_rage.png" alt=""><span>Rabbia<strong id="race-rage-points">96</strong></span></div>
+                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_energy.png" alt=""><span>Energia<strong id="race-energy-points">76</strong></span></div>
+                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_mana.png" alt=""><span>Mana<strong id="race-mana-points">30</strong></span></div>
+                <div class="resource"><img class="small-icon" src="art_input/assets/ui/resources/resource_faith.png" alt=""><span>Fede<strong id="race-faith-points">0</strong></span></div>
             </div>
             <button class="gold-btn confirm-race" data-go="campaign-screen">CONFERMA</button>
         </section>
@@ -2457,6 +2467,21 @@ function costLabel(cost) {
     return parts.join("<br>");
 }
 
+function getClassResourcePreview(className = selection.className, level = playerState.level) {
+    const stats = getClassStats(className);
+    const levelBonus = Math.max(0, level - 1);
+    const isFaithClass = className === "Paladino" || className === "Prete";
+    const isArcaneClass = className === "Mago" || className === "Negromante";
+    const scaledMana = stats.manaMax + levelBonus * 7;
+
+    return {
+        rage: stats.rageMax + levelBonus * 6,
+        energy: stats.energyMax + levelBonus * 8,
+        mana: isFaithClass ? Math.max(0, Math.round(stats.manaMax * 0.35)) + levelBonus * 2 : isArcaneClass ? scaledMana : stats.manaMax + levelBonus * 3,
+        faith: isFaithClass ? scaledMana : 0,
+    };
+}
+
 function showScreen(id) {
     applyGameStateToUI();
     screens.forEach(screen => screen.classList.toggle("active", screen.id === id));
@@ -2475,6 +2500,25 @@ goButtons.forEach(button => {
     });
 });
 
+function updateRaceCardPreview(card, activeSlot = null) {
+    if (!card) return;
+    const slots = [...card.querySelectorAll(".class-slot:not(.locked)")];
+    const sprites = [...card.querySelectorAll(".party-line .sprite")];
+    const slot = activeSlot && !activeSlot.classList.contains("locked")
+        ? activeSlot
+        : slots.find(item => item.classList.contains("selected")) || slots[0];
+    const activeIndex = Math.max(0, slots.indexOf(slot));
+    sprites.forEach((sprite, index) => {
+        const active = index === activeIndex;
+        sprite.classList.toggle("active-preview", active);
+        sprite.dataset.locked = active ? "" : "true";
+    });
+}
+
+function updateRacePreviews() {
+    document.querySelectorAll(".race-card").forEach(card => updateRaceCardPreview(card));
+}
+
 function updateRaceSelection(card, options = {}) {
     if (!card) return;
     selection.raceKey = card.dataset.race || "dogs";
@@ -2485,6 +2529,7 @@ function updateRaceSelection(card, options = {}) {
         : null;
     const fallbackClass = firstClass || card.querySelector(".class-slot:not(.locked)");
     if (fallbackClass) updateClassSelection(fallbackClass, { skipSave: true });
+    updateRacePreviews();
     applyGameStateToUI();
     if (!options.skipSave) saveGame();
 }
@@ -2498,6 +2543,7 @@ function updateClassSelection(slot, options = {}) {
     if (changedClass) syncPlayerClassStats({ reset: true });
     document.querySelectorAll(".class-slot").forEach(item => item.classList.remove("selected"));
     slot.classList.add("selected");
+    updateRaceCardPreview(slot.closest(".race-card"), slot);
     applyGameStateToUI();
     if (!options.skipSave) saveGame();
 }
@@ -2507,6 +2553,7 @@ function restoreSelectionUI() {
     updateRaceSelection(card, { keepClass: true, skipSave: true });
     const slot = [...card.querySelectorAll(".class-slot:not(.locked)")].find(item => item.dataset.class === selection.className);
     if (slot) updateClassSelection(slot, { skipSave: true });
+    updateRacePreviews();
 }
 
 function applyGameStateToUI() {
@@ -2534,6 +2581,11 @@ function applyGameStateToUI() {
     const rewardLoot = document.getElementById("reward-loot");
     const rewardLootIcon = document.getElementById("reward-loot-icon");
     const rewardExp = document.getElementById("reward-exp");
+    const raceResourcePreview = getClassResourcePreview();
+    const raceRagePoints = document.getElementById("race-rage-points");
+    const raceEnergyPoints = document.getElementById("race-energy-points");
+    const raceManaPoints = document.getElementById("race-mana-points");
+    const raceFaithPoints = document.getElementById("race-faith-points");
 
     if (confirm) confirm.textContent = `${selection.race} / ${selection.className}`;
     if (campaignTitle) campaignTitle.textContent = `CAMPAGNA ${selection.race.toUpperCase()}`;
@@ -2563,6 +2615,10 @@ function applyGameStateToUI() {
     if (campaignEnergy) campaignEnergy.textContent = `${playerState.energy}/${playerState.energyMax}`;
     if (campaignGold) campaignGold.textContent = formatNumber(playerState.gold);
     if (campaignTalents) campaignTalents.textContent = playerState.talentPoints;
+    if (raceRagePoints) raceRagePoints.textContent = raceResourcePreview.rage;
+    if (raceEnergyPoints) raceEnergyPoints.textContent = raceResourcePreview.energy;
+    if (raceManaPoints) raceManaPoints.textContent = raceResourcePreview.mana;
+    if (raceFaithPoints) raceFaithPoints.textContent = raceResourcePreview.faith;
     if (rewardGold) rewardGold.textContent = reward.gold < 0 ? `${reward.gold}` : `${reward.gold}`;
     if (rewardLoot) rewardLoot.textContent = reward.lootText || "-";
     if (rewardLootIcon) rewardLootIcon.src = reward.lootIcon || "art_input/assets/inventory/loot/loot_common.png";
